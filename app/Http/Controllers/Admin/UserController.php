@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of users.
+     */
+    public function index(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->filled('q')) {
+            $search = $request->input('q');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('alias_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->latest()->paginate(15);
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Show the form for creating a new user.
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Store a newly created user in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'alias_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+            'contact' => 'nullable|string|max:255',
+            'extension' => 'nullable|string|max:255',
+            'role' => 'required|in:admin,manager,agent,ticketing',
+            'agent_language' => 'nullable|in:english,spanish,both',
+            'joining_date' => 'nullable|date',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['is_active'] = $request->has('is_active');
+
+        User::create($validated);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified user.
+     */
+    public function edit(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified user in storage.
+     */
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'alias_name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|string|min:6',
+            'contact' => 'nullable|string|max:255',
+            'extension' => 'nullable|string|max:255',
+            'role' => 'required|in:admin,manager,agent,ticketing',
+            'agent_language' => 'nullable|in:english,spanish,both',
+            'joining_date' => 'nullable|date',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $validated['is_active'] = $request->has('is_active');
+
+        $user->update($validated);
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Toggle user active status.
+     */
+    public function toggleActive(User $user)
+    {
+        $user->update([
+            'is_active' => !$user->is_active,
+        ]);
+
+        $status = $user->is_active ? 'activated' : 'deactivated';
+
+        return redirect()->back()->with('success', "User {$user->alias_name} has been {$status}.");
+    }
+}

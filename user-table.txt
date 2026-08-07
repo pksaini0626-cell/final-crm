@@ -1,0 +1,148 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.2
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1:3306
+-- Generation Time: Aug 07, 2026 at 06:12 PM
+-- Server version: 11.8.8-MariaDB-log
+-- PHP Version: 7.2.34
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `u279204418_crm`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `agent_custom_id` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `alias_name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) NOT NULL,
+  `extension_number` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` varchar(50) NOT NULL DEFAULT 'agent',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `is_blocked` tinyint(1) NOT NULL DEFAULT 0,
+  `last_login` timestamp NULL DEFAULT NULL,
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `agent_custom_id`, `name`, `alias_name`, `email`, `extension_number`, `phone`, `email_verified_at`, `password`, `role`, `is_active`, `is_blocked`, `last_login`, `created_by`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'AG3823', 'Prashant', 'pk', 'prashant.saini@trafficpirates.com', NULL, NULL, NULL, '$2y$12$WHSPbTd76ZJ9tvsXTDEIcuH8dIsxxrtOXLyj9WaQ6TcxV99EezReu', 'agent', 1, 0, '2026-08-06 15:41:11', NULL, NULL, '2026-02-19 10:15:30', '2026-08-06 15:41:11'),
+(2, 'AG4125', 'MIS Main', NULL, 'mis@callinggenie.com', NULL, NULL, NULL, '$2y$12$RnYfDUvUCnhXRAZS1Va1LOh9c8VTjv2tM483B.3oHE3RB0FgHqxNS', 'agent', 1, 0, '2026-06-01 19:33:05', NULL, 'Xv3Sj5tfqYcx5MEMRbW1QWKwSU8D1SNKkBiwGr8FPaDlJjBuUPsVicKEvwI1', '2026-02-25 05:48:49', '2026-06-01 19:33:05'),
+(3, 'AG4084', 'Support Team', NULL, 'support@callinggenie.com', NULL, NULL, NULL, '$2y$12$cGnA1mq8YHqmBoXwtPc7V.lm1aXcPt91MskFk0zvNrTlUttoWL.JK', 'support', 1, 0, '2026-06-01 19:32:12', NULL, 'os6OqToDb7W14jeKxElZ9CmZa8wcPP3F9UF9o1ejw1l0rYKssqiEsHl1YP8n', '2026-02-25 05:50:01', '2026-06-01 19:32:12'),
+(4, 'AG6861', 'Charging Team', 'Simon', 'greatdotgreat@gmail.com', NULL, NULL, NULL, '$2y$12$qvNFfV6J.C6iZZBdqTeqHeQhgOgRPbb7SSd5pWMcaa75APF0qFPJG', 'charge', 1, 0, '2026-07-14 09:34:16', NULL, NULL, '2026-02-25 05:50:01', '2026-07-14 09:34:16'),
+(5, 'AG3271', 'Manager Team', NULL, 'manager@callinggenie.com', NULL, NULL, NULL, '$2y$12$kMfMK/dQNdOtVqDDuzyEnuTJfl8E8OErInRuPWxKOYc1FZrGb53Qy', 'agent', 1, 0, NULL, NULL, NULL, '2026-02-25 05:50:01', '2026-03-05 04:57:19'),
+(6, 'ADMIN_7837', 'Super Admin', NULL, 'duke.nelson@callinggenie.com', NULL, '+919999402961', '2026-03-03 08:39:11', '$2y$12$9ZJHNydZxxUp.8C7G3U0kumPNVqF2zNxc44Mk.3pJRSOTvzlDXa1S', 'admin', 1, 0, '2026-08-07 11:10:23', NULL, NULL, '2026-03-03 08:39:11', '2026-08-07 11:10:23'),
+(8, 'tetsing', 'Test User', NULL, 'test@example.com', NULL, NULL, '2026-03-03 08:44:32', '$2y$12$X292IEAZ9j8j4Yw/MHzjH.WKMdv4Rlido51KYNP.ABe6IJZ4PLYx6', 'agent', 1, 0, NULL, NULL, '9T4ZfuOaDb', '2026-03-03 08:44:32', '2026-03-03 08:44:32'),
+(9, 'AGT_69AF1D201F020', 'Gilbert', 'Gilbert', 'gaurav.sharma@callinggenie.com', '166', '+17144220495', NULL, '$2y$12$5EcuhQlUWC.DcIXxspnqLuYEcGBiqYPd1XuddIyabcl9NByd.PNMS', 'agent', 1, 0, '2026-08-03 12:44:13', 6, 'cw6fX509mfnOMCUGmGHp5jbJwbueDvxalbzXbthkPCUAaXmZLrZXpmK1j6O6', '2026-03-09 19:18:56', '2026-08-03 12:44:13'),
+(10, 'AGT_69AF1D82AE9D5', 'Thomas', 'Thomas', 'wilkenson.thomas@callinggenie.com', '137', '+1714422-516', NULL, '$2y$12$36QT8CEspm3vrlWALw3K3ekKcEvM3qNk9d5iVk9W0rwF5SK0fuedy', 'agent', 1, 0, '2026-08-07 07:53:12', 6, 'cnjb1qxGjBnXlnNxwbhDrCZ8mGp5YzigsT1txHiIosyRpeeXhlmMgsU8GErw', '2026-03-09 19:20:34', '2026-08-07 07:53:12'),
+(11, 'AGT_69AF1DA9B1C06', 'Mike', 'Mike', 'ankush.bhardwaj@callinggenie.com', '141', '+17474002565', NULL, '$2y$12$ZOFkVGOWELhbiNNZWxhjKuSEL9wt/YsmkKfyXEOxuRQNJi2XH4eOa', 'agent', 1, 0, '2026-08-05 08:17:22', 6, 'i5Gv1a3pASrBAUIfVIeG6XbCTIfroFTbnSARtkE7OUIopnos705LuZMfuV8v', '2026-03-09 19:21:13', '2026-08-05 08:17:22'),
+(13, 'CHG_69B2A40DE33B5', 'Simone Ossan', 'Simone', 'simone.ossan@callinggenie.com', NULL, NULL, NULL, '$2y$12$f5sBIGze4ISdKtz7AH4B3OdhX81K3r8VYNGczy7bZxMbzADARYtv.', 'charge', 1, 0, NULL, 6, NULL, '2026-03-12 11:31:25', '2026-03-12 11:31:25'),
+(14, 'AGT_69B967CDC5236', 'Travis', 'Travis', 'tarun.Sindhu@callinggenie.com', '198', '+16262432148', NULL, '$2y$12$PGudMRSdWKr6HEnoC0n5rOtSa.vSsHhS5d0BNN7EQ7yr/4Saz.OYG', 'agent', 1, 0, '2026-06-07 11:32:30', 6, 'DNS9JAIhVodfsnJjjak3SeqofmtRlOR8oTexjiil8bqTs8wo4OKWwN6V668O', '2026-03-17 14:40:13', '2026-06-07 11:32:30'),
+(15, 'AGT_69B9719922E5D', 'Michael', 'Michael', 'tribhuvan@callinggenie.com', '147', '+1714422-0454', NULL, '$2y$12$8jXAJYs72raFNPs.ZapAl.yRPZehSxT/s0.UCfmCR8XcteFdfc4xa', 'agent', 1, 0, NULL, 6, NULL, '2026-03-17 15:22:01', '2026-05-12 21:14:53'),
+(16, 'AGT_69B972109B29F', 'Mickey', 'Mickey', 'chirag.juneja@callinggenie.com', '161', '+1714422-0030', NULL, '$2y$12$iwp7sS44haOFzYYBKL5/VOZc9XKFnxTHgXLZKpZkqb.ZhCFm5jIKy', 'agent', 1, 0, '2026-06-05 18:40:31', 6, '8fpnZJy4fEZDR54kUpDOD5x0Dqxx7UDw55at7ExzCeHFL3gRuvTSceSu24qC', '2026-03-17 15:24:00', '2026-06-05 18:40:31'),
+(17, 'AGT_69B972B36EFB2', 'Sheldon', 'Sheldon', 'preet.kohli@callinggenie.com', '162', '+1714422-0735', NULL, '$2y$12$9Pun/NUgFgDtAHZypF3mDudFf5XvQDg60jCO4fhy4IJCRWxHmXZy6', 'agent', 1, 0, '2026-08-07 05:43:37', 6, 'fPrWGK8WcooIytcDBnT2wJRAnyjg4uwktFdRfxumZLAotRuOfYGK6Gu1ezKA', '2026-03-17 15:26:43', '2026-08-07 05:43:37'),
+(18, 'AGT_69B9752145562', 'Dexter', 'Dexter', 'shamsad.ahemad@callinggenie.com', '130', '+1747263-0663', NULL, '$2y$12$w86mbDiXGbZTzJNPrn2GX.qG0UWKbP18tD8aocVY2J2PYcZTiZjGq', 'agent', 1, 0, '2026-08-04 10:39:18', 6, 'GBGIkgAxmCyKs9cwJ4Ok48AM1iV2M2xkoo9SGBEkw3dRKUnFciBHqCB3rklZ', '2026-03-17 15:37:05', '2026-08-04 10:39:18'),
+(19, 'AGT_69B976B2DC853', 'Sandra', 'Sandra', 'mehak.Chouhan@callinggenie.com', '181', '+1818616-7612', NULL, '$2y$12$QGvB4JqtyJN9UjxLiAsK7.IOA0V3fydamK/YF7sLSmxA19YQdRabu', 'agent', 1, 0, '2026-08-06 07:00:44', 6, 'zM8uPSXaprL8arqd5dZhtogJCQYzX7UFuGuf9jvtqpseWxxtuayVwUGoqTqx', '2026-03-17 15:43:46', '2026-08-06 07:00:44'),
+(20, 'AGT_69B977369EF16', 'Kenny', NULL, 'pulkit.juneja@callinggenie.com', NULL, '+747256-7768', NULL, '$2y$12$JTGS9sTKDnkIFgxNeML0/uMS060pdVGpO9rTvieEz42L2rnAWfJ2m', 'admin', 1, 0, '2026-07-01 16:09:31', 6, 'izwwadmp05GmjT458k2sIUHDrx0FgUFnmW4usGPGTFTlNAyDamxXXaPw8SSO', '2026-03-17 15:45:58', '2026-07-01 16:09:31'),
+(21, 'AGT_69B9779CC2342', 'Sarah', 'Sarah', 'shefali.kapoor@callinggenie.com', '123', '+1747253-0262', NULL, '$2y$12$mPBwXo5EhKw78GHvUlySXO6W5BPGpcdSaJRCjA.7rTqxfNEi/WC96', 'agent', 1, 0, '2026-08-05 12:16:47', 6, 'I39m7jz2SLkRm9xUZGEBdGGIIWmmvlfdoupWqAK1D4B05dNOZMDuVEME1Pt8', '2026-03-17 15:47:40', '2026-08-05 12:16:47'),
+(22, 'AGT_69B977F79BF37', 'Paul', 'Paul', 'abhigya.sharma@callinggenie.com', NULL, '+1626389-9150', NULL, '$2y$12$uKplxcoxYh48AB0Cn0C1o.JvEuFylCdpCAQZNGFk7AFv5ukzkQ.xO', 'agent', 0, 0, '2026-03-20 13:10:10', 6, 'FFMv8aIIjiA9KxiIlHvnZqbY36Df6eL5H1YBTQGUNdO3B4FBOtRyscupjTMQ', '2026-03-17 15:49:11', '2026-05-04 14:11:14'),
+(23, 'AGT_69B97856BBDA7', 'Gustavo', 'Gustavo', 'aalam.sarfraj@callinggenie.com', '178', '+16195350036', NULL, '$2y$12$RH8WE7e7MezJv6VrX4Vxe.lCbkQmyx8frD10Z7M90gvqrmdrWO3Bm', 'agent', 1, 0, '2026-06-02 01:27:11', 6, 'RL9Aaz187hgDxh1tTZ4lo8qP3OXODpEZihQculQ5IwWnzLaJCV1zVRSEpuwa', '2026-03-17 15:50:46', '2026-06-02 01:27:11'),
+(24, 'AGT_69B978A5C9DE0', 'Daniel', 'Daniel', 'ujwal.taneja@callinggenie.com', '200', '+16572328316', NULL, '$2y$12$gGxbaCZuvSlgJVHdDzTJCe3RpW8M/6OFn3VcjGiLHS3n6Lzy2ClQy', 'agent', 1, 0, '2026-07-20 15:11:10', 6, 'KcioWIwSlLKTloifXS9zhwfIgaa4TCDwtht7jzVhhLaOxKhhbws4h7lMjRsn', '2026-03-17 15:52:05', '2026-07-20 15:11:10'),
+(25, 'AGT_69B9794DD2086', 'Danny', 'Danny', 'kunal.sharma@callinggenie.com', NULL, '+17144220678', NULL, '$2y$12$wweQ1/eB0tIxzDDpjZp0duiwcSigIA4NnrfgaiUqeFSikFoBa9W06', 'agent', 0, 0, NULL, 6, NULL, '2026-03-17 15:54:53', '2026-05-12 21:02:56'),
+(26, 'AGT_69B979AA3ED68', 'Nicolas', 'Nicolas', 'neeraj.jha@callinggenie.com', NULL, '+16265257100', NULL, '$2y$12$R/8lLpRkmYk/3TmAWajJ7OQjVI/.GGEN3PBHVUZW5glRibH8f3EG6', 'agent', 0, 0, '2026-03-19 16:39:38', 6, NULL, '2026-03-17 15:56:26', '2026-05-12 21:02:15'),
+(27, 'AGT_69B97AE67D1EE', 'Jack', 'Jack', 'jatin.rekhi@callinggenie.com', '110', '+16282849060', NULL, '$2y$12$zYo3dJevpB0M.ZLS71q9LO/.Zz3Sq9kYLhQsrDWIue3IsAU36i3ga', 'agent', 1, 0, '2026-08-07 08:11:43', 6, 'jqGPH6QNSMTH3msOj9DO15CgNQk9CNVI3wi4y3ciXiqL5c4omiCPwCPTq6dh', '2026-03-17 16:01:42', '2026-08-07 08:11:43'),
+(28, 'AGT_69B97B3DA381B', 'Peter', 'Peter', 'mohit.gupta@callinggenie.com', NULL, '+16196043183', NULL, '$2y$12$/UJH72K67Pm9ZCUaNGuA5OjiR08sIZFGMZ7NxiY2Isx5nD9r5YX52', 'agent', 0, 0, '2026-03-19 16:57:20', 6, NULL, '2026-03-17 16:03:09', '2026-05-12 21:01:56'),
+(29, 'AGT_69B97BA41A09A', 'Easton', 'Easton', 'vishal.sharma@callinggenie.com', NULL, '+18184730237', NULL, '$2y$12$hqbBMCFtzhPLyiglcpl5xeO1166WWUiLiMCCToUtS2kdQqntBVyX.', 'agent', 0, 0, '2026-03-19 16:41:07', 6, NULL, '2026-03-17 16:04:52', '2026-05-12 21:01:28'),
+(30, 'AGT_69B97C01F1718', 'Darren Smith', 'Darren Smith', 'devansh.chauhan@callinggenie.com', NULL, '+17474443011', NULL, '$2y$12$wDHC9BQcbgvfEBCDHAZnG.Fco/POVPranMbeTDz7kegrSCD05808i', 'ticketing', 1, 0, NULL, 6, NULL, '2026-03-17 16:06:25', '2026-07-31 17:42:20'),
+(31, 'AGT_69B97C61BD584', 'Terry', NULL, 'farman.rizvi@callinggenie.com', NULL, '+16613717574', NULL, '$2y$12$Ar6O4SftQ2MbVGP8FDuMA.2lDcMNllty9btPc.JvrKWZMxQVruYAG', 'admin', 1, 0, '2026-07-31 17:41:37', 6, '4oN646zt654Yy7U8YNgjyw2IM7eN9YtZCgTbmevByTuPVtT01yW9GE4WoInS', '2026-03-17 16:08:01', '2026-07-31 17:41:37'),
+(32, 'AGT_69B97CAC5403E', 'Tristan', 'Tristan', 'sahil.ali@callinggenie.com', NULL, '+17473600625', NULL, '$2y$12$F6rl2Oqqy9zR3omD0t4TteDSQFr6ZEyC0i8eb8FunU1t6cgKdRdqS', 'agent', 0, 0, '2026-03-20 17:36:36', 6, 'ACyDCsTKMiVlNy5DvAIzRg9luQnkzuPrYU4SpwxhpmMwhWSpvt1xQ7ceeBC6', '2026-03-17 16:09:16', '2026-05-12 21:00:15'),
+(33, 'AGT_69B97CED036D1', 'Trevor', 'Trevor', 'aryaman.kumar@callinggenie.com', '194', '+12134554450', NULL, '$2y$12$xOUKulSd017O/0jf9fJDluHri.G2zrKY76NSaj.Exavzcr6iS6uu6', 'agent', 1, 0, '2026-04-13 19:05:31', 6, 'Un9CxGx86py1PXrc7MbqewAgre5bxwHWt2kslGrnpWWHqDjqryasRcZpKdon', '2026-03-17 16:10:21', '2026-05-12 20:59:55'),
+(34, 'AGT_69B97D663EBC5', 'Richard', 'Richard', 'sagar.kaushik@callinggenie.com', '131', '+16193637862', NULL, '$2y$12$keYcRo3hbqI4v5hoS.3oN.T2.lo69yLxDao018IBq/i/VKzaiYsnS', 'agent', 1, 0, '2026-08-04 09:02:56', 6, 'eVlizOl9LLQKGw4uAkqZKyQfBU2MMSsPu5ThCgQikXZIZIYYMnPo7vxONfXu', '2026-03-17 16:12:22', '2026-08-04 09:02:56'),
+(36, 'AGT_69BD6E0F97987', 'Jazz', 'Jazz', 'akshay.as@callinggenie.com', '201', '+16263809126', NULL, '$2y$12$L5YilktXDaoE6rWPe8RPeu.rZnpB6euS7QcDeCpt4wIlpXfqFv5iy', 'agent', 1, 0, '2026-06-01 20:16:18', 6, 'YUauYb5g1M0pbYz2pfCTsu322LUEHuB4NcCtybbw9D21Gqnp77A1bWmYHLJ5', '2026-03-20 15:55:59', '2026-06-01 20:16:18'),
+(37, 'SUP_69BD81FB31874', 'Mohit kumar', 'Mohit', 'mohit.kumar@callinggenie.com', NULL, NULL, NULL, '$2y$12$mgEVXdipsnpC/4lotxRbsO0eeRL61txIheQqzdTx0aVGNeHllPIcm', 'support', 1, 0, '2026-08-04 06:12:59', 6, 'rUTCqtsc3NJeTsY64ZW6sWmvellKaqn2emqXaVYzjA1Kx8CEJW3vvZJXh0ud', '2026-03-20 17:20:59', '2026-08-04 06:12:59'),
+(38, 'CHG_69CD0D729F971', 'Deepi', 'Deepi', 'deepi@callinggenie.com', NULL, '7290859912', NULL, '$2y$12$C5759sGWVbt2vjO0zfPGy.s/09VwNpKGtipZfXhZKo.PL7ruv7m4W', 'charge', 1, 0, '2026-07-14 09:34:21', 6, NULL, '2026-04-01 12:20:02', '2026-07-14 09:34:21'),
+(39, 'AGT_69D54027D096A', 'Johnson', 'Johnson', 'shivam.Chawla@callinggenie.com', NULL, '7476668227', NULL, '$2y$12$ZxaG10bPIYfbnsM6O4VJP.tgKI4Lb7bYhWrs1GIXV5UvBwX16uFqe', 'agent', 0, 0, '2026-04-13 19:07:21', 6, NULL, '2026-04-07 17:34:31', '2026-04-18 13:57:18'),
+(40, 'AGT_69D5409543D6B', 'Alice', 'Alice', 'bhanu.priya@callinggenie.com', '129', '7478778656', NULL, '$2y$12$jfH.t0SknysHPbuWnMEW2ePIixOylIK/z8uQES4TFxBddCZRL.chO', 'agent', 1, 0, '2026-08-06 09:07:38', 6, 'mwTyzYXGQqX88yryOeEnoMYtvmabIgbp7VHKgQwms9fqzGTFxHIoBdctcLpx', '2026-04-07 17:36:21', '2026-08-06 09:07:38'),
+(42, 'AGT_69D5415BEC861', 'Mac', 'Mac', 'taranjeet.singh@callinggenie.com', '125', '7475280895', NULL, '$2y$12$PSfP6GQbUn4xTMKyVG6lBuS6jbfC8SfPYJjjnQkqG6IExz25/brpa', 'agent', 1, 0, '2026-05-14 14:57:00', 6, 'B8P4GCZ58AwYVzcisfsw3anH2N9dfKpyIK7rUS5ETxISv0O7GQzwOh8JRK8x', '2026-04-07 17:39:39', '2026-05-14 14:57:00'),
+(43, 'AGT_69D541A762DCF', 'Axl', 'Axl', 'pranay.Chhabra@callinggenie.com', '132', '6262836879', NULL, '$2y$12$nz.UNAD9u4rw.dc6GkhKfeFZKj2jfWtfSkAnwuEhj1pVCXKQRyS1m', 'agent', 1, 0, '2026-06-16 19:55:44', 6, NULL, '2026-04-07 17:40:55', '2026-06-16 19:55:44'),
+(44, 'SUP_69D584EDC5419', 'Maddy', 'Maddy', 'sonu.mahto@callinggenie.com', NULL, '9354774575', NULL, '$2y$12$yK29QRY/lm3H3mxwnz15z.CsbqhM/Dknh6KyHEX34Wjm2E1py36k6', 'support', 1, 0, '2026-04-09 22:26:04', 6, NULL, '2026-04-07 22:27:57', '2026-04-09 22:26:04'),
+(45, 'CHG_69D59B0AD17C8', 'Ravleen Kaur', 'Adora', 'ravleen.kaur@callinggenie.com', NULL, '8929343547', NULL, '$2y$12$z2BHTr4hTgYWScH1oVhTzOF2QAska5nv1elF5arJlAmuR9pqvg.7m', 'charge', 1, 0, '2026-04-08 00:04:33', 6, NULL, '2026-04-08 00:02:18', '2026-04-08 00:04:33'),
+(756, 'ADM_69DD634F117D7', 'Gursimran Singh', 'Admin', 'gursimran.singh@callinggenie.com', NULL, '+91 11 2327 7705', NULL, '$2y$12$lS4ADsnTaKX1e2qtDDxyL.L1PyB3FBirslSNlqgNBgXXDxJvcn/La', 'admin', 1, 0, '2026-04-13 21:43:22', 6, NULL, '2026-04-13 21:42:39', '2026-04-13 21:43:22'),
+(757, 'AGT_69E64ECFCEEDD', 'Joseph', 'Joseph', 'jagmohan.singh@callinggenie.com', '124', '7476668227', NULL, '$2y$12$JRZNxnAYlhVtrHUDUSbKMeb17efKgaNh2MmwC6wLRPznoWe2YeDBe', 'agent', 1, 0, '2026-06-07 17:08:59', 6, 'k7hq78nVxaWlJRK8p8K02kf3nEAml8cVJ3FEE43VHTupFlt0U7kGQeoPmo8w', '2026-04-20 16:05:35', '2026-06-07 17:08:59'),
+(758, 'AGT_69E64FFC119DA', 'Stefan', 'Stefan', 'himanshu.adhikari@callinggenie.com', '180', '8184730237', NULL, '$2y$12$KCrmtvrDofiXj6qTCE96seB8p/zWR9g..18D8h5zr3MgvmUy26nJK', 'agent', 1, 0, '2026-05-06 22:04:03', 6, NULL, '2026-04-20 16:10:36', '2026-05-06 22:04:03'),
+(760, 'AGT_69EF992178F1B', 'Palmer', 'Palmer', 'pramod.verma@callinggenie.com', '128', NULL, NULL, '$2y$12$gHbM/C8T.WGZqiI1zX0W8OVP6/FySiXIjS7KyF9RQXbZCqSeqoy32', 'agent', 0, 0, NULL, 6, NULL, '2026-04-27 17:13:05', '2026-05-04 16:26:28'),
+(768, 'AGT_69F53C7306CBB', 'Adora', 'Adora', 'jyoti.singh@callinggenie.com', '192', NULL, NULL, '$2y$12$R.CfjU2A62M/paTK4HIdyOM1QOloPPHvEdBxPH1SBRKVw8d4nFN/.', 'agent', 1, 0, '2026-08-03 06:13:43', 6, 'q4aBuVX6BAx3JXHmWj8rPnbdJhilD4gvMde0v3ADObP4FgLCcMgF8y5meMa1', '2026-05-01 23:51:15', '2026-08-03 06:13:43'),
+(770, 'AGT_69F8F050982A8', 'Stark', NULL, 'aman.mathur@callinggenie.com', NULL, NULL, NULL, '$2y$12$YaJRgrf7otP2jDklKovI0uXTcOGinDet2oWtRd.xHbWzFEQpzAeiu', 'admin', 1, 0, '2026-08-06 09:16:17', 6, NULL, '2026-05-04 19:15:28', '2026-08-06 09:16:17'),
+(771, 'MIS_69FA3FB092AB9', 'Aditya Kumar', 'Aditya', 'aditya.kumar@callinggenie.com', NULL, NULL, NULL, '$2y$12$tKpNeiTtn/sNOe9yl7kuzeHBh2xWKarBBhgGSLi9toKzJP0/JoOYy', 'mis', 1, 0, '2026-06-01 23:49:38', 6, NULL, '2026-05-05 19:06:24', '2026-06-01 23:49:38'),
+(772, 'USR_1778708939_BACE3F', 'Simran Kaur', 'Simran', 'simranjeet.kaur@callinggenie.com', NULL, '6262836879', '2026-05-13 21:48:59', '$2y$12$V1F4kGoU5KXhxEpxGFe/0.os9nv.umGf75IVvbyO8nfzz24Pl7Ezy', 'charge', 1, 0, '2026-05-13 21:49:37', 6, NULL, '2026-05-13 21:48:59', '2026-05-13 21:49:37'),
+(773, 'CHANGES_1779818551_7180C8', 'Changes', 'CHANGES', 'changes@callinggenie.com', NULL, '1234567890', '2026-05-26 18:02:31', '$2y$12$dzZtQ1hDqd7d9Fu7OMn2xOKX03ZCbsas1J0fH4V7K0BKZDL6CoQ3S', 'changes', 1, 0, '2026-06-01 19:32:06', 6, NULL, '2026-05-26 18:02:31', '2026-06-01 19:32:06'),
+(774, 'MIS_1780347542_615AA9', 'Satyam Mishra', 'Satyam', 'satyam@callinggenie.com', NULL, '7505350491', '2026-06-01 20:59:02', '$2y$12$wtFmvtyGUpzOvWMzzEKC9uB8b95Ye.fU7b20QP4Jlg9/jKIPe1siK', 'mis', 1, 0, '2026-07-13 13:29:18', 6, NULL, '2026-06-01 20:59:02', '2026-07-13 13:29:18'),
+(775, 'MIS_MGR_1780347640_8E1DF8', 'Anand Shankar Pathak', 'Anand', 'anand.shankar@callinggenie.com', NULL, '9716851209', '2026-06-01 21:00:40', '$2y$12$o9KZ1zxPZurvF9IGKMxXx.OkG1T6uuxsXUHfHYtaQEo0YFRwgAfaO', 'mis-manager', 1, 0, '2026-07-02 21:31:51', 6, 'm8xvzsRAGP8ByeybiaxSmF7PRp41n9m6TesxKheeFGcwWRlN4PU42zBHzC54', '2026-06-01 21:00:40', '2026-07-02 21:31:51'),
+(776, 'AGT_1780423161_9B62F1', 'Shivam Gupta', 'James', 'shivam.gupta@callinggenie.com', '180', '8184730237', '2026-06-02 17:59:21', '$2y$12$pxwnVwRy3.P/zjngm2aWmOXGEfVbddU5dhSaxfSxce7rUdd6t2Toa', 'agent', 1, 0, '2026-08-07 07:55:52', 6, 'QsStFc9KiPzTHSX2Fhgu7WwttTQk5KMTlzaP3RHAI2fJOKc6Y9KaaWpI41gG', '2026-06-02 17:59:21', '2026-08-07 07:55:52'),
+(777, 'CHANGES_1781654545_1D5464', 'Maverick', NULL, 'mohit@callinggenie.com', NULL, '8685084243', '2026-06-17 00:02:25', '$2y$12$y6Z46Rh4soBKl3dzLwGGhu03nwIoPo.BVh8LHq1qmSI8wCsLFkm0W', 'changes', 1, 0, '2026-07-25 15:01:59', 6, 'tcskoPqKu8ditQ9rGMGJRckgUVWowICfGuCXPHHVsU8lREfKt8VZ2wA947WR', '2026-06-17 00:02:25', '2026-07-25 15:01:59'),
+(778, 'AGT_1783707693_D17F23', 'Henrik AR Long', 'Henrik AR Long', 'anoop.sharma@callinggenie.com', NULL, NULL, '2026-07-10 11:21:33', '$2y$12$HGWdtAXriO8TRgNFaYCt9eLYHDFBDVPHkuvOnyDaL.DoSeYLUNUqi', 'agent', 1, 0, '2026-08-07 08:39:13', 6, 'oHrldA4pCI5BkxXFSXtMphLSMDk5NSZf4UZaYxEJdbXCIM9g17nZcUdeuX3K', '2026-07-10 11:21:33', '2026-08-07 08:39:13'),
+(779, 'TCK_1785525919_F6B1DB', 'Christopher Wilson', 'Christopher Wilson', 'kartik@callinggenie.com', NULL, NULL, '2026-07-31 12:25:19', '$2y$12$sSHIdUt7.h532O7EjMDVqugDYRV8V5h0IXCM2l3fzTe/qLQd/r9w.', 'ticketing', 1, 0, '2026-08-06 17:32:14', 6, NULL, '2026-07-31 12:25:19', '2026-08-06 17:32:14');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `users_email_unique` (`email`),
+  ADD UNIQUE KEY `users_agent_custom_id_unique` (`agent_custom_id`),
+  ADD KEY `users_created_by_foreign` (`created_by`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=780;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
