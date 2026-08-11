@@ -194,7 +194,7 @@
             $passengerName = $booking->card_holder_name;
             if (!$passengerName && $booking->passengers->isNotEmpty()) {
                 $firstPax = $booking->passengers->first();
-                $passengerName = trim(($firstPax->title ? $firstPax->title . ' ' : '') . $firstPax->first_name . ' ' . $firstPax->last_name);
+                $passengerName = trim(($firstPax->title ? $firstPax->title . ' ' : '') . $firstPax->first_name . ($firstPax->middle_name ? ' ' . $firstPax->middle_name : '') . ($firstPax->last_name ? ' ' . $firstPax->last_name : ''));
             }
             if (!$passengerName) {
                 $passengerName = 'Valued Customer';
@@ -260,7 +260,7 @@
                     <tr>
                         <td style="text-align: center; font-weight: bold;">{{ $index + 1 }}</td>
                         <td style="font-weight: bold; color: #0f172a;">
-                            {{ $passenger->first_name }} {{ $passenger->last_name }}
+                            {{ trim($passenger->first_name . ($passenger->middle_name ? ' ' . $passenger->middle_name : '') . ($passenger->last_name ? ' ' . $passenger->last_name : '')) }}
                         </td>
                         <td>{{ $passenger->title ?: 'ADT' }}</td>
                         <td style="font-family: monospace; font-weight: bold; color: #0284c7;">

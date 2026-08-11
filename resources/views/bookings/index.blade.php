@@ -207,7 +207,7 @@
 
         @if ($bookings->hasPages())
             <div class="card-footer bg-white border-top border-light-subtle p-3">
-                {{ $bookings->links() }}
+                {{ $bookings->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>

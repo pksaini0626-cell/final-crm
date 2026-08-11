@@ -152,4 +152,57 @@ class AuthEmailWorkflowTest extends TestCase
             'booking_status' => 'email_auth_sent',
         ]);
     }
+
+    /**
+     * Test charges description renders correctly for single vs split airline payments.
+     */
+    public function test_charges_description_renders_single_or_split_airline_payment(): void
+    {
+        // 1. Single payment case (paid_to_airline = 0)
+        $singleBooking = Booking::create([
+            'agent_id' => $this->agent->id,
+            'booking_date' => date('Y-m-d'),
+            'vertical' => 'flight',
+            'service_provided' => 'new_booking',
+            'booking_portal' => 'website',
+            'language' => 'English',
+            'currency' => 'USD',
+            'total_amount' => 150.00,
+            'paid_to_airline' => 0.00,
+            'total_mco' => 150.00,
+            'merchant' => 'Travelomile',
+            'airline_name' => 'Emirates Airline',
+            'email_address' => 'customer1@example.com',
+            'card_holder_name' => 'Jane Doe',
+            'card_last_4' => '9876',
+        ]);
+
+        $singleHtml = view('emails.customer_auth_email', ['booking' => $singleBooking])->render();
+        $this->assertStringContainsString('Charges Description', $singleHtml);
+        $this->assertStringContainsString('1. <strong style="color: #0f172a;">USD 150.00</strong> (Travelomile, incl. the taxes and fees)', $singleHtml);
+
+        // 2. Split airline payment case (paid_to_airline > 0)
+        $splitBooking = Booking::create([
+            'agent_id' => $this->agent->id,
+            'booking_date' => date('Y-m-d'),
+            'vertical' => 'flight',
+            'service_provided' => 'new_booking',
+            'booking_portal' => 'website',
+            'language' => 'English',
+            'currency' => 'USD',
+            'total_amount' => 3961.90,
+            'paid_to_airline' => 3661.90,
+            'total_mco' => 300.00,
+            'merchant' => 'TraveloMile.com',
+            'airline_name' => 'Emirates Airline',
+            'email_address' => 'customer2@example.com',
+            'card_holder_name' => 'John Smith',
+            'card_last_4' => '5432',
+        ]);
+
+        $splitHtml = view('emails.customer_auth_email', ['booking' => $splitBooking])->render();
+        $this->assertStringContainsString('Charges Description:', $splitHtml);
+        $this->assertStringContainsString('Charge 1: <strong style="color: #0f172a;">USD 3,661.90</strong> (Emirates Airline, incl. base fare)', $splitHtml);
+        $this->assertStringContainsString('Charge 2: <strong style="color: #0f172a;">USD 300.00</strong> (TraveloMile.com, incl. taxes &amp; fees)', $splitHtml);
+    }
 }

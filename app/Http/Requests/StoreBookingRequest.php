@@ -86,7 +86,8 @@ class StoreBookingRequest extends FormRequest
             // Passengers: At least one passenger is MUST
             'passengers' => 'required|array|min:1',
             'passengers.*.first_name' => 'required|string|max:255',
-            'passengers.*.last_name' => 'required|string|max:255',
+            'passengers.*.middle_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'nullable|string|max:255',
             'passengers.*.title' => 'nullable|string|max:255',
             'passengers.*.dob' => 'required|date',
             'passengers.*.pax_index' => 'nullable|string|max:10',

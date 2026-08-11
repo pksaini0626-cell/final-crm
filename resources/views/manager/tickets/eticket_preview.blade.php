@@ -87,7 +87,7 @@
                                 @foreach($booking->passengers as $pax)
                                     <tr>
                                         <td>
-                                            <div class="fw-bold text-white">{{ $pax->title }} {{ $pax->first_name }} {{ $pax->last_name }}</div>
+                                            <div class="fw-bold text-dark">{{ trim(($pax->title ? $pax->title . ' ' : '') . $pax->first_name . ($pax->middle_name ? ' ' . $pax->middle_name : '') . ($pax->last_name ? ' ' . $pax->last_name : '')) }}</div>
                                             <small class="text-secondary font-monospace">{{ $pax->pax_index ?: 'P' . ($loop->index + 1) }}</small>
                                         </td>
                                         <td>

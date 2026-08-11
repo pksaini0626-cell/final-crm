@@ -90,12 +90,31 @@
                             </table>
 
                             <!-- CHARGES DESCRIPTION -->
-                            <div style="font-size: 14px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; font-family: Arial, sans-serif;">
-                                Descripción de Cargos
-                            </div>
-                            <div style="font-size: 13px; margin-bottom: 16px; color: #1e293b; font-family: Arial, sans-serif;">
-                                1. <strong style="color: #0f172a;">{{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</strong> ({{ $merchantName }}, impuestos y cargos incluidos)
-                            </div>
+                            @php
+                                $paidToAirline = floatval($booking->paid_to_airline ?? 0);
+                                $agencyFee = max(0, floatval($booking->total_amount ?? 0) - $paidToAirline);
+                            @endphp
+
+                            @if($paidToAirline > 0)
+                                <div style="font-size: 14px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; font-family: Arial, sans-serif;">
+                                    Descripción de Cargos:
+                                </div>
+                                <div style="font-size: 13px; margin-bottom: 6px; color: #1e293b; font-family: Arial, sans-serif;">
+                                    Cargo 1: <strong style="color: #0f172a;">{{ $booking->currency }} {{ number_format($paidToAirline, 2) }}</strong> ({{ $airlineName }}, incl. tarifa base)
+                                </div>
+                                @if($agencyFee > 0)
+                                    <div style="font-size: 13px; margin-bottom: 16px; color: #1e293b; font-family: Arial, sans-serif;">
+                                        Cargo 2: <strong style="color: #0f172a;">{{ $booking->currency }} {{ number_format($agencyFee, 2) }}</strong> ({{ $merchantName }}, incl. impuestos y cargos)
+                                    </div>
+                                @endif
+                            @else
+                                <div style="font-size: 14px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; font-family: Arial, sans-serif;">
+                                    Descripción de Cargos
+                                </div>
+                                <div style="font-size: 13px; margin-bottom: 16px; color: #1e293b; font-family: Arial, sans-serif;">
+                                    1. <strong style="color: #0f172a;">{{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</strong> ({{ $merchantName }}, impuestos y cargos incluidos)
+                                </div>
+                            @endif
 
                             <!-- PASSENGER DETAILS TABLE -->
                             <div style="font-size: 14px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; font-family: Arial, sans-serif;">
@@ -120,7 +139,7 @@
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $idx + 1 }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->pax_index ? 'ADT' : 'ADT' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->first_name }}</td>
-                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">-</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->middle_name ?: '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->last_name }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->title == 'MS' || $pax->title == 'MRS' ? 'Femenino' : 'Masculino' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">-</td>

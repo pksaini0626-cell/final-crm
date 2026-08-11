@@ -110,6 +110,42 @@
             color: #94a3b8;
             opacity: 0.6;
         }
+
+        /* Dark Theme Pagination Styling */
+        .bg-dark .page-link,
+        .card.bg-dark .page-link,
+        .card-footer.bg-dark .page-link {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        .bg-dark .page-link:hover,
+        .card.bg-dark .page-link:hover,
+        .card-footer.bg-dark .page-link:hover {
+            background-color: #334155;
+            border-color: #475569;
+            color: #f8fafc;
+        }
+        .bg-dark .page-item.active .page-link,
+        .card.bg-dark .page-item.active .page-link,
+        .card-footer.bg-dark .page-item.active .page-link {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.4);
+        }
+        .bg-dark .page-item.disabled .page-link,
+        .card.bg-dark .page-item.disabled .page-link,
+        .card-footer.bg-dark .page-item.disabled .page-link {
+            background-color: #0f172a;
+            border-color: #1e293b;
+            color: #475569;
+            opacity: 0.5;
+        }
+        .bg-dark .text-muted,
+        .card-footer.bg-dark .text-muted {
+            color: #94a3b8 !important;
+        }
     </style>
 </head>
 <body class="d-flex flex-column h-100">

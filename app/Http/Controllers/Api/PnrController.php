@@ -53,7 +53,8 @@ class PnrController extends Controller
 
                 return [
                     'first_name' => $firstName ?: 'PAX',
-                    'last_name' => $lastName ?: 'PASSENGER',
+                    'middle_name' => $pax['middle_name'] ?? '',
+                    'last_name' => $lastName ?: '',
                     'title' => strtoupper($title),
                     'pax_index' => $pax['pax_index'] ?? ($idx + 1),
                 ];

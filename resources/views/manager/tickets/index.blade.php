@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
                 <i class="bi bi-ticket-perforated text-primary"></i> Ticketing Queue &amp; Manager Approvals
             </h1>
             <p class="text-secondary small mb-0">Review authorized bookings, assign ticketing agents, and generate/issue e-tickets.</p>
@@ -28,10 +28,10 @@
     @endif
 
     <!-- Bookings Table -->
-    <div class="card bg-dark border-secondary shadow-sm overflow-hidden mb-4">
+    <div class="card bg-white border-light-subtle shadow-sm overflow-hidden mb-4">
         <div class="table-responsive">
-            <table class="table table-dark table-hover table-striped align-middle mb-0 text-nowrap">
-                <thead class="table-dark text-secondary small text-uppercase">
+            <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
+                <thead class="table-light text-secondary small text-uppercase border-bottom">
                     <tr>
                         <th class="px-3 py-3">Booking Reference</th>
                         <th class="px-3 py-3">Merchant Profile</th>
@@ -55,7 +55,7 @@
                             <!-- Merchant -->
                             <td class="px-3 py-3">
                                 @if($booking->merchantProfile)
-                                    <div class="fw-semibold text-white">{{ $booking->merchantProfile->name }}</div>
+                                    <div class="fw-semibold text-dark">{{ $booking->merchantProfile->name }}</div>
                                     <div class="small text-secondary font-monospace">{{ $booking->merchantProfile->merchant_code }}</div>
                                 @else
                                     <span class="text-secondary fst-italic">None</span>
@@ -64,7 +64,7 @@
 
                             <!-- Customer Details -->
                             <td class="px-3 py-3">
-                                <div class="fw-semibold text-white">{{ $booking->card_holder_name ?: 'N/A' }}</div>
+                                <div class="fw-semibold text-dark">{{ $booking->card_holder_name ?: 'N/A' }}</div>
                                 <div class="small text-secondary">{{ $booking->email_address }}</div>
                             </td>
 
@@ -144,29 +144,29 @@
             </table>
         </div>
 
-        @if($bookings->hasPages())
-            <div class="card-footer bg-dark border-secondary p-3">
-                {{ $bookings->links() }}
+        @if ($bookings->hasPages())
+            <div class="card-footer bg-white border-top border-light-subtle p-3">
+                {{ $bookings->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 </div>
 
 <!-- Assign Ticketing Modal -->
-<div x-show="assignModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': assignModalOpen }" tabindex="-1" x-cloak>
+<div x-show="assignModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': assignModalOpen }" tabindex="-1" x-cloak>
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content card bg-dark border-primary shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-dark border-primary d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2">
+        <div class="modal-content card bg-white border-primary shadow-lg w-100" style="pointer-events: auto;">
+            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
                     <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
                 </h5>
-                <button type="button" @click="assignModalOpen = false" class="btn-close btn-close-white"></button>
+                <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
             </div>
             <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
                 @csrf
                 <div class="card-body p-4">
                     <p class="text-secondary small mb-3">
-                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-white" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
+                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-dark" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
                     </p>
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
@@ -180,7 +180,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="card-footer bg-dark border-secondary d-flex justify-content-end gap-2 py-3">
+                <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
                     <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
                         <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
@@ -192,20 +192,20 @@
 </div>
 
 <!-- Approve Payment Status Modal -->
-<div x-show="approveModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': approveModalOpen }" tabindex="-1" x-cloak>
+<div x-show="approveModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': approveModalOpen }" tabindex="-1" x-cloak>
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content card bg-dark border-warning shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-dark border-warning d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2">
+        <div class="modal-content card bg-white border-warning shadow-lg w-100" style="pointer-events: auto;">
+            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
                     <i class="bi bi-credit-card-2-front text-warning"></i> Approve Payment Status
                 </h5>
-                <button type="button" @click="approveModalOpen = false" class="btn-close btn-close-white"></button>
+                <button type="button" @click="approveModalOpen = false" class="btn-close"></button>
             </div>
             <form :action="getApprovePaymentAction()" method="POST">
                 @csrf
                 <div class="card-body p-4">
                     <p class="text-secondary small mb-3">
-                        Update payment status for Booking Reference <strong class="text-white" x-text="`#${approveBookingRef}`"></strong>.
+                        Update payment status for Booking Reference <strong class="text-dark" x-text="`#${approveBookingRef}`"></strong>.
                     </p>
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase">New Payment Status <span class="text-danger">*</span></label>
@@ -215,7 +215,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="card-footer bg-dark border-secondary d-flex justify-content-end gap-2 py-3">
+                <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
                     <button type="button" @click="approveModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
                     <button type="submit" class="btn btn-warning btn-sm px-4 fw-bold text-dark">
                         <i class="bi bi-check-circle me-1"></i> Update Payment Status

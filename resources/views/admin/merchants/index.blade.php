@@ -93,7 +93,7 @@
 
         @if($merchants->hasPages())
             <div class="card-footer bg-dark border-secondary py-3">
-                {{ $merchants->links() }}
+                {{ $merchants->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>

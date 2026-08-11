@@ -362,7 +362,8 @@
                                         <th style="width: 70px;" class="text-center">Pax</th>
                                         <th style="width: 90px;">Title</th>
                                         <th>First Name <span class="text-danger">*</span></th>
-                                        <th>Last Name <span class="text-danger">*</span></th>
+                                        <th>Middle Name <span class="text-secondary small font-normal">(Opt)</span></th>
+                                        <th>Last Name</th>
                                         <th style="width: 140px;">DOB <span class="text-danger">*</span></th>
                                         <th>Ticket #</th>
                                         <th style="width: 90px;">Seat</th>
@@ -389,7 +390,10 @@
                                                 <input type="text" :name="`passengers[${index}][first_name]`" x-model="pax.first_name" required placeholder="First Name" class="form-control form-control-sm">
                                             </td>
                                             <td>
-                                                <input type="text" :name="`passengers[${index}][last_name]`" x-model="pax.last_name" required placeholder="Last Name" class="form-control form-control-sm">
+                                                <input type="text" :name="`passengers[${index}][middle_name]`" x-model="pax.middle_name" placeholder="Middle Name" class="form-control form-control-sm">
+                                            </td>
+                                            <td>
+                                                <input type="text" :name="`passengers[${index}][last_name]`" x-model="pax.last_name" placeholder="Last Name" class="form-control form-control-sm">
                                             </td>
                                             <td>
                                                 <input type="date" :name="`passengers[${index}][dob]`" x-model="pax.dob" required class="form-control form-control-sm font-monospace">
@@ -805,6 +809,7 @@
                     pax_index: p.pax_index || `P${initialPax.length + 1}`,
                     title: p.title || '',
                     first_name: p.first_name || '',
+                    middle_name: p.middle_name || '',
                     last_name: p.last_name || '',
                     dob: p.dob ? String(p.dob).slice(0, 10) : '',
                     ticket_number: p.ticket_number || '',
@@ -933,6 +938,7 @@
                     pax_index: pax.pax_index || `P${this.passengers.length + 1}`,
                     title: pax.title || '',
                     first_name: pax.first_name || '',
+                    middle_name: pax.middle_name || '',
                     last_name: pax.last_name || '',
                     dob: pax.dob ? String(pax.dob).slice(0, 10) : '',
                     ticket_number: pax.ticket_number || '',

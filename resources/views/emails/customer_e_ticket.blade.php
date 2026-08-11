@@ -35,7 +35,7 @@
                                 $passengerName = $booking->card_holder_name;
                                 if (!$passengerName && $booking->passengers->isNotEmpty()) {
                                     $firstPax = $booking->passengers->first();
-                                    $passengerName = trim(($firstPax->title ? $firstPax->title . ' ' : '') . $firstPax->first_name . ' ' . $firstPax->last_name);
+                                    $passengerName = trim(($firstPax->title ? $firstPax->title . ' ' : '') . $firstPax->first_name . ($firstPax->middle_name ? ' ' . $firstPax->middle_name : '') . ($firstPax->last_name ? ' ' . $firstPax->last_name : ''));
                                 }
                                 if (!$passengerName) {
                                     $passengerName = 'Valued Customer';
@@ -114,7 +114,7 @@
                                         <tr>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b; font-weight: bold;">{{ $idx + 1 }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: bold;">
-                                                {{ $pax->title }} {{ $pax->first_name }} {{ $pax->last_name }}
+                                                {{ trim(($pax->title ? $pax->title . ' ' : '') . $pax->first_name . ($pax->middle_name ? ' ' . $pax->middle_name : '') . ($pax->last_name ? ' ' . $pax->last_name : '')) }}
                                             </td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #0284c7; font-family: monospace; font-weight: bold;">
                                                 {{ $pax->ticket_number ?: 'TICKETED / ISSUED' }}

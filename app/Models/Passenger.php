@@ -19,6 +19,7 @@ class Passenger extends Model
         'booking_id',
         'pax_index',
         'first_name',
+        'middle_name',
         'last_name',
         'title',
         'dob',
