@@ -146,6 +146,7 @@
         @php
             $fetchBase64Logo = function($url) {
                 if (empty($url)) return null;
+                if (!extension_loaded('gd')) return null;
                 if (str_starts_with($url, 'data:image')) return $url;
 
                 try {
@@ -169,7 +170,7 @@
                 } catch (\Throwable $e) {
                     // Ignore
                 }
-                return $url;
+                return null;
             };
 
             $emailFlights = ($booking->flightSegments && $booking->flightSegments->isNotEmpty())
@@ -232,11 +233,8 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td align="left" style="padding-top: 4px;">
+                                <td align="left" colspan="2" style="padding-top: 4px;">
                                     <span style="color: #64748b; font-size: 10px;">Date: {{ $booking->booking_date ? $booking->booking_date->format('d M Y') : date('d M Y') }}</span>
-                                </td>
-                                <td align="right" style="padding-top: 4px;">
-                                    <span style="color: #0369a1; font-size: 10px; font-weight: bold;">Status: {{ strtoupper($booking->booking_status) }}</span>
                                 </td>
                             </tr>
                         </table>

@@ -87,6 +87,15 @@ class Booking extends Model
                 $booking->booking_id = static::generateUniqueBookingId();
             }
         });
+
+        static::saving(function (Booking $booking) {
+            if (empty($booking->merchant_id) && !empty($booking->merchant)) {
+                $merchantObj = Merchant::where('name', $booking->merchant)->first();
+                if ($merchantObj) {
+                    $booking->merchant_id = $merchantObj->id;
+                }
+            }
+        });
     }
 
     /**

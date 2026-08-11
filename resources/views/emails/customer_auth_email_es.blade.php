@@ -59,6 +59,7 @@
                                     'dob_correction' => 'procesado la corrección de fecha de nacimiento',
                                     'pet_in_cabin' => 'agregado la mascota en cabina',
                                     'ancillary_refund' => 'procesado el reembolso de servicios adicionales',
+                                    'infant_ticket' => 'procesado el boleto de infante',
                                     default => 'reservado sus vuelos'
                                 };
                             @endphp

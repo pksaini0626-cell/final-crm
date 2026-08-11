@@ -72,7 +72,7 @@ class StoreBookingRequest extends FormRequest
             // Status Tracking (Auto-assigned to booking_generated if empty)
             'booking_status' => 'nullable|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void',
             'case_status' => 'nullable|required_if:booking_status,void|in:rdr,retrieval,chargeback,refund,void',
-            'email_auth_taken' => 'boolean',
+            'email_auth_taken' => 'nullable|boolean',
             
             // Financials
             'currency' => 'required|string|max:3',

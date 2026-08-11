@@ -58,29 +58,42 @@
                                 Please arrive at the airport at least 2 hours prior to departure for domestic flights and 3 hours prior to departure for international flights.
                             </div>
 
-                            <!-- 24/7 SUPPORT & FARE RULES BOX -->
+                            <!-- 24/7 SUPPORT & NEED ASSISTANCE OR CHANGES BOX -->
                             <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f0fdf4; border-left: 4px solid #059669; border-top: 1px solid #d1fae5; border-right: 1px solid #d1fae5; border-bottom: 1px solid #d1fae5; border-radius: 4px; margin: 18px 0;">
                                 <tr>
                                     <td style="padding: 14px 18px; font-size: 13px; color: #166534; line-height: 1.6; font-family: Arial, sans-serif;">
-                                        <p style="margin: 0 0 6px 0; font-weight: bold;">
+                                        <p style="margin: 0 0 6px 0; font-weight: bold; font-size: 14px;">
                                             📞 Need Assistance or Changes?
                                         </p>
                                         <p style="margin: 0;">
-                                            For any changes, cancellations, or refund queries, please call us at <strong style="color: #047857; font-size: 14px;">{{ $supportPhone ?? '+1-888-476-0932' }}</strong> (available 24/7). Please note that date/routing changes and cancellations are subject to airline fare rules, penalties, and processing fees.
+                                            For any changes, cancellations, or refund queries, please call us at <strong style="color: #047857; font-size: 14px;" x-text="supportPhone || '{{ $supportPhone ?? '+1-888-476-0932' }}'">{{ $supportPhone ?? '+1-888-476-0932' }}</strong> (available 24/7). Please note that date/routing changes and cancellations are subject to airline fare rules, penalties, and processing fees.
                                         </p>
                                     </td>
                                 </tr>
                             </table>
 
-                            @if(!empty($customNote))
-                                <!-- CUSTOM NOTE CALLOUT -->
-                                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #fefce8; border-left: 4px solid #eab308; border-top: 1px solid #fef08a; border-right: 1px solid #fef08a; border-bottom: 1px solid #fef08a; border-radius: 4px; margin: 16px 0;">
+                            <!-- PLEASE NOTE / SPECIAL INSTRUCTIONS CALLOUT -->
+                            <div x-show="customNote &amp;&amp; customNote.trim().length > 0">
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #fffbe6; border-left: 4px solid #d97706; border-top: 1px solid #fef08a; border-right: 1px solid #fef08a; border-bottom: 1px solid #fef08a; border-radius: 4px; margin: 16px 0;">
                                     <tr>
-                                        <td style="padding: 12px 16px; font-size: 13px; color: #854d0e; font-family: Arial, sans-serif;">
-                                            <strong style="color: #713f12;">Important Note:</strong> {{ $customNote }}
+                                        <td style="padding: 14px 18px; font-size: 13px; color: #78350f; font-family: Arial, sans-serif; line-height: 1.6;">
+                                            <strong style="color: #92400e; font-size: 14px; display: block; margin-bottom: 4px;">📌 Please Note / Special Instructions:</strong>
+                                            <span x-text="customNote" style="white-space: pre-line;">{{ $customNote ?? '' }}</span>
                                         </td>
                                     </tr>
                                 </table>
+                            </div>
+                            @if(!empty($customNote))
+                                <template x-if="typeof customNote === 'undefined'">
+                                    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #fffbe6; border-left: 4px solid #d97706; border-top: 1px solid #fef08a; border-right: 1px solid #fef08a; border-bottom: 1px solid #fef08a; border-radius: 4px; margin: 16px 0;">
+                                        <tr>
+                                            <td style="padding: 14px 18px; font-size: 13px; color: #78350f; font-family: Arial, sans-serif; line-height: 1.6;">
+                                                <strong style="color: #92400e; font-size: 14px; display: block; margin-bottom: 4px;">📌 Please Note / Special Instructions:</strong>
+                                                <span style="white-space: pre-line;">{{ $customNote }}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </template>
                             @endif
 
                             <!-- PASSENGER DETAILS TABLE -->

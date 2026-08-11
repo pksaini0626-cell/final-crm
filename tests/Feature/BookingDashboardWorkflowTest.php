@@ -336,6 +336,45 @@ class BookingDashboardWorkflowTest extends TestCase
     }
 
     /**
+     * Test agent can upload PDF and image attachments along with remarks multiple times.
+     */
+    public function test_agent_can_append_remark_with_file_attachments(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $booking = Booking::create([
+            'agent_id' => $this->agent->id,
+            'booking_date' => '2026-08-04',
+            'vertical' => 'flight',
+            'service_provided' => 'new_booking',
+            'booking_portal' => 'website',
+            'language' => 'English',
+            'booking_status' => 'booking_generated',
+            'currency' => 'USD',
+            'total_mco' => 100.00,
+            'payment_status' => 'pending',
+        ]);
+
+        $pdfFile = \Illuminate\Http\UploadedFile::fake()->create('ticket_confirmation.pdf', 500, 'application/pdf');
+        $imageFile = \Illuminate\Http\UploadedFile::fake()->create('passport_copy.png', 400, 'image/png');
+
+        $response = $this->actingAs($this->agent)
+            ->post(route('bookings.add-remark', $booking), [
+                'remark' => 'Uploaded ticket confirmation and passport document.',
+                'attachments' => [$pdfFile, $imageFile],
+            ]);
+
+        $response->assertRedirect();
+
+        $remark = $booking->bookingRemarks()->latest()->first();
+        $this->assertNotNull($remark);
+        $this->assertEquals('Uploaded ticket confirmation and passport document.', $remark->remark);
+        $this->assertCount(2, $remark->attachments_data);
+        $this->assertEquals('pdf', $remark->attachments_data[0]['file_type']);
+        $this->assertEquals('image', $remark->attachments_data[1]['file_type']);
+    }
+
+    /**
      * Test updating ticket and seat numbers.
      */
     public function test_agent_can_update_tickets_and_seats(): void

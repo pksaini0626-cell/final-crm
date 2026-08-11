@@ -43,6 +43,11 @@ class CallLogController extends Controller
             $query->where('follow_up', $request->input('follow_up') === '1');
         }
 
+        // Call Type (Service Provided) filter
+        if ($request->filled('service_provided')) {
+            $query->where('service_provided', $request->input('service_provided'));
+        }
+
         // Single Date filter
         if ($request->filled('date')) {
             $query->whereDate('call_date', $request->input('date'));
@@ -83,6 +88,7 @@ class CallLogController extends Controller
             'phone_number' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'city' => 'nullable|string|max:255',
+            'service_provided' => 'required|string|max:255',
             'follow_up' => 'required|boolean',
             'call_date' => 'required|date',
             'remark' => 'nullable|string|max:2000',
@@ -116,6 +122,8 @@ class CallLogController extends Controller
                 'phone_number' => $callLog->phone_number,
                 'email' => $callLog->email ?: 'N/A',
                 'city' => $callLog->city ?: 'N/A',
+                'service_provided' => $callLog->service_provided ?: 'N/A',
+                'service_provided_label' => $callLog->service_provided_label,
                 'follow_up' => $callLog->follow_up ? 'Yes' : 'No',
                 'call_date' => $callLog->call_date->format('M d, Y h:i A'),
                 'remark' => $callLog->remark ?: 'No remarks recorded.',
@@ -177,6 +185,10 @@ class CallLogController extends Controller
                 $query->where('follow_up', $request->input('follow_up') === '1');
             }
 
+            if ($request->filled('service_provided')) {
+                $query->where('service_provided', $request->input('service_provided'));
+            }
+
             if ($request->filled('date')) {
                 $query->whereDate('call_date', $request->input('date'));
             }
@@ -213,6 +225,7 @@ class CallLogController extends Controller
                 'Phone Number',
                 'Email',
                 'City',
+                'Call Type',
                 'Follow Up Required',
                 'Call Date & Time',
                 'Remark',
@@ -228,6 +241,7 @@ class CallLogController extends Controller
                     $log->phone_number,
                     $log->email ?: 'N/A',
                     $log->city ?: 'N/A',
+                    $log->service_provided_label,
                     $log->follow_up ? 'Yes' : 'No',
                     $log->call_date ? $log->call_date->format('Y-m-d H:i:s') : '',
                     $log->remark ?: '',

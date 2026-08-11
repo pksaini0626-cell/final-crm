@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:manager|admin|changes'])->group(function () {
     Route::get('/changes/requests', [\App\Http\Controllers\ChangeRequestController::class, 'index'])->name('changes.index');
+    Route::get('/changes/queue', [\App\Http\Controllers\ChangeRequestController::class, 'index'])->name('changes.queue');
     Route::post('/changes/requests/{changeRequest}/status', [\App\Http\Controllers\ChangeRequestController::class, 'updateStatus'])->name('changes.update-status');
 });
 
@@ -80,6 +81,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Admin Booking Management & CSV Export
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');

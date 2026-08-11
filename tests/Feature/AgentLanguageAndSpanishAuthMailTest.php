@@ -115,6 +115,7 @@ class AgentLanguageAndSpanishAuthMailTest extends TestCase
             'dob_correction',
             'pet_in_cabin',
             'ancillary_refund',
+            'infant_ticket',
         ];
 
         foreach ($services as $service) {

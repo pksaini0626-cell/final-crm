@@ -47,10 +47,21 @@
                                 $pnr = $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A');
                                 $merchantName = $booking->merchant ?: 'Travelomile';
                                 $serviceProvidedText = match($booking->service_provided) {
-                                    'baggage_addition' => 'added the bags',
-                                    'seat_selection' => 'selected the seats',
+                                    'new_booking' => 'booked your reservation',
+                                    'exchange' => 'processed the exchange for your reseervation',
                                     'cancellation' => 'processed the cancellation',
-                                    'modification' => 'processed the itinerary modification',
+                                    'refund' => 'processed the refund request',
+                                    'seat_selection' => 'assigned the seats',
+                                    'baggage_addition' => 'added the baggage',
+                                    'others' => 'processed your service request',
+                                    'cancel_and_refund' => 'processed the cancellation and refund',
+                                    'name_correction' => 'processed the name correction',
+                                    'flight_upgrade' => 'processed the flight upgrade',
+                                    'dob_correction' => 'processed the date of birth correction',
+                                    'pet_in_cabin' => 'added the pet in cabin request',
+                                    'ancillary_refund' => 'processed the ancillary refund',
+                                    'general_inquiry' => 'assisted you with your inquiry',
+                                    'infant_ticket' => 'confirmed the infant ticket',
                                     default => 'reserved your flights'
                                 };
                             @endphp

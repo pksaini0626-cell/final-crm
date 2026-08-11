@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark" class="h-100">
+<html lang="en" data-bs-theme="light" class="h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,12 +24,21 @@
 
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        if (window.axios) {
+            window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta && csrfMeta.content) {
+                window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfMeta.content;
+            }
+        }
+    </script>
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 
     <style>
         [x-cloak] {
@@ -37,41 +46,75 @@
         }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #0b0e1b;
-            color: #e2e8f0;
+            background-color: #f8fafc;
+            color: #1e293b;
         }
         .navbar-brand-gradient {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .card {
-            background-color: #12172d;
-            border-color: #1e264a;
+            background-color: #ffffff;
+            border-color: #e2e8f0;
         }
         .card-header {
-            background-color: #171e3a;
-            border-bottom-color: #1e264a;
+            background-color: #f8fafc;
+            border-bottom-color: #e2e8f0;
         }
         .form-control, .form-select {
-            background-color: #080b16;
-            border-color: #222c54;
-            color: #f1f5f9;
+            background-color: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
         }
         .form-control:focus, .form-select:focus {
-            background-color: #080b16;
+            background-color: #ffffff;
             border-color: #6366f1;
-            color: #ffffff;
-            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+            color: #0f172a;
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.15);
         }
         .form-control::placeholder {
+            color: #94a3b8;
+        }
+        /* Light Theme Pagination Styling */
+        .pagination {
+            margin-bottom: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+        .page-link {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
             color: #475569;
+            border-radius: 6px !important;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .page-link:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .page-item.active .page-link {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+        }
+        .page-item.disabled .page-link {
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            color: #94a3b8;
+            opacity: 0.6;
         }
     </style>
 </head>
 <body class="d-flex flex-column h-100">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg border-bottom border-dark-subtle bg-dark bg-opacity-75 sticky-top backdrop-blur">
+    <nav class="navbar navbar-expand-lg border-bottom border-light-subtle bg-white sticky-top shadow-sm">
         <div class="container-fluid px-lg-4">
             <a class="navbar-brand d-flex items-center gap-2 font-black fs-4" href="{{ route('bookings.index') }}">
                 <span class="p-1 px-2 rounded-3 bg-primary text-white me-1 fs-5"><i class="bi bi-send-fill"></i></span>
@@ -138,7 +181,7 @@
                     @auth
                     <div class="vr h-50 mx-1 text-secondary"></div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-dark-subtle text-indigo-300 border border-indigo-500/30 px-3 py-2 rounded-pill fw-semibold">
+                        <span class="badge bg-light text-dark border border-secondary-subtle px-3 py-2 rounded-pill fw-semibold">
                             <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->alias_name }}
                             <small class="text-primary font-mono">({{ strtoupper(Auth::user()->role) }})</small>
                         </span>
@@ -165,6 +208,14 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 rounded-3 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>{{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
                 <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Please correct the following errors:</div>
@@ -181,7 +232,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-dark border-top border-dark-subtle text-center text-secondary small">
+    <footer class="footer mt-auto py-3 bg-white border-top border-light-subtle text-center text-secondary small">
         <div class="container">
             &copy; {{ date('Y') }} Flight CRM System. All rights reserved.
         </div>

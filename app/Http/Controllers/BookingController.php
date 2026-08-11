@@ -7,6 +7,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
 {
@@ -146,6 +147,7 @@ class BookingController extends Controller
             }
 
             $data['booking_status'] = 'booking_generated';
+            $data['email_auth_taken'] = $request->boolean('email_auth_taken');
 
             // Create the Booking record (total_mco is saved as passed from input)
             $booking = Booking::create($data);
@@ -178,10 +180,28 @@ class BookingController extends Controller
             }
 
             // Record Initial BookingRemark
+            $initialAttachments = [];
+            if ($request->hasFile('initial_attachments')) {
+                foreach ($request->file('initial_attachments') as $file) {
+                    if ($file && $file->isValid()) {
+                        $path = $file->store('booking_remarks', 'public');
+                        $ext = strtolower($file->getClientOriginalExtension());
+                        $initialAttachments[] = [
+                            'file_path' => $path,
+                            'original_name' => $file->getClientOriginalName(),
+                            'file_type' => in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'gif']) ? 'image' : ($ext === 'pdf' ? 'pdf' : 'file'),
+                            'file_size' => $file->getSize(),
+                            'file_url' => Storage::disk('public')->url($path),
+                        ];
+                    }
+                }
+            }
+
             $booking->bookingRemarks()->create([
                 'user_id' => Auth::id(),
                 'remark' => $request->input('initial_remark') ?: 'Booking created successfully.',
                 'type' => 'agent_remark',
+                'attachments' => $initialAttachments,
             ]);
 
             if ($request->wantsJson() || $request->ajax()) {
@@ -203,19 +223,39 @@ class BookingController extends Controller
      */
     public function addRemark(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id(), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
 
         $request->validate([
-            'remark' => 'required|string',
+            'remark' => 'nullable|string|required_without:attachments',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
         ]);
+
+        $attachmentData = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store('booking_remarks', 'public');
+                    $ext = strtolower($file->getClientOriginalExtension());
+                    $attachmentData[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'file_type' => in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'gif']) ? 'image' : ($ext === 'pdf' ? 'pdf' : 'file'),
+                        'file_size' => $file->getSize(),
+                        'file_url' => Storage::disk('public')->url($path),
+                    ];
+                }
+            }
+        }
 
         $booking->bookingRemarks()->create([
             'user_id' => Auth::id(),
-            'remark' => $request->input('remark'),
-            'type' => 'agent_remark',
+            'remark' => $request->input('remark') ?: 'Attachment(s) added.',
+            'type' => Auth::user()->hasAnyRole(['admin', 'manager']) ? 'admin_remark' : 'agent_remark',
+            'attachments' => $attachmentData,
         ]);
 
-        return redirect()->back()->with('success', 'Remark added successfully.');
+        return redirect()->back()->with('success', 'Remark with attachment(s) saved successfully.');
     }
 
     /**
@@ -232,6 +272,8 @@ class BookingController extends Controller
             'billing_address' => 'nullable|string|max:1000',
             'payment_info' => 'nullable|string',
             'new_remark' => 'nullable|string',
+            'new_remark_attachments' => 'nullable|array',
+            'new_remark_attachments.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
             'passengers' => 'nullable|array',
             'passengers.*.id' => 'required_with:passengers|exists:passengers,id',
             'passengers.*.ticket_number' => 'nullable|string|max:255',
@@ -272,11 +314,29 @@ class BookingController extends Controller
                 }
             }
 
-            if ($request->filled('new_remark')) {
+            if ($request->filled('new_remark') || $request->hasFile('new_remark_attachments')) {
+                $newAttachments = [];
+                if ($request->hasFile('new_remark_attachments')) {
+                    foreach ($request->file('new_remark_attachments') as $file) {
+                        if ($file && $file->isValid()) {
+                            $path = $file->store('booking_remarks', 'public');
+                            $ext = strtolower($file->getClientOriginalExtension());
+                            $newAttachments[] = [
+                                'file_path' => $path,
+                                'original_name' => $file->getClientOriginalName(),
+                                'file_type' => in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'gif']) ? 'image' : ($ext === 'pdf' ? 'pdf' : 'file'),
+                                'file_size' => $file->getSize(),
+                                'file_url' => Storage::disk('public')->url($path),
+                            ];
+                        }
+                    }
+                }
+
                 $booking->bookingRemarks()->create([
                     'user_id' => Auth::id(),
-                    'remark' => $request->input('new_remark'),
+                    'remark' => $request->input('new_remark') ?: 'Updated booking details with attachment(s).',
                     'type' => Auth::user()->hasAnyRole(['admin', 'manager']) ? 'admin_remark' : 'agent_remark',
+                    'attachments' => $newAttachments,
                 ]);
             }
         });
@@ -372,7 +432,7 @@ class BookingController extends Controller
         $request->validate([
             'email_address' => 'required|email',
             'subject' => 'required|string',
-            'email_language' => 'required|in:english,spanish',
+            'email_language' => 'nullable|string',
             'from_email' => 'nullable|email',
             'from_name' => 'nullable|string',
             'custom_note' => 'nullable|string',
@@ -383,31 +443,38 @@ class BookingController extends Controller
 
         $booking->load(['passengers', 'bookingFlights', 'agent']);
 
-        $mailService = new \App\Services\MerchantMailService();
-        $mailService->sendAuthorizationEmail($booking, [
-            'email_address' => $request->input('email_address'),
-            'subject' => $request->input('subject'),
-            'from_email' => $request->input('from_email'),
-            'from_name' => $request->input('from_name'),
-            'custom_note' => $request->input('custom_note'),
-            'agent_name' => $request->input('agent_name'),
-            'agent_ext' => $request->input('agent_ext'),
-            'email_language' => $request->input('email_language', 'english'),
-            'custom_html' => $request->input('custom_html'),
-        ]);
+        try {
+            $mailService = new \App\Services\MerchantMailService();
+            $mailService->sendAuthorizationEmail($booking, [
+                'email_address' => $request->input('email_address'),
+                'subject' => $request->input('subject'),
+                'from_email' => filter_var($request->input('from_email'), FILTER_VALIDATE_EMAIL) ? $request->input('from_email') : null,
+                'from_name' => $request->input('from_name'),
+                'custom_note' => $request->input('custom_note'),
+                'agent_name' => $request->input('agent_name'),
+                'agent_ext' => $request->input('agent_ext'),
+                'email_language' => strtolower($request->input('email_language', 'english')) === 'spanish' ? 'spanish' : 'english',
+                'custom_html' => $request->input('custom_html'),
+            ]);
 
-        $booking->update([
-            'booking_status' => 'email_auth_sent',
-        ]);
+            $booking->update([
+                'booking_status' => 'email_auth_sent',
+                'email_auth_taken' => true,
+            ]);
 
-        $booking->bookingRemarks()->create([
-            'user_id' => Auth::id(),
-            'remark' => 'Authorization email (' . strtoupper($request->input('email_language')) . ') sent to ' . $request->input('email_address'),
-            'type' => 'agent_remark',
-        ]);
+            $booking->bookingRemarks()->create([
+                'user_id' => Auth::id(),
+                'remark' => 'Authorization email (' . strtoupper($request->input('email_language', 'ENGLISH')) . ') sent to ' . $request->input('email_address'),
+                'type' => 'agent_remark',
+            ]);
 
-        return redirect()->route('bookings.index')
-            ->with('success', 'Authorization email dispatched successfully to ' . $request->input('email_address'));
+            return redirect()->route('bookings.index')
+                ->with('success', 'Authorization email dispatched successfully to ' . $request->input('email_address'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['email' => 'Failed to dispatch authorization email: ' . $e->getMessage()]);
+        }
     }
 
     /**

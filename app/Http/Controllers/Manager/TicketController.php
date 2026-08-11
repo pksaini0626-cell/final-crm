@@ -26,7 +26,7 @@ class TicketController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $query = Booking::whereIn('booking_status', ['email_auth_done', 'ticketed', 'booking_complete'])
+        $query = Booking::whereNotIn('booking_status', ['void'])
             ->with(['passengers', 'bookingFlights', 'merchantProfile', 'agent', 'ticketingUser']);
 
         if ($user && $user->role === 'ticketing') {
@@ -178,8 +178,12 @@ class TicketController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        if (!$booking->merchantProfile) {
-            return redirect()->back()->withErrors(['error' => 'Cannot send E-Ticket: No merchant is associated with this booking.']);
+        $merchant = $booking->merchantProfile ?: \App\Models\Merchant::where('name', $booking->merchant)->first();
+        if (!$merchant) {
+            return redirect()->back()->withErrors(['error' => 'Cannot send E-Ticket: No merchant profile found for name "' . ($booking->merchant ?: 'N/A') . '".']);
+        }
+        if (empty($booking->merchant_id)) {
+            $booking->update(['merchant_id' => $merchant->id]);
         }
 
         try {

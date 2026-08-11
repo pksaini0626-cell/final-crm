@@ -20,6 +20,19 @@
         </a>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger border-danger shadow-sm mb-4">
+            <div class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i> Cannot Dispatch Authorization Email:
+            </div>
+            <ul class="mb-0 ps-3 small">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Main 2-Column Grid -->
     <div class="row g-4 items-start">
         

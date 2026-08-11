@@ -44,6 +44,7 @@ class CallLogWorkflowTest extends TestCase
             'phone_number' => '+1555999000',
             'email' => 'alice@example.com',
             'city' => 'Chicago',
+            'service_provided' => 'new_booking',
             'follow_up' => 1,
             'call_date' => '2026-08-07 10:30:00',
             'remark' => 'Inquired about flights to London.',
@@ -59,6 +60,7 @@ class CallLogWorkflowTest extends TestCase
             'customer_name' => 'Alice Smith',
             'phone_number' => '+1555999000',
             'city' => 'Chicago',
+            'service_provided' => 'new_booking',
             'follow_up' => true,
         ]);
 
@@ -67,9 +69,10 @@ class CallLogWorkflowTest extends TestCase
 
         $indexResponse->assertOk();
         $indexResponse->assertSee('Alice Smith');
+        $indexResponse->assertSee('New Booking');
     }
 
-    public function test_admin_can_view_all_call_logs_and_filter_by_agent(): void
+    public function test_admin_can_view_all_call_logs_and_filter_by_agent_and_service_provided(): void
     {
         CallLog::create([
             'agent_id' => $this->agent->id,
@@ -77,16 +80,18 @@ class CallLogWorkflowTest extends TestCase
             'phone_number' => '+1555111222',
             'email' => 'bob@example.com',
             'city' => 'Dallas',
+            'service_provided' => 'cancellation',
             'follow_up' => false,
             'call_date' => '2026-08-07 11:00:00',
             'remark' => 'Flight quote provided.',
         ]);
 
         $response = $this->actingAs($this->admin)
-            ->get(route('call-logs.index', ['agent_id' => $this->agent->id]));
+            ->get(route('call-logs.index', ['agent_id' => $this->agent->id, 'service_provided' => 'cancellation']));
 
         $response->assertOk();
         $response->assertSee('Bob Johnson');
+        $response->assertSee('Cancellation');
     }
 
     public function test_call_log_csv_export_endpoint(): void
@@ -97,6 +102,7 @@ class CallLogWorkflowTest extends TestCase
             'phone_number' => '+1555333444',
             'email' => 'charlie@example.com',
             'city' => 'Miami',
+            'service_provided' => 'flight_upgrade',
             'follow_up' => true,
             'call_date' => '2026-08-07 14:00:00',
             'remark' => 'Follow up on booking status.',
@@ -108,6 +114,7 @@ class CallLogWorkflowTest extends TestCase
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('Charlie Brown', $response->streamedContent());
+        $this->assertStringContainsString('Flight Upgrade', $response->streamedContent());
     }
 
     public function test_agent_can_delete_own_call_log(): void

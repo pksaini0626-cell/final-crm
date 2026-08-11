@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div x-data="{ saving: false }">
+<div x-data="{ saving: false, supportPhone: '{{ addslashes(old('support_phone', '+1-888-476-0932')) }}', customNote: '{{ addslashes(old('custom_note', '')) }}' }">
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
@@ -129,13 +129,14 @@
                     <!-- 24/7 Support Contact Phone -->
                     <div>
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">24/7 Support Phone</label>
-                        <input type="text" name="support_phone" value="{{ old('support_phone', '+1-888-476-0932') }}" class="form-control font-monospace">
+                        <input type="text" name="support_phone" x-model="supportPhone" class="form-control font-monospace">
                     </div>
 
                     <!-- Custom Instructions / Notes -->
                     <div>
-                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Custom Note to Customer (Optional)</label>
-                        <textarea name="custom_note" rows="2" class="form-control" placeholder="Add custom instructions or baggage notes for the customer..."></textarea>
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Need Assistance or Changes? / Please Note (Optional)</label>
+                        <textarea name="custom_note" x-model="customNote" rows="3" class="form-control" placeholder="Add custom instructions, baggage notes, or assistance information for the customer..."></textarea>
+                        <div class="form-text text-info small mt-1"><i class="bi bi-lightning-charge-fill me-1"></i> Appears live in real-time in the email preview panel.</div>
                     </div>
 
                     <!-- Booking Status Update -->

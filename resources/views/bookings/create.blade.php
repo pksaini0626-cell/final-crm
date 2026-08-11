@@ -6,11 +6,11 @@
     <!-- ============================================================ -->
     <!-- PAGE HEADER -->
     <!-- ============================================================ -->
-    <div class="card bg-dark border-secondary shadow-sm mb-4">
+    <div class="card bg-white border-light-subtle shadow-sm mb-4">
         <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
-                    <h1 class="h4 fw-bold text-white mb-0">Create New Flight Booking</h1>
+                    <h1 class="h4 fw-bold text-dark mb-0">Create New Flight Booking</h1>
                 </div>
             </div>
             
@@ -28,25 +28,25 @@
             <div class="d-flex align-items-center gap-3">
                 <i class="bi bi-files fs-3 text-info"></i>
                 <div>
-                    <div class="fw-bold text-white fs-6">Duplicating Booking #{{ $duplicateBooking->booking_id }}</div>
-                    <div class="small text-info-subtle">
+                    <div class="fw-bold text-dark fs-6">Duplicating Booking #{{ $duplicateBooking->booking_id }}</div>
+                    <div class="small text-secondary">
                         Originally created by <strong>{{ $duplicateBooking->agent ? ($duplicateBooking->agent->alias_name ?: $duplicateBooking->agent->name) : 'Agent' }}</strong>. 
                         All data has been pre-filled. A new unique Booking ID will be generated upon saving and assigned to you.
                     </div>
                 </div>
             </div>
-            <span class="badge bg-info text-dark font-monospace px-3 py-2">DUPLICATE MODE</span>
+            <span class="badge bg-info text-white font-monospace px-3 py-2">DUPLICATE MODE</span>
         </div>
     @endif
 
     <!-- ============================================================ -->
     <!-- PNR AUTO-FILL TOOLBAR (MULTI-LINE SMART IMPORT) -->
     <!-- ============================================================ -->
-    <div class="card bg-dark border-primary border-opacity-50 shadow-sm mb-4">
+    <div class="card bg-white border-primary-subtle shadow-sm mb-4">
         <div class="card-body p-3">
             <div class="row g-3">
                 <div class="col-md-9 col-lg-10">
-                    <textarea x-model="rawPnr" rows="3" placeholder="Paste full GDS raw text lines here (e.g. 1 DL 450 Y 12OCT JFKLAX HK1 0800 1130...)" class="form-control form-control-dark font-monospace text-emerald-400 small"></textarea>
+                    <textarea x-model="rawPnr" rows="3" placeholder="Paste full GDS raw text lines here (e.g. 1 DL 450 Y 12OCT JFKLAX HK1 0800 1130...)" class="form-control font-monospace text-success small"></textarea>
                 </div>
                 <div class="col-md-3 col-lg-2 d-flex align-items-end">
                     <button type="button" @click="parsePnr()" :disabled="parsing" class="btn btn-primary w-100 py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
@@ -87,17 +87,17 @@
             <div class="col-lg-8">
 
                 <!-- SECTION 1: Flight & PNR Information -->
-                <div class="card bg-dark border-secondary shadow-sm mb-4">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex align-items-center gap-2">
+                <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex align-items-center gap-2">
                         <i class="bi bi-airplane-fill text-primary"></i>
-                        <h2 class="h6 font-bold text-white mb-0 text-uppercase">1. Flight & PNR Information</h2>
+                        <h2 class="h6 font-bold text-dark mb-0 text-uppercase">1. Flight & PNR Information</h2>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             @if(Auth::check() && (Auth::user()->hasAnyRole(['admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'manager'])))
                                 <div class="col-md-3">
-                                    <label class="form-label text-warning small fw-bold text-uppercase">Assign Agent <span class="text-danger">*</span></label>
-                                    <select name="agent_id" x-model="formData.agent_id" required class="form-select border-warning text-warning fw-semibold">
+                                    <label class="form-label text-warning-emphasis small fw-bold text-uppercase">Assign Agent <span class="text-danger">*</span></label>
+                                    <select name="agent_id" x-model="formData.agent_id" required class="form-select border-warning fw-semibold">
                                         <option value="">-- Select Agent --</option>
                                         @if(isset($agents))
                                             @foreach($agents as $ag)
@@ -136,6 +136,7 @@
                                     <option value="dob_correction">D.O.B Correction</option>
                                     <option value="pet_in_cabin">Pet In Cabin</option>
                                     <option value="ancillary_refund">Ancillary Refund</option>
+                                    <option value="infant_ticket">Infant Ticket</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -157,7 +158,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Trip Type</label>
-                                <select name="trip_type" x-model="formData.trip_type" class="form-select font-semibold text-info">
+                                <select name="trip_type" x-model="formData.trip_type" class="form-select font-semibold text-primary">
                                     <option value="one_way">One Way</option>
                                     <option value="round_trip">Round Trip</option>
                                     <option value="multi_city">Multi City</option>
@@ -166,14 +167,14 @@
 
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Airline PNR</label>
-                                <input type="text" name="airline_pnr" x-model="formData.airline_pnr" class="form-control text-uppercase font-monospace fw-bold text-info" placeholder="PNR123">
+                                <input type="text" name="airline_pnr" x-model="formData.airline_pnr" class="form-control text-uppercase font-monospace fw-bold text-primary" placeholder="PNR123">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">GK PNR</label>
-                                <input type="text" name="gk_pnr" x-model="formData.gk_pnr" class="form-control text-uppercase font-monospace fw-bold text-warning" placeholder="GK7788">
+                                <input type="text" name="gk_pnr" x-model="formData.gk_pnr" class="form-control text-uppercase font-monospace fw-bold text-warning-emphasis" placeholder="GK7788">
                             </div>
                             <div class="col-md-3 d-flex align-items-center">
-                                <span class="text-warning small fst-italic"><i class="bi bi-info-circle me-1"></i> At least one of Airline PNR or GK PNR is required.</span>
+                                <span class="text-warning-emphasis small fst-italic"><i class="bi bi-info-circle me-1"></i> At least one of Airline PNR or GK PNR is required.</span>
                             </div>
 
                             <div class="col-md-3">
@@ -193,21 +194,21 @@
                 </div>
 
                 <!-- SECTION 2: Customer & Billing Authorization -->
-                <div class="card bg-dark border-secondary shadow-sm mb-4">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-credit-card-2-front-fill text-success"></i>
-                            <h2 class="h6 font-bold text-white mb-0 text-uppercase">2. Customer &amp; Billing Authorization</h2>
+                            <h2 class="h6 font-bold text-dark mb-0 text-uppercase">2. Customer &amp; Billing Authorization</h2>
                         </div>
                         <!-- Radio Toggle: Single Card vs Multiple Cards -->
-                        <div class="d-flex align-items-center gap-3 bg-body-tertiary px-3 py-1.5 rounded-pill border border-secondary">
+                        <div class="d-flex align-items-center gap-3 bg-light px-3 py-1.5 rounded-pill border border-light-subtle">
                             <div class="form-check form-check-inline mb-0">
                                 <input class="form-check-input" type="radio" name="payment_mode_radio" id="pm_single" value="single" x-model="paymentMode">
-                                <label class="form-check-label text-white small fw-bold" for="pm_single">Single Card</label>
+                                <label class="form-check-label text-dark small fw-bold" for="pm_single">Single Card</label>
                             </div>
                             <div class="form-check form-check-inline mb-0">
                                 <input class="form-check-input" type="radio" name="payment_mode_radio" id="pm_multiple" value="multiple" x-model="paymentMode">
-                                <label class="form-check-label text-info small fw-bold" for="pm_multiple"><i class="bi bi-stack me-1"></i> Multiple Cards</label>
+                                <label class="form-check-label text-primary small fw-bold" for="pm_multiple"><i class="bi bi-stack me-1"></i> Multiple Cards</label>
                             </div>
                         </div>
                     </div>
@@ -258,43 +259,41 @@
                             </div>
 
                             <div class="col-md-4 d-flex align-items-end">
-                                <div class="form-check p-3 bg-body-tertiary rounded border border-secondary w-100">
+                                <div class="form-check p-3 bg-light rounded border border-light-subtle w-100">
                                     <input type="hidden" name="email_auth_taken" value="0">
                                     <input type="checkbox" name="email_auth_taken" value="1" x-model="formData.email_auth_taken" id="email_auth_taken" class="form-check-input me-2">
-                                    <label for="email_auth_taken" class="form-check-label text-white small fw-semibold cursor-pointer">
+                                    <label for="email_auth_taken" class="form-check-label text-dark small fw-semibold cursor-pointer">
                                         Email Auth Already Taken
                                     </label>
                                 </div>
                             </div>
 
-                            @if(Auth::user()->hasAnyRole(['admin','manager']))
-                                <div class="col-12">
-                                    <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between align-items-center mb-1">
-                                        <span>Payment Info Notes</span>
-                                    </label>
-                                    <textarea name="payment_info" x-model="formData.payment_info" rows="2" class="form-control" placeholder="Enter payment info notes (Only viewable by Admins)..."></textarea>
-                                </div>
-                            @endif
+                            <div class="col-12">
+                                <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between align-items-center mb-1">
+                                    <span>Payment Info Notes / Remarks</span>
+                                </label>
+                                <textarea name="payment_info" x-model="formData.payment_info" rows="2" class="form-control" placeholder="Enter payment info notes & remarks..."></textarea>
+                            </div>
                         </div>
 
                         <!-- MULTIPLE CARDS ROSTER SECTION -->
-                        <div x-show="paymentMode === 'multiple'" class="mt-4 pt-4 border-top border-secondary" x-cloak>
+                        <div x-show="paymentMode === 'multiple'" class="mt-4 pt-4 border-top border-light-subtle" x-cloak>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div>
-                                    <h6 class="text-info fw-bold mb-0 text-uppercase d-flex align-items-center gap-2">
+                                    <h6 class="text-primary fw-bold mb-0 text-uppercase d-flex align-items-center gap-2">
                                         <i class="bi bi-credit-card-2-back-fill"></i> Multiple Payment Cards Roster
                                     </h6>
                                     <small class="text-secondary">Manage all credit/debit cards authorized for this booking.</small>
                                 </div>
-                                <button type="button" @click="multiCardsModalOpen = true" class="btn btn-outline-info btn-sm fw-bold">
+                                <button type="button" @click="multiCardsModalOpen = true" class="btn btn-outline-primary btn-sm fw-bold">
                                     <i class="bi bi-plus-circle me-1"></i> Add Card to Roster
                                 </button>
                             </div>
 
                             <div class="table-responsive">
-                                <table class="table table-dark table-striped table-bordered align-middle mb-0">
-                                    <thead>
-                                        <tr class="small text-uppercase text-secondary">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr class="small text-uppercase text-secondary border-bottom">
                                             <th>Card Holder Name</th>
                                             <th>Card Type</th>
                                             <th style="width: 120px;">Last 4</th>
@@ -345,21 +344,21 @@
                 </div>
 
                 <!-- SECTION 3: Passenger Roster -->
-                <div class="card bg-dark border-secondary shadow-sm mb-4">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-people-fill text-info"></i>
-                            <h2 class="h6 font-bold text-white mb-0 text-uppercase">3. Passenger Roster <span class="text-danger">*</span></h2>
+                            <i class="bi bi-people-fill text-primary"></i>
+                            <h2 class="h6 font-bold text-dark mb-0 text-uppercase">3. Passenger Roster <span class="text-danger">*</span></h2>
                         </div>
-                        <button type="button" @click="addPassenger()" class="btn btn-outline-info btn-sm fw-bold">
+                        <button type="button" @click="addPassenger()" class="btn btn-outline-primary btn-sm fw-bold">
                             <i class="bi bi-plus-lg me-1"></i> Add Passenger
                         </button>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-dark table-striped table-bordered align-middle mb-0">
-                                <thead>
-                                    <tr class="small text-uppercase text-secondary">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase text-secondary border-bottom">
                                         <th style="width: 70px;" class="text-center">Pax</th>
                                         <th style="width: 90px;">Title</th>
                                         <th>First Name <span class="text-danger">*</span></th>
@@ -374,7 +373,7 @@
                                     <template x-for="(pax, index) in passengers" :key="index">
                                         <tr>
                                             <td class="text-center">
-                                                <input type="text" :name="`passengers[${index}][pax_index]`" x-model="pax.pax_index" placeholder="P1" class="form-control form-control-sm text-center font-monospace fw-bold text-info">
+                                                <input type="text" :name="`passengers[${index}][pax_index]`" x-model="pax.pax_index" placeholder="P1" class="form-control form-control-sm text-center font-monospace fw-bold text-primary">
                                             </td>
                                             <td>
                                                 <select :name="`passengers[${index}][title]`" x-model="pax.title" class="form-select form-select-sm">
@@ -415,11 +414,11 @@
                 </div>
 
                 <!-- SECTION 3.5: Flight Segments Roster -->
-                <div class="card bg-dark border-secondary shadow-sm mb-4">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-airplane-engines-fill text-primary"></i>
-                            <h2 class="h6 font-bold text-white mb-0 text-uppercase">Itinerary Flight Segments</h2>
+                            <h2 class="h6 font-bold text-dark mb-0 text-uppercase">Itinerary Flight Segments</h2>
                             <span class="badge bg-primary-subtle text-primary font-monospace ms-2" x-text="`${flights.length} Segment(s)`"></span>
                         </div>
                         <button type="button" @click="addFlight()" class="btn btn-outline-primary btn-sm fw-bold">
@@ -428,9 +427,9 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-dark table-striped table-bordered align-middle mb-0">
-                                <thead>
-                                    <tr class="small text-uppercase text-secondary">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase text-secondary border-bottom">
                                         <th style="width: 40px;" class="text-center">#</th>
                                         <th style="width: 85px;">Carrier</th>
                                         <th style="width: 95px;">Flight #</th>
@@ -448,7 +447,7 @@
                                         <tr>
                                             <td class="text-center font-monospace fw-bold text-secondary" x-text="index + 1"></td>
                                             <td>
-                                                <input type="text" x-model="fl.operating_carrier" placeholder="UA" class="form-control form-control-sm font-monospace text-uppercase fw-bold text-info">
+                                                <input type="text" x-model="fl.operating_carrier" placeholder="UA" class="form-control form-control-sm font-monospace text-uppercase fw-bold text-primary">
                                             </td>
                                             <td>
                                                 <input type="text" x-model="fl.flight_number" placeholder="354" class="form-control form-control-sm font-monospace text-uppercase">
@@ -490,11 +489,11 @@
                 </div>
 
                 <!-- SECTION 4: Financial Breakdown & MCO Calculation -->
-                <div class="card bg-dark border-secondary shadow-sm mb-4">
-                    <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-currency-dollar text-warning"></i>
-                            <h2 class="h6 font-bold text-white mb-0 text-uppercase">4. Financial Breakdown & MCO Calculation</h2>
+                            <i class="bi bi-currency-dollar text-warning-emphasis"></i>
+                            <h2 class="h6 font-bold text-dark mb-0 text-uppercase">4. Financial Breakdown & MCO Calculation</h2>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="small text-secondary fw-bold">MCO Profit:</span>
@@ -520,7 +519,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Total Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="total_amount" x-model="formData.total_amount" @input="calculateMco()" required class="form-control font-monospace fw-bold text-white" placeholder="0.00">
+                                <input type="number" step="0.01" name="total_amount" x-model="formData.total_amount" @input="calculateMco()" required class="form-control font-monospace fw-bold text-dark" placeholder="0.00">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Paid to Airline <span class="text-danger">*</span></label>
@@ -528,7 +527,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Total MCO <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="total_mco" x-model="formData.total_mco" required class="form-control font-monospace fw-bold text-warning bg-warning bg-opacity-10 border-warning border-opacity-50" placeholder="0.00">
+                                <input type="number" step="0.01" name="total_mco" x-model="formData.total_mco" required class="form-control font-monospace fw-bold text-success bg-success bg-opacity-10 border-success border-opacity-50" placeholder="0.00">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Payment Status <span class="text-danger">*</span></label>
@@ -541,7 +540,9 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Initial Remark</label>
-                                <input type="text" name="initial_remark" x-model="initialRemark" placeholder="Add notes..." class="form-control">
+                                <input type="text" name="initial_remark" x-model="initialRemark" placeholder="Add notes..." class="form-control mb-2">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Attachments (PDF/Images)</label>
+                                <input type="file" name="initial_attachments[]" multiple accept=".pdf,image/png,image/jpeg,image/jpg,image/webp" class="form-control form-control-sm">
                             </div>
                         </div>
                     </div>
@@ -554,18 +555,18 @@
                 <div class="sticky-top" style="top: 80px;">
 
                     <!-- LIVE TICKET PREVIEW CARD -->
-                    <div class="card bg-dark border-secondary shadow-sm mb-4">
-                        <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                    <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="p-1 rounded-circle bg-success d-inline-block"></span>
-                                <h3 class="h6 font-bold text-white mb-0 text-uppercase">Live e-Ticket Preview</h3>
+                                <h3 class="h6 font-bold text-dark mb-0 text-uppercase">Live e-Ticket Preview</h3>
                             </div>
-                            <span class="badge bg-dark-subtle text-info border border-info border-opacity-25 font-monospace" x-text="`PNR: ${formData.airline_pnr || formData.gk_pnr || 'NONE'}`"></span>
+                            <span class="badge bg-light text-primary border border-primary-subtle font-monospace" x-text="`PNR: ${formData.airline_pnr || formData.gk_pnr || 'NONE'}`"></span>
                         </div>
                         <div class="card-body p-3">
-                            <div class="p-3 bg-body-tertiary rounded border border-secondary mb-3">
+                            <div class="p-3 bg-light rounded border border-light-subtle mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-white small" x-text="formData.airline_name || 'Airline Not Set'"></span>
+                                    <span class="fw-bold text-dark small" x-text="formData.airline_name || 'Airline Not Set'"></span>
                                     <span class="badge bg-primary-subtle text-primary font-monospace" x-text="formData.airline_code || 'XX'"></span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center small text-secondary fw-semibold">
@@ -584,10 +585,10 @@
                             <div x-show="flights.length > 0">
                                 <div class="small fw-bold text-secondary text-uppercase mb-2">Flight Segments (<span x-text="flights.length"></span>)</div>
                                 <template x-for="(fl, idx) in flights" :key="idx">
-                                    <div class="p-2.5 bg-body-tertiary rounded border border-secondary mb-2 small">
-                                        <div class="d-flex justify-content-between font-bold text-white mb-1">
+                                    <div class="p-2.5 bg-light rounded border border-light-subtle mb-2 small">
+                                        <div class="d-flex justify-content-between font-bold text-dark mb-1">
                                             <span x-text="`${fl.operating_carrier || formData.airline_code || ''} ${fl.flight_number}`"></span>
-                                            <span class="badge bg-secondary font-monospace" x-text="fl.cabin || 'Economy'"></span>
+                                            <span class="badge bg-secondary-subtle text-secondary font-monospace" x-text="fl.cabin || 'Economy'"></span>
                                         </div>
                                         <div class="d-flex justify-content-between text-secondary">
                                             <span x-text="`${fl.origin_airport} → ${fl.destination_airport}`"></span>
@@ -600,26 +601,26 @@
                     </div>
 
                     <!-- FINANCIAL SUMMARY CARD -->
-                    <div class="card bg-dark border-secondary shadow-sm mb-4">
-                        <div class="card-header bg-dark border-secondary py-3">
-                            <h3 class="h6 font-bold text-white mb-0 text-uppercase">Financial Summary</h3>
+                    <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom border-light-subtle py-3">
+                            <h3 class="h6 font-bold text-dark mb-0 text-uppercase">Financial Summary</h3>
                         </div>
                         <div class="card-body p-3">
                             <ul class="list-group list-group-flush bg-transparent small mb-3">
-                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-secondary py-2">
+                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
                                     <span>Passengers Count:</span>
-                                    <strong class="text-white" x-text="passengers.length"></strong>
+                                    <strong class="text-dark" x-text="passengers.length"></strong>
                                 </li>
-                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-secondary py-2">
+                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
                                     <span>Total Customer Charge:</span>
-                                    <strong class="text-white font-monospace" x-text="`${formData.currency} ${Number(formData.total_amount || 0).toFixed(2)}`"></strong>
+                                    <strong class="text-dark font-monospace" x-text="`${formData.currency} ${Number(formData.total_amount || 0).toFixed(2)}`"></strong>
                                 </li>
-                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-secondary py-2">
+                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
                                     <span>Airline Cost:</span>
                                     <strong class="text-secondary font-monospace" x-text="`${formData.currency} ${Number(formData.paid_to_airline || 0).toFixed(2)}`"></strong>
                                 </li>
                                 <li class="list-group-item bg-transparent d-flex justify-content-between pt-3 border-0">
-                                    <span class="fw-bold text-warning text-uppercase">Calculated MCO Margin:</span>
+                                    <span class="fw-bold text-warning-emphasis text-uppercase">Calculated MCO Margin:</span>
                                     <strong class="text-success font-monospace fs-5" x-text="`${formData.currency} ${Number(formData.total_mco || 0).toFixed(2)}`"></strong>
                                 </li>
                             </ul>
@@ -672,15 +673,17 @@
                 <input type="hidden" :name="`flights[${index}][transit_text]`" x-model="fl.transit_text">
             </div>
         </template>
+    </form>
+
     <!-- Add Card Modal -->
-    <div x-show="multiCardsModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': multiCardsModalOpen }" tabindex="-1" x-cloak>
+    <div x-show="multiCardsModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': multiCardsModalOpen }" tabindex="-1" x-cloak>
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content card bg-dark border-info shadow-lg w-100" style="pointer-events: auto;">
-                <div class="card-header bg-dark border-info d-flex justify-content-between align-items-center py-3">
-                    <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2">
-                        <i class="bi bi-credit-card text-info"></i> Add Payment Card to Booking
+            <div class="modal-content card bg-white border-0 shadow-lg w-100" style="pointer-events: auto;">
+                <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                    <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-credit-card text-primary"></i> Add Payment Card to Booking
                     </h5>
-                    <button type="button" @click="multiCardsModalOpen = false" class="btn-close btn-close-white"></button>
+                    <button type="button" @click="multiCardsModalOpen = false" class="btn-close"></button>
                 </div>
                 <div class="card-body p-4">
                     <div class="mb-3">
@@ -710,9 +713,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-dark border-secondary d-flex justify-content-end gap-2 py-3">
+                <div class="card-footer bg-light border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
                     <button type="button" @click="multiCardsModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
-                    <button type="button" @click="saveModalCard()" class="btn btn-info btn-sm px-4 fw-bold text-dark">
+                    <button type="button" @click="saveModalCard()" class="btn btn-primary btn-sm px-4 fw-bold">
                         <i class="bi bi-plus-circle me-1"></i> Add Card
                     </button>
                 </div>
@@ -1062,17 +1065,58 @@
                 this.submitting = true;
 
                 try {
-                    const payload = {
-                        ...this.formData,
-                        passengers: this.passengers,
-                        flights: this.flights,
-                        initial_remark: this.initialRemark || ''
-                    };
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+                    const formDataObj = new FormData();
+                    formDataObj.append('_token', csrfToken);
 
-                    const response = await axios.post('/bookings', payload, {
+                    Object.keys(this.formData).forEach(key => {
+                        if (key === 'email_auth_taken') {
+                            formDataObj.append(key, this.formData[key] ? '1' : '0');
+                        } else if (this.formData[key] !== null && this.formData[key] !== undefined) {
+                            formDataObj.append(key, this.formData[key]);
+                        }
+                    });
+                    formDataObj.append('initial_remark', this.initialRemark || '');
+
+                    this.passengers.forEach((pax, idx) => {
+                        Object.keys(pax).forEach(pKey => {
+                            if (pax[pKey] !== null && pax[pKey] !== undefined) {
+                                formDataObj.append(`passengers[${idx}][${pKey}]`, pax[pKey]);
+                            }
+                        });
+                    });
+
+                    this.flights.forEach((flt, idx) => {
+                        Object.keys(flt).forEach(fKey => {
+                            if (flt[fKey] !== null && flt[fKey] !== undefined) {
+                                formDataObj.append(`flights[${idx}][${fKey}]`, flt[fKey]);
+                            }
+                        });
+                    });
+
+                    if (this.bookingCards && this.bookingCards.length > 0) {
+                        this.bookingCards.forEach((card, idx) => {
+                            Object.keys(card).forEach(cKey => {
+                                if (card[cKey] !== null && card[cKey] !== undefined) {
+                                    formDataObj.append(`booking_cards[${idx}][${cKey}]`, card[cKey]);
+                                }
+                            });
+                        });
+                    }
+
+                    const fileInput = document.querySelector('input[name="initial_attachments[]"]');
+                    if (fileInput && fileInput.files.length > 0) {
+                        Array.from(fileInput.files).forEach(file => {
+                            formDataObj.append('initial_attachments[]', file);
+                        });
+                    }
+
+                    const response = await axios.post('/bookings', formDataObj, {
                         headers: {
+                            'Content-Type': 'multipart/form-data',
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
                         }
                     });
 
@@ -1082,8 +1126,8 @@
                             title: 'Booking Created!',
                             text: `Booking reference #${response.data.booking_id || ''} has been generated successfully.`,
                             confirmButtonColor: '#0d6efd',
-                            background: '#1e293b',
-                            color: '#fff'
+                            background: '#ffffff',
+                            color: '#1e293b'
                         }).then(() => {
                             window.location.href = response.data.redirect || '/bookings';
                         });
@@ -1110,8 +1154,24 @@
                             title: 'Validation Required',
                             html: `<div class="text-start text-warning small mt-2"><ul class="mb-0 ps-3">${listHtml}</ul></div>`,
                             confirmButtonColor: '#dc3545',
-                            background: '#1e293b',
-                            color: '#fff'
+                            background: '#ffffff',
+                            color: '#1e293b'
+                        });
+                    } else if (error.response && error.response.status === 419) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Session Expired',
+                            text: 'Your security token or session expired. Please refresh the page to reload your session.',
+                            showCancelButton: true,
+                            confirmButtonText: 'Refresh Page',
+                            confirmButtonColor: '#0d6efd',
+                            cancelButtonColor: '#6c757d',
+                            background: '#ffffff',
+                            color: '#1e293b'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.reload();
+                            }
                         });
                     } else {
                         Swal.fire({
@@ -1119,8 +1179,8 @@
                             title: 'Submission Error',
                             text: error.response?.data?.message || 'An unexpected error occurred while saving the booking.',
                             confirmButtonColor: '#dc3545',
-                            background: '#1e293b',
-                            color: '#fff'
+                            background: '#ffffff',
+                            color: '#1e293b'
                         });
                     }
                 }

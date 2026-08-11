@@ -21,16 +21,30 @@
                     <td style="border: 1px solid #e2e8f0; font-weight: bold;">#{{ $changeRequest->booking->booking_id ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Requested By (Agent):</td>
-                    <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->agent ? ($changeRequest->agent->alias_name ?: $changeRequest->agent->name) : 'N/A' }} ({{ $changeRequest->agent->email ?? 'N/A' }})</td>
+                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Airline PNR:</td>
+                    <td style="border: 1px solid #e2e8f0; font-family: monospace; font-weight: bold; color: #0284c7;">{{ $changeRequest->booking->airline_pnr ?? 'N/A' }}</td>
                 </tr>
                 <tr style="background-color: #f8fafc;">
-                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Assigned Date &amp; Time:</td>
-                    <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->assigned_at ? $changeRequest->assigned_at->format('M d, Y h:i A') : date('M d, Y h:i A') }}</td>
+                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Customer Name:</td>
+                    <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->booking->card_holder_name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold; border: 1px solid #e2e8f0;">Customer Email:</td>
                     <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->booking->email_address ?? 'N/A' }}</td>
+                </tr>
+                <tr style="background-color: #f8fafc;">
+                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Requested By (Agent):</td>
+                    <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->agent ? ($changeRequest->agent->alias_name ?: $changeRequest->agent->name) : 'N/A' }} ({{ $changeRequest->agent->email ?? 'N/A' }})</td>
+                </tr>
+                @if($changeRequest->request_type)
+                <tr style="background-color: #f0f9ff;">
+                    <td style="font-weight: bold; border: 1px solid #e2e8f0; color: #0284c7;">Request Type:</td>
+                    <td style="border: 1px solid #e2e8f0; font-weight: bold; color: #0284c7;">{{ $changeRequest->request_type }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td style="font-weight: bold; border: 1px solid #e2e8f0;">Assigned Date &amp; Time:</td>
+                    <td style="border: 1px solid #e2e8f0;">{{ $changeRequest->assigned_at ? $changeRequest->assigned_at->format('M d, Y h:i A') : date('M d, Y h:i A') }}</td>
                 </tr>
             </table>
 

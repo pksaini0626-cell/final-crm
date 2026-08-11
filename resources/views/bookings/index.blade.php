@@ -5,7 +5,7 @@
     <!-- Top Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
                 <i class="bi bi-speedometer2 text-primary"></i> Agent Dashboard
             </h1>
             <p class="text-secondary small mb-0">View and manage your bookings, update ticket details, and track authorization status.</p>
@@ -17,11 +17,11 @@
 
     <!-- Pending Customer Authorization Banner (Admin/Manager) -->
     @if(Auth::user()->hasAnyRole(['admin', 'manager']) && isset($pendingAuthBookings) && $pendingAuthBookings->count() > 0)
-        <div class="card bg-dark border-warning shadow-sm mb-4">
-            <div class="card-header bg-warning bg-opacity-10 border-warning py-3 d-flex justify-content-between align-items-center">
+        <div class="card bg-white border-warning-subtle shadow-sm mb-4">
+            <div class="card-header bg-warning-subtle py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <span class="spinner-grow spinner-grow-sm text-warning" role="status" aria-hidden="true"></span>
-                    <h2 class="h6 font-bold text-warning mb-0 text-uppercase tracking-wider">
+                    <h2 class="h6 font-bold text-warning-emphasis mb-0 text-uppercase tracking-wider">
                         Pending Customer Authorization Notifications ({{ $pendingAuthBookings->count() }})
                     </h2>
                 </div>
@@ -31,22 +31,22 @@
                 <div class="row g-3">
                     @foreach($pendingAuthBookings as $pBooking)
                         <div class="col-md-6 col-lg-4">
-                            <div class="p-3 bg-body-tertiary rounded border border-secondary shadow-sm h-100 d-flex flex-column justify-content-between">
+                            <div class="p-3 bg-light rounded border border-light-subtle shadow-sm h-100 d-flex flex-column justify-content-between">
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="badge bg-primary font-monospace fs-6">#{{ $pBooking->booking_id }}</span>
-                                        <span class="badge bg-warning text-dark text-uppercase">Email Auth Sent</span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">Email Auth Sent</span>
                                     </div>
                                     <div class="small text-secondary">
-                                        <div class="mb-1"><strong class="text-white">PNR:</strong> <span class="text-info font-monospace fw-bold">{{ $pBooking->airline_pnr ?: ($pBooking->gk_pnr ?: 'N/A') }}</span></div>
-                                        <div class="mb-1"><strong class="text-white">Airline:</strong> {{ $pBooking->airline_name ?: 'N/A' }}</div>
-                                        <div class="mb-1"><strong class="text-white">Email:</strong> <span class="text-white-50">{{ $pBooking->email_address }}</span></div>
-                                        <div class="mb-1"><strong class="text-white">Agent:</strong> {{ $pBooking->agent ? $pBooking->agent->alias_name : 'Agent' }}</div>
+                                        <div class="mb-1"><strong class="text-dark">PNR:</strong> <span class="text-primary font-monospace fw-bold">{{ $pBooking->airline_pnr ?: ($pBooking->gk_pnr ?: 'N/A') }}</span></div>
+                                        <div class="mb-1"><strong class="text-dark">Airline:</strong> {{ $pBooking->airline_name ?: 'N/A' }}</div>
+                                        <div class="mb-1"><strong class="text-dark">Email:</strong> <span class="text-secondary">{{ $pBooking->email_address }}</span></div>
+                                        <div class="mb-1"><strong class="text-dark">Agent:</strong> {{ $pBooking->agent ? $pBooking->agent->alias_name : 'Agent' }}</div>
                                         <div class="text-muted small mt-1"><i class="bi bi-clock me-1"></i> Dispatched {{ $pBooking->updated_at->diffForHumans() }}</div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
-                                    <button type="button" @click="openDetails({{ json_encode($pBooking) }})" class="btn btn-outline-info btn-sm fw-semibold">
+                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
+                                    <button type="button" @click="openDetails({{ json_encode($pBooking) }})" class="btn btn-outline-primary btn-sm fw-semibold">
                                         <i class="bi bi-eye me-1"></i> View
                                     </button>
 
@@ -66,14 +66,14 @@
     @endif
 
     <!-- Filters & Search -->
-    <div class="card bg-dark border-secondary shadow-sm mb-4">
+    <div class="card bg-white border-light-subtle shadow-sm mb-4">
         <div class="card-body p-3">
             <form action="{{ route('bookings.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6 col-lg-7">
                     <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Search Bookings</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-dark-subtle border-secondary text-secondary"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Booking ID, Airline PNR, Email, or Passenger Name..." class="form-control">
+                        <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Booking ID, Airline PNR, Email, or Passenger Name..." class="form-control border-start-0 ps-0">
                     </div>
                 </div>
 
@@ -100,10 +100,10 @@
     </div>
 
     <!-- Table View -->
-    <div class="card bg-dark border-secondary shadow-sm mb-4">
+    <div class="card bg-white border-light-subtle shadow-sm mb-4">
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-                <thead class="table-dark text-secondary small text-uppercase">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary small text-uppercase border-bottom">
                     <tr>
                         <th class="ps-3 py-3">Booking ID</th>
                         <th class="py-3">Airline PNR</th>
@@ -118,22 +118,22 @@
                     @forelse ($bookings as $booking)
                         <tr>
                             <!-- Booking ID -->
-                            <td class="ps-3 fw-bold text-info font-monospace">
+                            <td class="ps-3 fw-bold text-primary font-monospace">
                                 #{{ $booking->booking_id }}
                             </td>
                             <!-- PNR -->
                             <td>
-                                <span class="badge bg-body-tertiary text-info border border-info border-opacity-25 font-monospace fs-6">
+                                <span class="badge bg-light text-primary border border-primary-subtle font-monospace fs-6">
                                     {{ $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A') }}
                                 </span>
                             </td>
                             <!-- Customer Info -->
                             <td>
                                 @if($booking->card_holder_name)
-                                    <div class="fw-semibold text-white">{{ $booking->card_holder_name }}</div>
+                                    <div class="fw-semibold text-dark">{{ $booking->card_holder_name }}</div>
                                     <div class="small text-secondary">{{ $booking->email_address }}</div>
                                 @elseif($booking->passengers->isNotEmpty())
-                                    <div class="fw-semibold text-white">{{ $booking->passengers->first()->first_name }} {{ $booking->passengers->first()->last_name }}</div>
+                                    <div class="fw-semibold text-dark">{{ $booking->passengers->first()->first_name }} {{ $booking->passengers->first()->last_name }}</div>
                                     <div class="small text-secondary">{{ $booking->email_address }}</div>
                                 @else
                                     <span class="text-secondary small">No Passengers</span>
@@ -144,7 +144,7 @@
                                 @php
                                     $badgeClass = match($booking->booking_status) {
                                         'booking_generated' => 'bg-info-subtle text-info border border-info-subtle',
-                                        'email_auth_sent' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                                        'email_auth_sent' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                         'email_auth_done' => 'bg-primary-subtle text-primary border border-primary-subtle',
                                         'ticketed' => 'bg-purple-subtle text-purple border border-purple-subtle',
                                         'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
@@ -172,23 +172,23 @@
                                         <i class="bi bi-envelope me-1"></i>
                                         {{ in_array($booking->booking_status, ['email_auth_sent', 'email_auth_done']) ? 'Resend Auth' : 'Auth Mail' }}
                                     </a>
-                                    @if(in_array($booking->booking_status, ['email_auth_done', 'ticketed', 'booking_complete']))
-                                        <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary" title="Assign to Ticketing Agent">
-                                            <i class="bi bi-person-check me-1"></i>
-                                            {{ $booking->ticketingUser ? ($booking->ticketingUser->alias_name ?: $booking->ticketingUser->name) : 'Assign Ticketing' }}
-                                        </button>
-                                    @endif
+                                     @if($booking->booking_status !== 'void')
+                                         <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary" title="Assign to Ticketing Agent">
+                                             <i class="bi bi-person-check me-1"></i>
+                                             {{ $booking->ticketingUser ? ($booking->ticketingUser->alias_name ?: $booking->ticketingUser->name) : 'Assign Ticketing' }}
+                                         </button>
+                                     @endif
                                      <a href="{{ route('bookings.request-change.create', $booking->id) }}" class="btn btn-outline-info" title="Request Changes from Changes Team">
                                          <i class="bi bi-arrow-repeat me-1"></i> Request Change
                                      </a>
                                      <a href="{{ route('bookings.create', ['duplicate' => $booking->id]) }}" class="btn btn-outline-secondary" title="Duplicate Booking">
                                          <i class="bi bi-files me-1"></i> Duplicate
                                      </a>
-                                     <button type="button" @click="openDetails({{ json_encode($booking) }})" class="btn btn-outline-info" title="View Details & Update">
+                                     <button type="button" @click="openDetails({{ json_encode($booking) }})" class="btn btn-outline-primary" title="View Details & Update">
                                          <i class="bi bi-pencil-square me-1"></i> View / Edit
                                      </button>
-                                    <button type="button" @click="openRemarkModal({{ $booking->id }})" class="btn btn-outline-success" title="Add Remark">
-                                        <i class="bi bi-chat-text me-1"></i> Remark
+                                    <button type="button" @click="openRemarkModal({{ $booking->id }})" class="btn btn-outline-success" title="Add Remark with Attachment">
+                                        <i class="bi bi-paperclip me-1"></i> Remark
                                     </button>
                                 </div>
                             </td>
@@ -206,68 +206,78 @@
         </div>
 
         @if ($bookings->hasPages())
-            <div class="card-footer bg-dark border-secondary p-3">
+            <div class="card-footer bg-white border-top border-light-subtle p-3">
                 {{ $bookings->links() }}
             </div>
         @endif
     </div>
 
-    <!-- REMARK MODAL -->
-    <div x-show="remarkModalOpen" class="modal fade" :class="{ 'show d-block': remarkModalOpen }" tabindex="-1" style="background-color: rgba(0,0,0,0.7);" x-cloak>
+    <!-- REMARK MODAL POPUP (MULTIPLE ATTACHMENT SUPPORT) -->
+    <div x-show="remarkModalOpen" class="modal fade" :class="{ 'show d-block': remarkModalOpen }" tabindex="-1" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" x-cloak>
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark border-secondary shadow-lg">
-                <div class="modal-header border-secondary py-3">
-                    <h5 class="modal-header-title h6 text-white mb-0 text-uppercase fw-bold">
-                        <i class="bi bi-chat-left-text text-success me-2"></i> Add Booking Remark
+            <div class="modal-content card bg-white border-0 shadow-lg w-100">
+                <div class="modal-header border-bottom border-light-subtle py-3">
+                    <h5 class="modal-header-title h6 text-dark mb-0 text-uppercase fw-bold">
+                        <i class="bi bi-chat-left-text text-success me-2"></i> Add Remark &amp; Attachments
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" @click="remarkModalOpen = false"></button>
+                    <button type="button" class="btn-close" @click="remarkModalOpen = false"></button>
                 </div>
-                <form :action="getRemarkAction()" @submit="$el.action = getRemarkAction()" method="POST">
+                <form :action="getRemarkAction()" @submit="$el.action = getRemarkAction()" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body p-4">
                         <div class="mb-3">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Remark Note</label>
-                            <textarea name="remark" required rows="4" class="form-control" placeholder="Type your remark update here..."></textarea>
+                            <textarea name="remark" rows="3" class="form-control" placeholder="Type your remark update here..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between">
+                                <span>Attach PDF or Images</span>
+                                <span class="text-muted fw-normal">Optional</span>
+                            </label>
+                            <input type="file" name="attachments[]" multiple accept=".pdf,image/png,image/jpeg,image/jpg,image/webp" class="form-control form-control-sm">
+                            <div class="form-text small text-muted">Upload PDF documents or images (PNG, JPG, WEBP). Select multiple files if needed.</div>
                         </div>
                     </div>
-                    <div class="modal-footer border-secondary py-2">
+                    <div class="modal-footer border-top border-light-subtle bg-light py-2">
                         <button type="button" @click="remarkModalOpen = false" class="btn btn-outline-secondary btn-sm fw-bold">Cancel</button>
-                        <button type="submit" class="btn btn-success btn-sm fw-bold">Save Remark</button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold">
+                            <i class="bi bi-paperclip me-1"></i> Save Remark &amp; Attachments
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- DETAIL OFF-CANVAS / DRAWER -->
-    <div x-show="slideoverOpen" class="offcanvas offcanvas-end bg-dark border-start border-secondary text-white" :class="{ 'show': slideoverOpen }" tabindex="-1" style="width: 650px; max-width: 90vw;" x-cloak>
-        <div class="offcanvas-header bg-dark border-bottom border-secondary py-3">
+    <!-- DETAIL OFF-CANVAS / DRAWER POPUP -->
+    <div x-show="slideoverOpen" class="offcanvas offcanvas-end bg-white border-start border-light-subtle text-dark" :class="{ 'show': slideoverOpen }" tabindex="-1" style="width: 650px; max-width: 90vw;" x-cloak>
+        <div class="offcanvas-header bg-white border-bottom border-light-subtle py-3">
             <div>
-                <h5 class="offcanvas-title h6 text-white fw-bold mb-0 text-uppercase">
-                    Booking Details <span class="text-info font-monospace ms-2" x-text="`#${booking.booking_id}`"></span>
+                <h5 class="offcanvas-title h6 text-dark fw-bold mb-0 text-uppercase">
+                    Booking Details <span class="text-primary font-monospace ms-2" x-text="`#${booking.booking_id}`"></span>
                 </h5>
                 <small class="text-secondary" x-text="`Created on ${formatDate(booking.created_at)}`"></small>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a :href="'/bookings/create?duplicate=' + booking.id" class="btn btn-outline-info btn-sm fw-semibold me-1">
+                <a :href="'/bookings/create?duplicate=' + booking.id" class="btn btn-outline-primary btn-sm fw-semibold me-1">
                     <i class="bi bi-files me-1"></i> Duplicate Booking
                 </a>
-                <button type="button" class="btn-close btn-close-white" @click="slideoverOpen = false"></button>
+                <button type="button" class="btn-close" @click="slideoverOpen = false"></button>
             </div>
         </div>
 
         <div class="offcanvas-body p-4 space-y-4">
             <!-- Details Grid -->
-            <div class="card bg-body-tertiary border-secondary mb-4">
+            <div class="card bg-light border-light-subtle mb-4">
                 <div class="card-body p-3">
                     <div class="row g-3">
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">Airline PNR</div>
-                            <div class="font-monospace fw-bold text-info fs-6" x-text="booking.airline_pnr || 'N/A'"></div>
+                            <div class="font-monospace fw-bold text-primary fs-6" x-text="booking.airline_pnr || 'N/A'"></div>
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">GK PNR</div>
-                            <div class="font-monospace fw-bold text-warning fs-6" x-text="booking.gk_pnr || 'N/A'"></div>
+                            <div class="font-monospace fw-bold text-warning-emphasis fs-6" x-text="booking.gk_pnr || 'N/A'"></div>
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">Trip Type</div>
@@ -275,50 +285,48 @@
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">Status</div>
-                            <div class="fw-semibold text-white" x-text="capitalize(booking.booking_status)"></div>
+                            <div class="fw-semibold text-dark" x-text="capitalize(booking.booking_status)"></div>
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">Airline</div>
-                            <div class="fw-semibold text-white" x-text="`${booking.airline_name || ''} (${booking.airline_code || ''})`"></div>
+                            <div class="fw-semibold text-dark" x-text="`${booking.airline_name || ''} (${booking.airline_code || ''})`"></div>
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">Route</div>
-                            <div class="fw-semibold text-white" x-text="`${booking.from_airport || ''} ➔ ${booking.to_airport || ''}`"></div>
+                            <div class="fw-semibold text-dark" x-text="`${booking.from_airport || ''} ➔ ${booking.to_airport || ''}`"></div>
                         </div>
                         <div class="col-6 col-sm-4">
                             <div class="small text-secondary text-uppercase fw-bold">MCO Amount</div>
                             <div class="fw-bold text-success font-monospace" x-text="`${booking.currency} ${parseFloat(booking.total_mco || 0).toFixed(2)}`"></div>
                         </div>
-                        <div class="col-12 pt-2 border-top border-secondary">
+                        <div class="col-12 pt-2 border-top border-light-subtle">
                             <div class="small text-secondary text-uppercase fw-bold">Billing Address</div>
-                            <div class="small text-white" x-text="booking.billing_address || 'No billing address recorded.'"></div>
+                            <div class="small text-dark" x-text="booking.billing_address || 'No billing address recorded.'"></div>
                         </div>
 
-                        @if(Auth::check() && Auth::user()->role === 'admin')
-                        <div class="col-12 pt-2 border-top border-secondary">
-                            <div class="small text-warning text-uppercase fw-bold mb-1"><i class="bi bi-shield-lock me-1"></i> Payment Info (Admin View)</div>
-                            <div class="small text-warning font-monospace bg-dark p-2 rounded border border-warning border-opacity-25" x-text="booking.payment_info || 'No payment info recorded.'"></div>
+                        <div class="col-12 pt-2 border-top border-light-subtle">
+                            <div class="small text-primary text-uppercase fw-bold mb-1"><i class="bi bi-journal-text me-1"></i> Payment Info Notes / Remarks</div>
+                            <div class="small text-dark font-monospace bg-white p-2 rounded border border-light-subtle" x-text="booking.payment_info || 'No payment info notes recorded.'"></div>
                         </div>
-                        @endif
                     </div>
                 </div>
             </div>
 
             <!-- Update Form -->
-            <div class="card bg-dark border-secondary mb-4">
-                <div class="card-header bg-dark border-secondary py-2">
-                    <h6 class="mb-0 text-white fw-bold small text-uppercase"><i class="bi bi-pencil me-1 text-info"></i> Update Ticket Details</h6>
+            <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom border-light-subtle py-2">
+                    <h6 class="mb-0 text-dark fw-bold small text-uppercase"><i class="bi bi-pencil me-1 text-primary"></i> Update Ticket Details</h6>
                 </div>
                 <div class="card-body p-3">
-                    <form :action="getUpdateTicketsAction()" @submit="$el.action = getUpdateTicketsAction()" method="POST" class="row g-3">
+                    <form :action="getUpdateTicketsAction()" @submit="$el.action = getUpdateTicketsAction()" method="POST" enctype="multipart/form-data" class="row g-3">
                         @csrf
                         <div class="col-sm-4">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Airline PNR</label>
-                            <input type="text" name="airline_pnr" :value="booking.airline_pnr" placeholder="PNR" class="form-control form-control-sm font-monospace text-info fw-bold">
+                            <input type="text" name="airline_pnr" :value="booking.airline_pnr" placeholder="PNR" class="form-control form-control-sm font-monospace text-primary fw-bold">
                         </div>
                         <div class="col-sm-4">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Trip Type</label>
-                            <select name="trip_type" :value="booking.trip_type || 'one_way'" class="form-select form-select-sm text-white">
+                            <select name="trip_type" :value="booking.trip_type || 'one_way'" class="form-select form-select-sm">
                                 <option value="one_way">One Way</option>
                                 <option value="round_trip">Round Trip</option>
                                 <option value="multi_city">Multi City</option>
@@ -333,25 +341,22 @@
                             <input type="text" name="billing_address" :value="booking.billing_address" placeholder="Full Billing Address" class="form-control form-control-sm">
                         </div>
 
-                        @if(Auth::check() && Auth::user()->role === 'admin')
                         <div class="col-12">
-                            <label class="form-label text-warning small fw-bold text-uppercase d-flex justify-content-between">
-                                <span>Payment Info Notes</span>
-                                <span class="badge bg-warning-subtle text-warning">Admin Only</span>
+                            <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between">
+                                <span>Payment Info Notes / Remarks</span>
                             </label>
-                            <textarea name="payment_info" x-text="booking.payment_info || ''" rows="2" placeholder="Admin Payment Notes..." class="form-control form-control-sm border-warning border-opacity-50"></textarea>
+                            <textarea name="payment_info" x-text="booking.payment_info || ''" rows="2" placeholder="Payment info & remarks notes..." class="form-control form-control-sm"></textarea>
                         </div>
-                        @endif
 
                         <div class="col-12">
                             <label class="form-label text-secondary small fw-bold text-uppercase mb-2">Passenger Tickets & Seats</label>
                             <div class="d-flex flex-column gap-2">
                                 <template x-for="(pax, index) in booking.passengers" :key="pax.id">
-                                    <div class="p-2 bg-body-tertiary rounded border border-secondary d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                                        <div class="small fw-semibold text-white">
+                                    <div class="p-2 bg-light rounded border border-light-subtle d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                                        <div class="small fw-semibold text-dark">
                                             <span x-text="`${pax.pax_index || ''} ${pax.title || ''} ${pax.first_name} ${pax.last_name}`"></span>
                                             <template x-if="pax.dob">
-                                                <span class="badge bg-secondary-subtle text-secondary font-monospace ms-1" x-text="`DOB: ${String(pax.dob).slice(0, 10)}`"></span>
+                                                <span class="badge bg-light text-secondary border border-secondary-subtle font-monospace ms-1" x-text="`DOB: ${String(pax.dob).slice(0, 10)}`"></span>
                                             </template>
                                             <input type="hidden" :name="`passengers[${index}][id]`" :value="pax.id">
                                         </div>
@@ -366,7 +371,12 @@
 
                         <div class="col-12">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Add New Remark (Optional)</label>
-                            <input type="text" name="new_remark" placeholder="Add update note..." class="form-control form-control-sm">
+                            <input type="text" name="new_remark" placeholder="Add update note..." class="form-control form-control-sm mb-2">
+                            <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between">
+                                <span>Attach PDF or Images</span>
+                                <span class="text-muted fw-normal">Optional</span>
+                            </label>
+                            <input type="file" name="new_remark_attachments[]" multiple accept=".pdf,image/png,image/jpeg,image/jpg,image/webp" class="form-control form-control-sm">
                         </div>
 
                         <div class="col-12 text-end">
@@ -379,21 +389,21 @@
             </div>
 
             <!-- Flight Segments -->
-            <div class="card bg-dark border-secondary mb-4">
-                <div class="card-header bg-dark border-secondary py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-white fw-bold small text-uppercase"><i class="bi bi-airplane me-1 text-primary"></i> Flight Segments</h6>
+            <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom border-light-subtle py-2 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-dark fw-bold small text-uppercase"><i class="bi bi-airplane me-1 text-primary"></i> Flight Segments</h6>
                     <span class="badge bg-primary-subtle text-primary font-monospace" x-text="`${(booking.flight_segments || booking.booking_flights || []).length} Segments`"></span>
                 </div>
                 <div class="card-body p-3">
                     <div class="d-flex flex-column gap-2">
                         <template x-for="(flight, fIdx) in (booking.flight_segments && booking.flight_segments.length > 0 ? booking.flight_segments : (booking.booking_flights || []))" :key="flight.id || fIdx">
-                            <div class="p-2 bg-body-tertiary rounded border border-secondary d-flex justify-content-between align-items-center">
+                            <div class="p-2 bg-light rounded border border-light-subtle d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="fw-semibold text-white small" x-text="`Segment #${flight.segment_number || (fIdx + 1)}: ${flight.operating_carrier || ''} ${flight.flight_number}`"></div>
+                                    <div class="fw-semibold text-dark small" x-text="`Segment #${flight.segment_number || (fIdx + 1)}: ${flight.operating_carrier || ''} ${flight.flight_number}`"></div>
                                     <div class="text-secondary" style="font-size: 0.75rem;" x-text="`${flight.origin_airport} ➔ ${flight.destination_airport} | Class: ${flight.booking_class || 'N/A'} ${flight.cabin ? '(' + flight.cabin + ')' : ''}`"></div>
                                 </div>
                                 <div class="text-end">
-                                    <div class="text-info font-monospace" style="font-size: 0.75rem;" x-text="formatDateTime(flight.departure_time)"></div>
+                                    <div class="text-primary font-monospace" style="font-size: 0.75rem;" x-text="formatDateTime(flight.departure_time)"></div>
                                     <div class="text-muted" style="font-size: 0.7rem;">Departure</div>
                                 </div>
                             </div>
@@ -403,19 +413,40 @@
             </div>
 
             <!-- Remarks History -->
-            <div class="card bg-dark border-secondary">
-                <div class="card-header bg-dark border-secondary py-2">
-                    <h6 class="mb-0 text-white fw-bold small text-uppercase"><i class="bi bi-clock-history me-1 text-success"></i> Remarks History</h6>
+            <div class="card bg-white border-light-subtle shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom border-light-subtle py-2">
+                    <h6 class="mb-0 text-dark fw-bold small text-uppercase"><i class="bi bi-clock-history me-1 text-success"></i> Remarks History</h6>
                 </div>
                 <div class="card-body p-3">
                     <div class="d-flex flex-column gap-2">
                         <template x-for="remark in booking.booking_remarks" :key="remark.id">
-                            <div class="p-2 bg-body-tertiary rounded border border-secondary">
+                            <div class="p-2 bg-light rounded border border-light-subtle">
                                 <div class="d-flex justify-content-between align-items-center text-secondary mb-1" style="font-size: 0.75rem;">
-                                    <span class="fw-bold text-info" x-text="remark.user ? remark.user.alias_name : 'System'"></span>
+                                    <span class="fw-bold text-primary" x-text="remark.user ? remark.user.alias_name : 'System'"></span>
                                     <span x-text="formatDate(remark.created_at)"></span>
                                 </div>
-                                <div class="small text-white-50" x-text="remark.remark"></div>
+                                <div class="small text-dark fw-medium" x-text="remark.remark"></div>
+
+                                <!-- File Attachments Display -->
+                                <template x-if="remark.attachments_data && remark.attachments_data.length > 0">
+                                    <div class="mt-2 pt-2 border-top border-light-subtle d-flex flex-wrap gap-2">
+                                        <template x-for="(file, fIdx) in remark.attachments_data" :key="fIdx">
+                                            <div>
+                                                <template x-if="isImageFile(file)">
+                                                    <a :href="getFileUrl(file)" target="_blank" class="d-inline-block text-decoration-none me-1 mb-1" title="Click to open image preview">
+                                                        <img :src="getFileUrl(file)" :alt="file.original_name" class="rounded border shadow-sm" style="max-height: 100px; max-width: 140px; object-fit: cover;">
+                                                    </a>
+                                                </template>
+                                                <template x-if="!isImageFile(file)">
+                                                    <a :href="getFileUrl(file)" target="_blank" class="btn btn-outline-danger btn-sm py-1 px-2 font-monospace small d-inline-flex align-items-center gap-1 shadow-sm me-1 mb-1" title="Click to view PDF document">
+                                                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
+                                                        <span x-text="file.original_name || 'Document.pdf'"></span>
+                                                    </a>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -425,25 +456,25 @@
     </div>
 </div>
 
-<!-- Assign Ticketing Modal -->
-<div x-show="assignModalOpen" x-cloak style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1055; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);" class="d-flex align-items-center justify-content-center" tabindex="-1">
+<!-- Assign Ticketing Modal Popup -->
+<div x-show="assignModalOpen" x-cloak style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="d-flex align-items-center justify-content-center" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered w-100" style="max-width: 500px;">
-        <div class="modal-content card bg-dark border-primary shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-dark border-primary d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2">
+        <div class="modal-content card bg-white border-0 shadow-lg w-100" style="pointer-events: auto;">
+            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
                     <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
                 </h5>
-                <button type="button" @click="assignModalOpen = false" class="btn-close btn-close-white"></button>
+                <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
             </div>
             <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
                 @csrf
                 <div class="card-body p-4">
                     <p class="text-secondary small mb-3">
-                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-white" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
+                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-primary" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
                     </p>
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
-                        <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select border-primary">
+                        <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select">
                             <option value="">-- Choose Ticketing Team Member --</option>
                             @foreach($ticketingAgents as $tAgent)
                                 <option value="{{ $tAgent->id }}">
@@ -453,7 +484,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="card-footer bg-dark border-secondary d-flex justify-content-end gap-2 py-3">
+                <div class="card-footer bg-light border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
                     <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
                         <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
@@ -463,8 +494,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script>
     function dashboardState() {
@@ -539,6 +568,20 @@
             capitalize(str) {
                 if (!str) return '';
                 return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            },
+
+            isImageFile(file) {
+                if (!file) return false;
+                if (file.file_type === 'image') return true;
+                const name = file.original_name || file.file_path || '';
+                return /\.(png|jpe?g|webp|gif|svg)$/i.test(name);
+            },
+
+            getFileUrl(file) {
+                if (!file) return '#';
+                if (file.file_url && file.file_url !== '#') return file.file_url;
+                if (file.file_path) return '/storage/' + file.file_path.replace(/^\/+/, '');
+                return '#';
             }
         };
     }

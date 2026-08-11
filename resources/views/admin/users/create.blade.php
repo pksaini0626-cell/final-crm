@@ -59,6 +59,7 @@
                         <select name="role" required class="form-select">
                             <option value="agent" {{ old('role') === 'agent' ? 'selected' : '' }}>Agent</option>
                             <option value="ticketing" {{ old('role') === 'ticketing' ? 'selected' : '' }}>Ticketing Agent</option>
+                            <option value="changes" {{ old('role') === 'changes' ? 'selected' : '' }}>Booking Changes Desk</option>
                             <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>

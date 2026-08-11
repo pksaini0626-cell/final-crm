@@ -183,4 +183,88 @@ class ChangeRequestWorkflowTest extends TestCase
                    $mail->changeRequest->status === 'completed';
         });
     }
+
+    public function test_changes_user_can_upload_attachments_and_update_booking_status(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        Mail::fake();
+
+        $changeRequest = ChangeRequest::create([
+            'booking_id' => $this->booking->id,
+            'agent_id' => $this->agent->id,
+            'change_request_text' => 'Itinerary update with media.',
+            'status' => 'pending',
+            'assigned_at' => now(),
+        ]);
+
+        $fakePdf = \Illuminate\Http\UploadedFile::fake()->create('reissued_ticket.pdf', 100, 'application/pdf');
+        $fakeImage = \Illuminate\Http\UploadedFile::fake()->image('screenshot.png');
+
+        $response = $this->actingAs($this->changesUser)
+            ->post(route('changes.update-status', $changeRequest->id), [
+                'status' => 'completed',
+                'booking_status' => 'ticketed',
+                'changes_remark' => 'Updated ticket number and attached reissued PDF.',
+                'attachments' => [$fakePdf, $fakeImage],
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $this->booking->id,
+            'booking_status' => 'ticketed',
+        ]);
+
+        $changeRequest->refresh();
+        $this->assertEquals('completed', $changeRequest->status);
+        $this->assertCount(2, $changeRequest->attachments_data);
+
+        $this->assertDatabaseHas('booking_remarks', [
+            'booking_id' => $this->booking->id,
+            'user_id' => $this->changesUser->id,
+            'type' => 'admin_remark',
+        ]);
+    }
+
+    public function test_extended_change_request_fields_and_statuses(): void
+    {
+        Mail::fake();
+
+        // 1. Agent submits request with request_type
+        $response = $this->actingAs($this->agent)
+            ->post(route('bookings.request-change', $this->booking->id), [
+                'request_type' => 'Flight Date Change',
+                'change_request_text' => 'Shift departure flight to Aug 20.',
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('change_requests', [
+            'booking_id' => $this->booking->id,
+            'request_type' => 'Flight Date Change',
+        ]);
+
+        $changeRequest = ChangeRequest::where('booking_id', $this->booking->id)->latest()->first();
+
+        // 2. Changes team processes request with Paid to Airline, FOP, Final Remark, and custom status (Closed)
+        $response = $this->actingAs($this->changesUser)
+            ->post(route('changes.update-status', $changeRequest->id), [
+                'status' => 'closed',
+                'paid_to_airline' => 'yes',
+                'fop' => 'Credit Card ****9876',
+                'final_remark' => 'Reissued with $50 change fee paid.',
+                'changes_remark' => 'Agent notified of confirmation number.',
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('change_requests', [
+            'id' => $changeRequest->id,
+            'status' => 'closed',
+            'paid_to_airline' => 'yes',
+            'fop' => 'Credit Card ****9876',
+            'final_remark' => 'Reissued with $50 change fee paid.',
+            'closed_by_user_id' => $this->changesUser->id,
+        ]);
+    }
 }

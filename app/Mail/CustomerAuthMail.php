@@ -64,6 +64,7 @@ class CustomerAuthMail extends Mailable
                 'dob_correction' => 'Corrección de Fecha de Nacimiento',
                 'pet_in_cabin' => 'Mascota en Cabina',
                 'ancillary_refund' => 'Reembolso de Servicios Adicionales',
+                'infant_ticket' => 'Boleto de Infante',
                 default => 'Reserva de Vuelo'
             };
             $defaultSubject = "Autorización para {$airlineName} {$serviceNameEs} Confirmación #{$pnr}";
@@ -81,13 +82,14 @@ class CustomerAuthMail extends Mailable
                 'dob_correction' => 'D.O.B Correction',
                 'pet_in_cabin' => 'Pet In Cabin',
                 'ancillary_refund' => 'Ancillary Refund',
+                'infant_ticket' => 'Infant Ticket',
                 default => ucwords(str_replace('_', ' ', $booking->service_provided ?: 'Booking'))
             };
             $defaultSubject = "Authorization for {$airlineName} {$serviceNameEn} Booking Confirmation #{$pnr}";
         }
 
         $this->customSubject = $customSubject ?: $defaultSubject;
-        $this->fromEmail = $fromEmail ?: (config('mail.from.address') ?: 'reservation@travelomile.com');
+        $this->fromEmail = (filter_var($fromEmail, FILTER_VALIDATE_EMAIL) ? $fromEmail : null) ?: (config('mail.from.address') ?: 'reservation@travelomile.com');
         $this->fromName = $fromName ?: 'Reservation Desk';
         $this->customNote = $customNote ?: '';
         $this->agentName = $agentName ?: ($booking->agent ? $booking->agent->name : 'Agent Desk');

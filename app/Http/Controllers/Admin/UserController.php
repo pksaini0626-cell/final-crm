@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -55,7 +56,7 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'contact' => 'nullable|string|max:255',
             'extension' => 'nullable|string|max:255',
-            'role' => 'required|in:admin,manager,agent,ticketing',
+            'role' => 'required|in:admin,manager,agent,ticketing,changes',
             'agent_language' => 'nullable|in:english,spanish,both',
             'joining_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
@@ -64,7 +65,12 @@ class UserController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->has('is_active');
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => $validated['role']]);
+            $user->syncRoles([$validated['role']]);
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -89,7 +95,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6',
             'contact' => 'nullable|string|max:255',
             'extension' => 'nullable|string|max:255',
-            'role' => 'required|in:admin,manager,agent,ticketing',
+            'role' => 'required|in:admin,manager,agent,ticketing,changes',
             'agent_language' => 'nullable|in:english,spanish,both',
             'joining_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
@@ -104,6 +110,11 @@ class UserController extends Controller
         $validated['is_active'] = $request->has('is_active');
 
         $user->update($validated);
+
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::firstOrCreate(['name' => $validated['role']]);
+            $user->syncRoles([$validated['role']]);
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
@@ -120,5 +131,21 @@ class UserController extends Controller
         $status = $user->is_active ? 'activated' : 'deactivated';
 
         return redirect()->back()->with('success', "User {$user->alias_name} has been {$status}.");
+    }
+
+    /**
+     * Delete a user permanently from CRM.
+     */
+    public function destroy(User $user)
+    {
+        if (Auth::id() === $user->id) {
+            return redirect()->back()->with('error', 'You cannot delete your own admin account.');
+        }
+
+        $alias = $user->alias_name ?: $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "User '{$alias}' has been permanently deleted from CRM.");
     }
 }

@@ -88,6 +88,24 @@ class AdminWorkflowTest extends TestCase
             ->assertStatus(200);
     }
 
+    public function test_admin_user_create_page_loads(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.users.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.users.create');
+    }
+
+    public function test_admin_user_store_validation_redirects_with_errors(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.users.store'), []);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['name', 'alias_name', 'email', 'password', 'role']);
+    }
+
     /**
      * Test User CRUD operations and active status toggling.
      */
@@ -196,6 +214,29 @@ class AdminWorkflowTest extends TestCase
 
         $this->assertDatabaseMissing('bookings', [
             'id' => $this->booking->id,
+        ]);
+    }
+
+    /**
+     * Test admin permanent user deletion.
+     */
+    public function test_admin_can_permanently_delete_user(): void
+    {
+        $userToDelete = User::create([
+            'name' => 'Temporary User',
+            'alias_name' => 'Temp U',
+            'email' => 'temp@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'agent',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->delete(route('admin.users.destroy', $userToDelete));
+
+        $response->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $userToDelete->id,
         ]);
     }
 }
