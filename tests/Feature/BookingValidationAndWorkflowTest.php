@@ -84,7 +84,7 @@ class BookingValidationAndWorkflowTest extends TestCase
             'total_mco' => 100.00,
             'payment_status' => 'pending',
             'passengers' => [
-                ['first_name' => 'John', 'last_name' => 'Doe', 'title' => 'MR', 'dob' => '1990-01-01']
+                ['first_name' => 'John', 'last_name' => 'Doe', 'title' => 'MR', 'dob' => '1990-01-01', 'gender' => 'M']
             ]
         ]);
 
@@ -94,6 +94,36 @@ class BookingValidationAndWorkflowTest extends TestCase
             'airline_pnr' => 'AA1234',
             'booking_status' => 'booking_generated',
         ]);
+
+        $this->assertDatabaseHas('passengers', [
+            'first_name' => 'John',
+            'gender' => 'M',
+        ]);
+    }
+
+    public function test_booking_requires_mandatory_gender_field(): void
+    {
+        $response = $this->actingAs($this->agent)->post('/bookings', [
+            'booking_date' => date('Y-m-d'),
+            'call_type' => 'meta',
+            'vertical' => 'flight',
+            'service_provided' => 'new_booking',
+            'booking_portal' => 'gds',
+            'airline_pnr' => 'AA5678',
+            'merchant' => 'Travelomile',
+            'card_last_4' => '4321',
+            'email_address' => 'customer2@example.com',
+            'currency' => 'USD',
+            'total_amount' => 500.00,
+            'paid_to_airline' => 400.00,
+            'total_mco' => 100.00,
+            'payment_status' => 'pending',
+            'passengers' => [
+                ['first_name' => 'Jane', 'last_name' => 'Doe', 'title' => 'MS', 'dob' => '1992-02-02']
+            ]
+        ]);
+
+        $response->assertSessionHasErrors(['passengers.0.gender']);
     }
 
     /**

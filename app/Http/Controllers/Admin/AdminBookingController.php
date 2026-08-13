@@ -125,17 +125,80 @@ class AdminBookingController extends Controller
             'airline_pnr' => 'nullable|string',
             'gk_pnr' => 'nullable|string',
             'payment_info' => 'nullable|string',
+            'passengers' => 'nullable|array',
+            'passengers.*.id' => 'nullable|integer',
+            'passengers.*.title' => 'nullable|string|max:50',
+            'passengers.*.first_name' => 'nullable|string|max:255',
+            'passengers.*.middle_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'nullable|string|max:255',
+            'passengers.*.gender' => 'nullable|in:M,F,O',
+            'passengers.*.dob' => 'nullable|string',
+            'passengers.*.ticket_number' => 'nullable|string|max:255',
+            'passengers.*.seat_number' => 'nullable|string|max:255',
+            'flights' => 'nullable|array',
+            'flights.*.operating_carrier' => 'nullable|string|max:255',
+            'flights.*.flight_number' => 'nullable|string|max:255',
+            'flights.*.origin_airport' => 'nullable|string|max:255',
+            'flights.*.destination_airport' => 'nullable|string|max:255',
+            'flights.*.departure_time' => 'nullable|string',
+            'flights.*.arrival_time' => 'nullable|string',
+            'flights.*.booking_class' => 'nullable|string|max:10',
+            'flights.*.status' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($validated, $booking) {
+        DB::transaction(function () use ($request, $validated, $booking) {
             $booking->update($validated);
+
+            if ($request->has('passengers')) {
+                foreach ($request->input('passengers') as $paxData) {
+                    if (!empty($paxData['id'])) {
+                        $passenger = $booking->passengers()->find($paxData['id']);
+                        if ($passenger) {
+                            $passenger->update([
+                                'title' => $paxData['title'] ?? $passenger->title,
+                                'first_name' => $paxData['first_name'] ?? $passenger->first_name,
+                                'middle_name' => array_key_exists('middle_name', $paxData) ? $paxData['middle_name'] : $passenger->middle_name,
+                                'last_name' => $paxData['last_name'] ?? $passenger->last_name,
+                                'gender' => $paxData['gender'] ?? $passenger->gender,
+                                'dob' => !empty($paxData['dob']) ? $paxData['dob'] : $passenger->dob,
+                                'ticket_number' => array_key_exists('ticket_number', $paxData) ? $paxData['ticket_number'] : $passenger->ticket_number,
+                                'seat_number' => array_key_exists('seat_number', $paxData) ? $paxData['seat_number'] : $passenger->seat_number,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            if ($request->has('flights')) {
+                $booking->bookingFlights()->delete();
+                $booking->flightSegments()->delete();
+                foreach ($request->input('flights') as $idx => $flightData) {
+                    if (!empty($flightData['flight_number']) || !empty($flightData['origin_airport']) || !empty($flightData['destination_airport'])) {
+                        $segmentData = array_merge($flightData, [
+                            'segment_number' => $idx + 1,
+                        ]);
+                        $booking->bookingFlights()->create($flightData);
+                        $booking->flightSegments()->create($segmentData);
+                    }
+                }
+            }
+
+            $roleLabel = match(Auth::user()->role) {
+                'ticketing' => 'Ticketing Agent',
+                'manager' => 'Manager',
+                default => 'Administrator'
+            };
 
             $booking->bookingRemarks()->create([
                 'user_id' => Auth::id(),
-                'remark' => 'Booking updated by Administrator.',
+                'remark' => "Booking updated by {$roleLabel}.",
                 'type' => 'admin_remark',
             ]);
         });
+
+        if (Auth::user()->role === 'ticketing') {
+            return redirect()->route('manager.tickets.index')->with('success', 'Booking updated successfully.');
+        }
 
         return redirect()->route('admin.bookings.index')->with('success', 'Booking updated successfully.');
     }

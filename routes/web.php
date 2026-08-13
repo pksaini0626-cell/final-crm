@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Admin\MerchantController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminBookingController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\Manager\TicketController;
@@ -22,6 +23,7 @@ Route::get('/booking/authorize/{booking}/{hash}', [CustomerAuthController::class
 Route::post('/booking/authorize/{booking}/{hash}', [CustomerAuthController::class, 'approve'])->name('customer.authorize.approve');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/pnr/parse', [\App\Http\Controllers\Api\PnrController::class, 'parse'])->name('pnr.parse');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
@@ -63,8 +65,19 @@ Route::middleware(['auth', 'role:manager|admin|ticketing'])->group(function () {
     Route::post('/manager/tickets/{booking}/send', [TicketController::class, 'sendETicket'])->name('manager.tickets.send');
 });
 
+// Booking Edit & Update (Accessible to Admin, Manager, and Ticketing)
+Route::middleware(['auth', 'role:admin|manager|ticketing'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
+});
+
 // Admin Panel Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    });
     // Merchant Management
     Route::get('/merchants', [MerchantController::class, 'index'])->name('merchants.index');
     Route::get('/merchants/create', [MerchantController::class, 'create'])->name('merchants.create');
@@ -86,8 +99,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Admin Booking Management & CSV Export
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/export', [ExportController::class, 'export'])->name('bookings.export');
-    Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
-    Route::put('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{booking}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
     Route::post('/bookings/{booking}/add-admin-remark', [AdminBookingController::class, 'addAdminRemark'])->name('bookings.add-admin-remark');
     Route::post('/bookings/{booking}/update-case-status', [AdminBookingController::class, 'updateCaseStatus'])->name('bookings.update-case-status');

@@ -105,6 +105,7 @@
                                     <tr style="background-color: #f1f5f9;">
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1; width: 45px;">No.</th>
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Passenger Name</th>
+                                        <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1; width: 70px;">Gender</th>
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Ticket Number</th>
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1; width: 90px;">Seat #</th>
                                     </tr>
@@ -116,6 +117,9 @@
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #0f172a; font-weight: bold;">
                                                 {{ trim(($pax->title ? $pax->title . ' ' : '') . $pax->first_name . ($pax->middle_name ? ' ' . $pax->middle_name : '') . ($pax->last_name ? ' ' . $pax->last_name : '')) }}
                                             </td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">
+                                                {{ $pax->gender ?: 'N/A' }}
+                                            </td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #0284c7; font-family: monospace; font-weight: bold;">
                                                 {{ $pax->ticket_number ?: 'TICKETED / ISSUED' }}
                                             </td>
@@ -125,7 +129,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" style="padding: 12px; text-align: center; color: #64748b; border: 1px solid #e2e8f0;">No passenger records attached.</td>
+                                            <td colspan="5" style="padding: 12px; text-align: center; color: #64748b; border: 1px solid #e2e8f0;">No passenger records attached.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -231,6 +235,15 @@
                                             </table>
                                         </td>
                                     </tr>
+
+                                    <!-- Transit / Layover Banner Row -->
+                                    @if(!empty($flight->transit_text))
+                                        <tr>
+                                            <td align="center" style="background-color: #f1f5f9; padding: 6px 10px; font-size: 11px; font-weight: bold; color: #334155; border-top: 1px solid #e2e8f0; text-align: center;">
+                                                &#x1F550; {{ $flight->transit_text }}
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </table>
                             @empty
                                 <div style="padding: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; color: #64748b; font-size: 13px;">

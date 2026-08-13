@@ -5,13 +5,13 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
-                <i class="bi bi-pencil-square text-primary"></i> Admin Edit: Booking <span class="font-monospace text-primary">#{{ $booking->booking_id }}</span>
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-pencil-square text-primary"></i> Edit Booking <span class="font-monospace text-primary">#{{ $booking->booking_id }}</span>
             </h1>
-            <p class="text-secondary small mb-0">Full administrator override controls for all booking parameters.</p>
+            <p class="text-secondary small mb-0">Full override controls for all booking parameters.</p>
         </div>
-        <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-secondary btn-sm fw-semibold d-inline-flex align-items-center gap-2">
-            <i class="bi bi-arrow-left"></i> Back to Global List
+        <a href="{{ Auth::user()->role === 'ticketing' ? route('manager.tickets.index') : route('admin.bookings.index') }}" class="btn btn-outline-secondary btn-sm fw-semibold d-inline-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>
 
@@ -176,6 +176,88 @@
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Total MCO <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="total_mco" value="{{ old('total_mco', $booking->total_mco) }}" required class="form-control font-monospace fw-bold text-success">
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passenger Names & Roster Details -->
+        <div class="card bg-white border-light-subtle shadow-sm">
+            <div class="card-header bg-white border-bottom border-light-subtle py-3">
+                <h2 class="h6 font-bold text-dark mb-0 text-uppercase d-flex align-items-center gap-2">
+                    <i class="bi bi-people-fill text-primary"></i> Passenger Names &amp; Details
+                </h2>
+            </div>
+            <div class="card-body p-4">
+                <div class="vstack gap-3">
+                    @foreach($booking->passengers as $idx => $pax)
+                        <div class="p-3 bg-light rounded border border-light-subtle">
+                            <input type="hidden" name="passengers[{{ $idx }}][id]" value="{{ $pax->id }}">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fw-bold">
+                                    Passenger #{{ $idx + 1 }}
+                                </span>
+                            </div>
+                            <div class="row g-3">
+                                <!-- Title -->
+                                <div class="col-md-2">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Title</label>
+                                    <select name="passengers[{{ $idx }}][title]" class="form-select">
+                                        <option value="MR" {{ old("passengers.{$idx}.title", strtoupper($pax->title ?? '')) === 'MR' ? 'selected' : '' }}>MR</option>
+                                        <option value="MRS" {{ old("passengers.{$idx}.title", strtoupper($pax->title ?? '')) === 'MRS' ? 'selected' : '' }}>MRS</option>
+                                        <option value="MS" {{ old("passengers.{$idx}.title", strtoupper($pax->title ?? '')) === 'MS' ? 'selected' : '' }}>MS</option>
+                                        <option value="MISS" {{ old("passengers.{$idx}.title", strtoupper($pax->title ?? '')) === 'MISS' ? 'selected' : '' }}>MISS</option>
+                                        <option value="MSTR" {{ old("passengers.{$idx}.title", strtoupper($pax->title ?? '')) === 'MSTR' ? 'selected' : '' }}>MSTR</option>
+                                    </select>
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="passengers[{{ $idx }}][first_name]" value="{{ old("passengers.{$idx}.first_name", $pax->first_name) }}" required class="form-control">
+                                </div>
+
+                                <!-- Middle Name -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Middle Name</label>
+                                    <input type="text" name="passengers[{{ $idx }}][middle_name]" value="{{ old("passengers.{$idx}.middle_name", $pax->middle_name) }}" class="form-control">
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-md-4">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="passengers[{{ $idx }}][last_name]" value="{{ old("passengers.{$idx}.last_name", $pax->last_name) }}" required class="form-control">
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Gender</label>
+                                    <select name="passengers[{{ $idx }}][gender]" class="form-select">
+                                        <option value="M" {{ old("passengers.{$idx}.gender", $pax->gender) === 'M' ? 'selected' : '' }}>Male (M)</option>
+                                        <option value="F" {{ old("passengers.{$idx}.gender", $pax->gender) === 'F' ? 'selected' : '' }}>Female (F)</option>
+                                        <option value="O" {{ old("passengers.{$idx}.gender", $pax->gender) === 'O' ? 'selected' : '' }}>Other (O)</option>
+                                    </select>
+                                </div>
+
+                                <!-- DOB -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Date of Birth (DOB)</label>
+                                    <input type="date" name="passengers[{{ $idx }}][dob]" value="{{ old("passengers.{$idx}.dob", $pax->dob ? ($pax->dob instanceof \DateTimeInterface ? $pax->dob->format('Y-m-d') : substr($pax->dob, 0, 10)) : '') }}" class="form-control font-monospace">
+                                </div>
+
+                                <!-- Ticket Number -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Ticket Number</label>
+                                    <input type="text" name="passengers[{{ $idx }}][ticket_number]" value="{{ old("passengers.{$idx}.ticket_number", $pax->ticket_number) }}" class="form-control font-monospace text-primary fw-bold">
+                                </div>
+
+                                <!-- Seat Number -->
+                                <div class="col-md-3">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Seat Number</label>
+                                    <input type="text" name="passengers[{{ $idx }}][seat_number]" value="{{ old("passengers.{$idx}.seat_number", $pax->seat_number) }}" class="form-control font-monospace">
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>

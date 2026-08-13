@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
+use App\Mail\AuthApprovedAgentNotificationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
@@ -86,9 +88,19 @@ class BookingController extends Controller
                 ->get();
         }
 
+        $approvedAuthBookings = collect();
+        if ($user && ($user->role === 'agent' || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])))) {
+            $approvedAuthBookings = Booking::where('agent_id', $user->id)
+                ->where('booking_status', 'email_auth_done')
+                ->with(['agent', 'passengers', 'bookingFlights'])
+                ->latest('updated_at')
+                ->take(5)
+                ->get();
+        }
+
         $ticketingAgents = \App\Models\User::where('role', 'ticketing')->where('is_active', true)->orderBy('alias_name')->get();
 
-        return view('bookings.index', compact('bookings', 'pendingAuthBookings', 'ticketingAgents'));
+        return view('bookings.index', compact('bookings', 'pendingAuthBookings', 'approvedAuthBookings', 'ticketingAgents'));
     }
 
     /**
@@ -278,6 +290,15 @@ class BookingController extends Controller
             'passengers.*.id' => 'required_with:passengers|exists:passengers,id',
             'passengers.*.ticket_number' => 'nullable|string|max:255',
             'passengers.*.seat_number' => 'nullable|string|max:255',
+            'flights' => 'nullable|array',
+            'flights.*.operating_carrier' => 'nullable|string|max:255',
+            'flights.*.flight_number' => 'nullable|string|max:255',
+            'flights.*.origin_airport' => 'nullable|string|max:255',
+            'flights.*.destination_airport' => 'nullable|string|max:255',
+            'flights.*.departure_time' => 'nullable|string',
+            'flights.*.arrival_time' => 'nullable|string',
+            'flights.*.booking_class' => 'nullable|string|max:10',
+            'flights.*.status' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request, $booking) {
@@ -310,6 +331,20 @@ class BookingController extends Controller
                             'ticket_number' => $paxData['ticket_number'] ?? null,
                             'seat_number' => $paxData['seat_number'] ?? null,
                         ]);
+                    }
+                }
+            }
+
+            if ($request->has('flights')) {
+                $booking->bookingFlights()->delete();
+                $booking->flightSegments()->delete();
+                foreach ($request->input('flights') as $idx => $flightData) {
+                    if (!empty($flightData['flight_number']) || !empty($flightData['origin_airport']) || !empty($flightData['destination_airport'])) {
+                        $segmentData = array_merge($flightData, [
+                            'segment_number' => $idx + 1,
+                        ]);
+                        $booking->bookingFlights()->create($flightData);
+                        $booking->flightSegments()->create($segmentData);
                     }
                 }
             }
@@ -484,18 +519,30 @@ class BookingController extends Controller
     {
         abort_if(!Auth::user()->hasAnyRole(['admin', 'manager']), 403);
 
-        DB::transaction(function () use ($booking) {
+        $approver = Auth::user();
+
+        DB::transaction(function () use ($booking, $approver) {
             $booking->update([
                 'booking_status' => 'email_auth_done',
             ]);
 
             $booking->bookingRemarks()->create([
-                'user_id' => Auth::id(),
-                'remark' => 'Customer Email Authorization approved by ' . strtoupper(Auth::user()->role) . ' (' . Auth::user()->name . '). Status updated to: EMAIL AUTH DONE.',
+                'user_id' => $approver->id,
+                'remark' => 'Customer Email Authorization approved by ' . strtoupper($approver->role) . ' (' . $approver->name . '). Status updated to: EMAIL AUTH DONE.',
                 'type' => 'admin_remark',
             ]);
         });
 
-        return redirect()->back()->with('success', 'Customer authorization approved successfully for Booking #' . $booking->booking_id . '. Status updated to EMAIL AUTH DONE.');
+        // Dispatch Email Notification to the agent who created the booking
+        $booking->load('agent');
+        if ($booking->agent && filter_var($booking->agent->email, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($booking->agent->email)->send(new AuthApprovedAgentNotificationMail($booking, $approver));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send auth approval email to agent: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('success', 'Customer authorization approved successfully for Booking #' . $booking->booking_id . '. Status updated to EMAIL AUTH DONE & notification email sent to agent.');
     }
 }

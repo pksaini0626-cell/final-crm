@@ -250,9 +250,10 @@
                 <tr>
                     <th style="width: 45px;">S. No.</th>
                     <th>Passenger Name</th>
-                    <th style="width: 80px;">Title</th>
-                    <th style="width: 160px;">Ticket Number</th>
-                    <th style="width: 80px;">Seat #</th>
+                    <th style="width: 60px;">Title</th>
+                    <th style="width: 60px;">Gender</th>
+                    <th style="width: 150px;">Ticket Number</th>
+                    <th style="width: 60px;">Seat #</th>
                 </tr>
             </thead>
             <tbody>
@@ -263,6 +264,7 @@
                             {{ trim($passenger->first_name . ($passenger->middle_name ? ' ' . $passenger->middle_name : '') . ($passenger->last_name ? ' ' . $passenger->last_name : '')) }}
                         </td>
                         <td>{{ $passenger->title ?: 'ADT' }}</td>
+                        <td style="text-align: center;">{{ $passenger->gender ?: 'N/A' }}</td>
                         <td style="font-family: monospace; font-weight: bold; color: #0284c7;">
                             {{ $passenger->ticket_number ?: 'TICKETED / ISSUED' }}
                         </td>
@@ -272,7 +274,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #64748b; font-style: italic;">No passenger records attached.</td>
+                        <td colspan="6" style="text-align: center; color: #64748b; font-style: italic;">No passenger records attached.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -375,22 +377,11 @@
                 </div>
             </div>
 
-            <!-- Connection Layover Bar -->
-            @if(isset($emailFlights[$index + 1]))
-                @php
-                    $arrival = $flight->arrival_time;
-                    $nextDeparture = $emailFlights[$index + 1]->departure_time;
-                @endphp
-                @if($arrival && $nextDeparture)
-                    @php
-                        $diff = $arrival->diff($nextDeparture);
-                        $hours = ($diff->days * 24) + $diff->h;
-                        $minutes = $diff->i;
-                    @endphp
-                    <div class="layover-bar">
-                        Connection Layover in {{ $flight->destination_airport }} ({{ $hours }}h {{ $minutes }}m)
-                    </div>
-                @endif
+            <!-- Connection Layover Bar (Only from PNR Expert if available) -->
+            @if(!empty($flight->transit_text))
+                <div class="layover-bar">
+                    {{ $flight->transit_text }}
+                </div>
             @endif
         @empty
             <p style="font-style: italic; color: #64748b; text-align: center;">No flight details attached to this booking.</p>

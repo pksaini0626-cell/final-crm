@@ -133,6 +133,10 @@ class TicketController extends Controller
         $request->validate([
             'trip_type' => 'nullable|in:one_way,round_trip,multi_city',
             'passengers' => 'nullable|array',
+            'passengers.*.title' => 'nullable|string|max:50',
+            'passengers.*.first_name' => 'nullable|string|max:255',
+            'passengers.*.middle_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'nullable|string|max:255',
             'passengers.*.ticket_number' => 'nullable|string|max:255',
             'passengers.*.seat_number' => 'nullable|string|max:255',
         ]);
@@ -147,8 +151,12 @@ class TicketController extends Controller
                     $passenger = $booking->passengers()->find($paxId);
                     if ($passenger) {
                         $passenger->update([
-                            'ticket_number' => $paxData['ticket_number'] ?? $passenger->ticket_number,
-                            'seat_number' => $paxData['seat_number'] ?? $passenger->seat_number,
+                            'title' => $paxData['title'] ?? $passenger->title,
+                            'first_name' => $paxData['first_name'] ?? $passenger->first_name,
+                            'middle_name' => array_key_exists('middle_name', $paxData) ? $paxData['middle_name'] : $passenger->middle_name,
+                            'last_name' => $paxData['last_name'] ?? $passenger->last_name,
+                            'ticket_number' => array_key_exists('ticket_number', $paxData) ? $paxData['ticket_number'] : $passenger->ticket_number,
+                            'seat_number' => array_key_exists('seat_number', $paxData) ? $paxData['seat_number'] : $passenger->seat_number,
                         ]);
                     }
                 }
@@ -156,12 +164,12 @@ class TicketController extends Controller
 
             $booking->bookingRemarks()->create([
                 'user_id' => Auth::id(),
-                'remark' => "Updated passenger ticket/seat numbers and trip type.",
+                'remark' => "Updated passenger names, ticket/seat numbers, and trip type.",
                 'type' => 'admin_remark',
             ]);
         });
 
-        return redirect()->back()->with('success', 'Ticket numbers, seat details, and trip type updated successfully.');
+        return redirect()->back()->with('success', 'Passenger names, ticket numbers, seat details, and trip type updated successfully.');
     }
 
     /**

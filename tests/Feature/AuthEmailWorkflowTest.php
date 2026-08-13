@@ -69,7 +69,7 @@ class AuthEmailWorkflowTest extends TestCase
             'card_holder_name' => 'John Doe',
             'card_last_4' => '1234',
             'passengers' => [
-                ['first_name' => 'John', 'last_name' => 'Doe', 'title' => 'MR', 'dob' => '1990-01-01']
+                ['first_name' => 'John', 'last_name' => 'Doe', 'title' => 'MR', 'dob' => '1990-01-01', 'gender' => 'M']
             ]
         ]);
 

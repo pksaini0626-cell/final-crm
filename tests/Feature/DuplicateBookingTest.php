@@ -173,6 +173,7 @@ class DuplicateBookingTest extends TestCase
                     'first_name' => 'Bob',
                     'last_name' => 'Builder',
                     'dob' => '1990-01-01',
+                    'gender' => 'M',
                 ]
             ],
             'payment_status' => 'pending',

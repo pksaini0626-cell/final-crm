@@ -97,6 +97,7 @@ class BookingDashboardWorkflowTest extends TestCase
                     'first_name' => 'John',
                     'last_name' => 'Doe',
                     'dob' => '1990-01-01',
+                    'gender' => 'M',
                     'ticket_number' => '1234567890',
                     'seat_number' => '12A'
                 ]
@@ -178,6 +179,7 @@ class BookingDashboardWorkflowTest extends TestCase
                     'first_name' => 'John',
                     'last_name' => 'Primary',
                     'dob' => '1990-01-01',
+                    'gender' => 'M',
                     'ticket_number' => '999888777',
                     'seat_number' => '10A'
                 ]

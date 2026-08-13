@@ -51,11 +51,24 @@ class PnrController extends Controller
                     }
                 }
 
+                $titleUpper = strtoupper($title);
+                $gender = $pax['gender'] ?? '';
+                if (!$gender) {
+                    if (in_array($titleUpper, ['MRS', 'MS', 'MISS'])) {
+                        $gender = 'F';
+                    } elseif (in_array($titleUpper, ['MR', 'MSTR'])) {
+                        $gender = 'M';
+                    } else {
+                        $gender = 'M';
+                    }
+                }
+
                 return [
                     'first_name' => $firstName ?: 'PAX',
                     'middle_name' => $pax['middle_name'] ?? '',
                     'last_name' => $lastName ?: '',
-                    'title' => strtoupper($title),
+                    'title' => $titleUpper,
+                    'gender' => $gender,
                     'pax_index' => $pax['pax_index'] ?? ($idx + 1),
                 ];
             })->toArray();

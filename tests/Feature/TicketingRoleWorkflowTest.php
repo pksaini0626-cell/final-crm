@@ -139,4 +139,42 @@ class TicketingRoleWorkflowTest extends TestCase
             'seat_number' => '14B',
         ]);
     }
+
+    /** @test */
+    public function ticketing_user_can_access_full_booking_edit_and_update_all_parameters(): void
+    {
+        // 1. Access edit page
+        $editResponse = $this->actingAs($this->ticketingUser)->get(route('admin.bookings.edit', $this->booking));
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee($this->booking->booking_id);
+
+        // 2. Submit booking update
+        $updatePayload = [
+            'agent_id' => $this->agentUser->id,
+            'booking_date' => now()->format('Y-m-d'),
+            'call_type' => 'meta',
+            'vertical' => 'flight',
+            'trip_type' => 'round_trip',
+            'service_provided' => 'ticketed_booking',
+            'booking_portal' => 'internal_crm',
+            'currency' => 'USD',
+            'total_amount' => 600.00,
+            'paid_to_airline' => 450.00,
+            'total_mco' => 150.00,
+            'booking_status' => 'ticketed',
+            'payment_status' => 'received',
+            'card_last_4' => '9999',
+            'email_address' => 'updated.customer@example.com',
+        ];
+
+        $updateResponse = $this->actingAs($this->ticketingUser)->put(route('admin.bookings.update', $this->booking), $updatePayload);
+        $updateResponse->assertRedirect(route('manager.tickets.index'));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $this->booking->id,
+            'booking_status' => 'ticketed',
+            'payment_status' => 'received',
+            'email_address' => 'updated.customer@example.com',
+        ]);
+    }
 }

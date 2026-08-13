@@ -135,7 +135,7 @@ class AgentLanguageAndSpanishAuthMailTest extends TestCase
                 'payment_status' => 'pending',
                 'email_address' => 'customer@example.com',
                 'passengers' => [
-                    ['first_name' => 'Maria', 'last_name' => 'Garcia', 'title' => 'MS', 'dob' => '1990-01-01']
+                    ['first_name' => 'Maria', 'last_name' => 'Garcia', 'title' => 'MS', 'dob' => '1990-01-01', 'gender' => 'F']
                 ]
             ]);
 

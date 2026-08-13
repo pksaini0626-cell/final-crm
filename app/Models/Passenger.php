@@ -23,6 +23,7 @@ class Passenger extends Model
         'last_name',
         'title',
         'dob',
+        'gender',
         'ticket_number',
         'seat_number',
     ];

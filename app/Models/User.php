@@ -30,6 +30,7 @@ class User extends Authenticatable
         'agent_language',
         'joining_date',
         'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'joining_date' => 'date',
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 

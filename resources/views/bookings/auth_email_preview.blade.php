@@ -38,13 +38,13 @@
         
         <!-- LEFT COLUMN: Email Controls & Settings Form -->
         <div class="col-lg-5">
-            <form id="auth-email-form" action="{{ route('bookings.auth-email.send', $booking->id) }}" method="POST" class="card bg-dark border-secondary shadow-sm">
+            <form id="auth-email-form" action="{{ route('bookings.auth-email.send', $booking->id) }}" method="POST" class="card bg-white border-light-subtle shadow-sm">
                 @csrf
                 <input type="hidden" name="custom_html" id="custom_html_input">
 
-                <div class="card-header bg-dark border-secondary py-3">
-                    <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
-                        <i class="bi bi-sliders text-info"></i> Email Configuration
+                <div class="card-header bg-white border-bottom border-light-subtle py-3">
+                    <h2 class="h6 font-bold text-dark mb-0 text-uppercase d-flex align-items-center gap-2">
+                        <i class="bi bi-sliders text-primary"></i> Email Configuration
                     </h2>
                 </div>
 
@@ -52,7 +52,7 @@
                     <!-- Email Language Selector -->
                     <div>
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Email Template Language <span class="text-danger">*</span></label>
-                        <select name="email_language" onchange="window.location.href='{{ route('bookings.auth-email.preview', $booking->id) }}?lang=' + this.value" class="form-select border-info border-opacity-50 text-white fw-bold">
+                        <select name="email_language" onchange="window.location.href='{{ route('bookings.auth-email.preview', $booking->id) }}?lang=' + this.value" class="form-select font-semibold text-primary">
                             <option value="english" {{ $selectedLanguage === 'english' ? 'selected' : '' }}>English (Inglés)</option>
                             <option value="spanish" {{ $selectedLanguage === 'spanish' ? 'selected' : '' }}>Spanish (Español)</option>
                         </select>
@@ -86,7 +86,7 @@
                     </div>
 
                     <!-- Agent Signature Details -->
-                    <div class="row g-2 pt-2 border-top border-secondary">
+                    <div class="row g-2 pt-2 border-top border-light-subtle">
                         <div class="col-sm-6">
                             <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Agent Name</label>
                             <input type="text" name="agent_name" value="{{ old('agent_name', $agentName) }}" class="form-control">
@@ -98,13 +98,13 @@
                     </div>
 
                     <!-- Summary Callout -->
-                    <div class="p-3 bg-body-tertiary rounded border border-secondary small text-secondary">
-                        <div class="fw-bold text-info mb-1 d-flex align-items-center gap-1">
+                    <div class="p-3 bg-light rounded border border-light-subtle small text-secondary">
+                        <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-1">
                             <i class="bi bi-shield-check"></i> Authorization Details
                         </div>
-                        <div><strong class="text-white">Customer:</strong> {{ $booking->card_holder_name ?: 'N/A' }}</div>
-                        <div><strong class="text-white">Card Last 4:</strong> ****-****-****-{{ $booking->card_last_4 ?: 'XXXX' }}</div>
-                        <div><strong class="text-white">Total Amount:</strong> <span class="text-success font-monospace fw-bold">{{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</span></div>
+                        <div><strong class="text-dark">Customer:</strong> {{ $booking->card_holder_name ?: 'N/A' }}</div>
+                        <div><strong class="text-dark">Card Last 4:</strong> ****-****-****-{{ $booking->card_last_4 ?: 'XXXX' }}</div>
+                        <div><strong class="text-dark">Total Amount:</strong> <span class="text-success font-monospace fw-bold">{{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</span></div>
                     </div>
 
                     <!-- Action Buttons -->
@@ -123,12 +123,12 @@
 
         <!-- RIGHT COLUMN: Real-Time Rich Text Editor & Live Preview Pane -->
         <div class="col-lg-7">
-            <div class="card bg-dark border-secondary shadow-sm">
+            <div class="card bg-white border-light-subtle shadow-sm">
                 <!-- Editor Header Toolbar -->
-                <div class="card-header bg-dark border-secondary py-2.5 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="card-header bg-white border-bottom border-light-subtle py-2.5 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div class="d-flex align-items-center gap-2">
-                        <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-1.5">
-                            <i class="bi bi-pencil-square text-success"></i> Rich Text Email Editor ({{ strtoupper($selectedLanguage) }})
+                        <h2 class="h6 font-bold text-dark mb-0 text-uppercase d-flex align-items-center gap-1.5">
+                            <i class="bi bi-pencil-square text-primary"></i> Rich Text Email Editor ({{ strtoupper($selectedLanguage) }})
                         </h2>
                         <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-inline-block">Live Editable</span>
                     </div>
@@ -141,39 +141,39 @@
                 </div>
 
                 <!-- Rich Text Formatting Toolbar -->
-                <div class="bg-body-secondary border-bottom border-secondary p-2 d-flex flex-wrap align-items-center gap-1">
+                <div class="bg-light border-bottom border-light-subtle p-2 d-flex flex-wrap align-items-center gap-1">
                     <div class="btn-group btn-group-sm me-1" role="group" aria-label="Text Formatting">
-                        <button type="button" onclick="formatText('bold')" class="btn btn-outline-light py-1 px-2" title="Bold (Ctrl+B)">
+                        <button type="button" onclick="formatText('bold')" class="btn btn-outline-secondary py-1 px-2" title="Bold (Ctrl+B)">
                             <i class="bi bi-type-bold fw-bold"></i>
                         </button>
-                        <button type="button" onclick="formatText('italic')" class="btn btn-outline-light py-1 px-2" title="Italic (Ctrl+I)">
+                        <button type="button" onclick="formatText('italic')" class="btn btn-outline-secondary py-1 px-2" title="Italic (Ctrl+I)">
                             <i class="bi bi-type-italic"></i>
                         </button>
-                        <button type="button" onclick="formatText('underline')" class="btn btn-outline-light py-1 px-2" title="Underline (Ctrl+U)">
+                        <button type="button" onclick="formatText('underline')" class="btn btn-outline-secondary py-1 px-2" title="Underline (Ctrl+U)">
                             <i class="bi bi-type-underline"></i>
                         </button>
-                        <button type="button" onclick="formatText('strikeThrough')" class="btn btn-outline-light py-1 px-2" title="Strikethrough">
+                        <button type="button" onclick="formatText('strikeThrough')" class="btn btn-outline-secondary py-1 px-2" title="Strikethrough">
                             <i class="bi bi-type-strikethrough"></i>
                         </button>
                     </div>
 
                     <div class="btn-group btn-group-sm me-1" role="group" aria-label="Alignment">
-                        <button type="button" onclick="formatText('justifyLeft')" class="btn btn-outline-light py-1 px-2" title="Align Left">
+                        <button type="button" onclick="formatText('justifyLeft')" class="btn btn-outline-secondary py-1 px-2" title="Align Left">
                             <i class="bi bi-text-left"></i>
                         </button>
-                        <button type="button" onclick="formatText('justifyCenter')" class="btn btn-outline-light py-1 px-2" title="Align Center">
+                        <button type="button" onclick="formatText('justifyCenter')" class="btn btn-outline-secondary py-1 px-2" title="Align Center">
                             <i class="bi bi-text-center"></i>
                         </button>
-                        <button type="button" onclick="formatText('justifyRight')" class="btn btn-outline-light py-1 px-2" title="Align Right">
+                        <button type="button" onclick="formatText('justifyRight')" class="btn btn-outline-secondary py-1 px-2" title="Align Right">
                             <i class="bi bi-text-right"></i>
                         </button>
                     </div>
 
                     <div class="btn-group btn-group-sm me-1" role="group" aria-label="Lists">
-                        <button type="button" onclick="formatText('insertUnorderedList')" class="btn btn-outline-light py-1 px-2" title="Bullet List">
+                        <button type="button" onclick="formatText('insertUnorderedList')" class="btn btn-outline-secondary py-1 px-2" title="Bullet List">
                             <i class="bi bi-list-ul"></i>
                         </button>
-                        <button type="button" onclick="formatText('insertOrderedList')" class="btn btn-outline-light py-1 px-2" title="Numbered List">
+                        <button type="button" onclick="formatText('insertOrderedList')" class="btn btn-outline-secondary py-1 px-2" title="Numbered List">
                             <i class="bi bi-list-ol"></i>
                         </button>
                     </div>
@@ -185,7 +185,7 @@
                     </div>
 
                     <div class="btn-group btn-group-sm" role="group" aria-label="Insert Link">
-                        <button type="button" onclick="addLink()" class="btn btn-outline-info py-1 px-2" title="Insert Link">
+                        <button type="button" onclick="addLink()" class="btn btn-outline-primary py-1 px-2" title="Insert Link">
                             <i class="bi bi-link-45deg"></i>
                         </button>
                         <button type="button" onclick="formatText('removeFormat')" class="btn btn-outline-secondary py-1 px-2" title="Clear Formatting">

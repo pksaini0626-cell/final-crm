@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
+            <h1 class="h3 fw-bold text-primary mb-1 d-flex align-items-center gap-2">
                 <i class="bi bi-building text-primary"></i> Merchant Profiles
             </h1>
             <p class="text-secondary small mb-0">Configure third-party payment gateways and dynamic SMTP servers.</p>

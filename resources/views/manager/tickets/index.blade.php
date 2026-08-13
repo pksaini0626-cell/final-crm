@@ -48,7 +48,7 @@
                         <tr>
                             <!-- Booking ID -->
                             <td class="px-3 py-3">
-                                <span class="fw-bold text-primary font-monospace fs-6 d-block">#{{ $booking->booking_id }}</span>
+                                <span class="fw-bold text-primary font-monospace fs-6 d-block"> {{ $booking->airline_pnr }}</span>
                                 <span class="small text-secondary d-block">Agent: {{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</span>
                             </td>
 
@@ -87,10 +87,11 @@
                             <td class="px-3 py-3">
                                 @php
                                     $statusBadge = match($booking->booking_status) {
-                                        'email_auth_done' => 'bg-info-subtle text-info border border-info-subtle',
-                                        'ticketed' => 'bg-purple-subtle text-purple border border-purple-subtle',
-                                        'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
-                                        default => 'bg-secondary-subtle text-secondary'
+                                        'email_auth_done' => 'bg-info text-light border border-info',
+                                        'ticketed' => 'bg-success text-light border border-success',
+                                        'booking_complete' => 'bg-success text-light border border-success',
+                                        'booking_generated' => 'bg-primary text-light border border-primary',
+                                        default => 'bg-secondary text-secondary'
                                     };
                                     $statusLabel = str_replace('_', ' ', ucfirst($booking->booking_status));
                                 @endphp
@@ -118,6 +119,9 @@
                             <!-- Actions -->
                             <td class="px-3 py-3 text-end">
                                 <div class="d-inline-flex gap-2">
+                                    <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn btn-outline-warning btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1" title="Edit Booking Parameters">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
                                     <a href="{{ route('manager.tickets.preview-email', $booking) }}" class="btn btn-outline-success btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1">
                                         <i class="bi bi-envelope-paper"></i> Preview &amp; Send E-Ticket
                                     </a>

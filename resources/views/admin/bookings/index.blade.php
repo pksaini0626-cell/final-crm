@@ -5,10 +5,10 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
                 <i class="bi bi-shield-lock text-primary"></i> Global Booking Management
             </h1>
-            <p class="text-secondary small mb-0">Search, filter, export, and manage system-wide booking records & case statuses.</p>
+            <p class="text-secondary small mb-0">Search, filter, export, and manage system-wide booking records &amp; case statuses.</p>
         </div>
         <div>
             <a href="{{ route('admin.bookings.export', request()->query()) }}" class="btn btn-success fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
@@ -19,35 +19,35 @@
 
     <!-- Pending Customer Authorization Notifications Banner for Admin/Manager -->
     @if(isset($pendingAuthBookings) && $pendingAuthBookings->count() > 0)
-        <div class="card bg-dark border-warning shadow-sm mb-4">
-            <div class="card-header bg-dark border-warning py-3 d-flex justify-content-between align-items-center">
+        <div class="card bg-white border-warning-subtle shadow-sm mb-4">
+            <div class="card-header bg-warning-subtle border-warning-subtle py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <span class="spinner-grow spinner-grow-sm text-warning" role="status"></span>
-                    <h2 class="h6 font-bold text-warning mb-0 text-uppercase">
+                    <h2 class="h6 font-bold text-warning-emphasis mb-0 text-uppercase">
                         Pending Customer Authorization Notifications ({{ $pendingAuthBookings->count() }})
                     </h2>
                 </div>
-                <span class="badge bg-warning-subtle text-warning border border-warning-subtle small">Customer Authorization Sent — Awaiting Reply & Admin Approval</span>
+                <span class="badge bg-warning text-dark border border-warning-subtle small">Customer Authorization Sent — Awaiting Reply &amp; Admin Approval</span>
             </div>
 
             <div class="card-body p-3">
                 <div class="row g-3">
                     @foreach($pendingAuthBookings as $pBooking)
                         <div class="col-md-6">
-                            <div class="card bg-body-tertiary border-warning-subtle shadow-sm h-100">
+                            <div class="card bg-light border-warning-subtle shadow-sm h-100">
                                 <div class="card-body p-3 vstack justify-content-between gap-3">
                                     <div class="vstack gap-1 text-secondary small">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="fw-bold text-white font-monospace">Booking #{{ $pBooking->booking_id }}</span>
-                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle text-uppercase">Email Auth Sent</span>
+                                            <span class="fw-bold text-dark font-monospace">Booking #{{ $pBooking->booking_id }}</span>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">Email Auth Sent</span>
                                         </div>
-                                        <div><strong class="text-secondary">PNR:</strong> <span class="text-warning font-monospace fw-bold">{{ $pBooking->airline_pnr ?: ($pBooking->gk_pnr ?: 'N/A') }}</span> | <strong class="text-secondary">Airline:</strong> {{ $pBooking->airline_name ?: 'Airline' }}</div>
-                                        <div><strong class="text-secondary">Customer Email:</strong> <span class="text-white fw-semibold">{{ $pBooking->email_address }}</span></div>
-                                        <div><strong class="text-secondary">Created By Agent:</strong> <span class="text-light fw-semibold">{{ $pBooking->agent ? $pBooking->agent->name : 'Agent' }}</span></div>
-                                        <div class="text-secondary-subtle small mt-1"><i class="bi bi-clock me-1"></i> Dispatched: {{ $pBooking->updated_at->diffForHumans() }}</div>
+                                        <div><strong class="text-secondary">PNR:</strong> <span class="text-warning-emphasis font-monospace fw-bold">{{ $pBooking->airline_pnr ?: ($pBooking->gk_pnr ?: 'N/A') }}</span> | <strong class="text-secondary">Airline:</strong> {{ $pBooking->airline_name ?: 'Airline' }}</div>
+                                        <div><strong class="text-secondary">Customer Email:</strong> <span class="text-dark fw-semibold">{{ $pBooking->email_address }}</span></div>
+                                        <div><strong class="text-secondary">Created By Agent:</strong> <span class="text-dark fw-semibold">{{ $pBooking->agent ? $pBooking->agent->name : 'Agent' }}</span></div>
+                                        <div class="text-muted small mt-1"><i class="bi bi-clock me-1"></i> Dispatched: {{ $pBooking->updated_at->diffForHumans() }}</div>
                                     </div>
 
-                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary-subtle">
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
                                         <a href="{{ route('bookings.index') }}?q={{ $pBooking->booking_id }}" class="btn btn-link btn-sm text-info p-0 text-decoration-none fw-semibold">
                                             <i class="bi bi-eye me-1"></i> View Booking
                                         </a>
@@ -69,10 +69,10 @@
     @endif
 
     <!-- Advanced Multi-Filter Bar -->
-    <div class="card bg-dark border-secondary shadow-sm mb-4">
-        <div class="card-header bg-dark border-secondary py-3">
-            <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
-                <i class="bi bi-funnel text-primary"></i> Filter & Search Records
+    <div class="card bg-white border-light-subtle shadow-sm mb-4">
+        <div class="card-header bg-white border-light-subtle py-3">
+            <h2 class="h6 font-bold text-dark mb-0 text-uppercase d-flex align-items-center gap-2">
+                <i class="bi bi-funnel text-primary"></i> Filter &amp; Search Records
             </h2>
         </div>
         <div class="card-body p-4">
@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-secondary">
+                <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-light-subtle">
                     <button type="submit" class="btn btn-primary fw-semibold px-4"><i class="bi bi-search me-1"></i> Apply Filters</button>
                     <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-secondary fw-semibold px-4">Clear All</a>
                 </div>
@@ -165,10 +165,10 @@
     </div>
 
     <!-- Bookings Table -->
-    <div class="card bg-dark border-secondary shadow-sm overflow-hidden mb-4">
+    <div class="card bg-white border-light-subtle shadow-sm overflow-hidden mb-4">
         <div class="table-responsive">
-            <table class="table table-dark table-hover table-striped align-middle mb-0 text-nowrap">
-                <thead class="table-dark text-secondary small text-uppercase">
+            <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
+                <thead class="table-light text-secondary small text-uppercase border-bottom">
                     <tr>
                         <th class="px-3 py-3">Booking ID / Agent</th>
                         <th class="px-3 py-3">Customer Details</th>
@@ -186,22 +186,32 @@
                             <td class="px-3 py-3">
                                 <span class="fw-bold text-primary font-monospace fs-6 d-block">{{ $booking->booking_id }}</span>
                                 <span class="small text-secondary d-block">Agent: {{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</span>
-                                <span class="text-secondary-subtle small font-monospace d-block">{{ $booking->booking_date->format('M d, Y') }}</span>
+                                <span class="text-muted small font-monospace d-block">{{ $booking->booking_date->format('M d, Y') }}</span>
                             </td>
                             <!-- Customer Details -->
                             <td class="px-3 py-3">
-                                <div class="fw-semibold text-white">{{ $booking->card_holder_name ?: 'N/A' }}</div>
+                                <div class="fw-semibold text-dark">{{ $booking->card_holder_name ?: 'N/A' }}</div>
                                 <div class="small text-secondary">{{ $booking->email_address }}</div>
                             </td>
                             <!-- Financials -->
                             <td class="px-3 py-3 small">
-                                <div class="fw-semibold text-white">Total: {{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</div>
+                                <div class="fw-semibold text-dark">Total: {{ $booking->currency }} {{ number_format($booking->total_amount, 2) }}</div>
                                 <div class="text-secondary">Airline: {{ $booking->currency }} {{ number_format($booking->paid_to_airline, 2) }}</div>
                                 <div class="fw-bold text-success font-monospace">MCO: {{ $booking->currency }} {{ number_format($booking->total_mco, 2) }}</div>
                             </td>
                             <!-- Booking Status -->
                             <td class="px-3 py-3">
-                                <span class="badge bg-body-tertiary text-light border border-secondary text-capitalize px-2.5 py-1.5">
+                                @php
+                                    $bStatusBadge = match($booking->booking_status) {
+                                        'booking_generated' => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+                                        'email_auth_done' => 'bg-primary-subtle text-primary border border-primary-subtle',
+                                        'ticketed' => 'bg-secondary text-white',
+                                        'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
+                                        'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        default => 'bg-light text-dark border border-secondary-subtle'
+                                    };
+                                @endphp
+                                <span class="badge {{ $bStatusBadge }} text-capitalize px-2 py-1">
                                     {{ str_replace('_', ' ', ucfirst($booking->booking_status)) }}
                                 </span>
                             </td>
@@ -210,12 +220,12 @@
                                 @php
                                     $payBadge = match($booking->payment_status) {
                                         'received' => 'bg-success-subtle text-success border border-success-subtle',
-                                        'pending' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                                        'pending' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                         'refund' => 'bg-danger-subtle text-danger border border-danger-subtle',
                                         default => 'bg-secondary-subtle text-secondary border border-secondary-subtle'
                                     };
                                 @endphp
-                                <span class="badge {{ $payBadge }} text-uppercase px-2.5 py-1.5">
+                                <span class="badge {{ $payBadge }} text-uppercase px-2 py-1">
                                     {{ strtoupper($booking->payment_status) }}
                                 </span>
                             </td>
@@ -271,21 +281,21 @@
         </div>
 
         @if($bookings->hasPages())
-            <div class="card-footer bg-dark border-secondary py-3">
+            <div class="card-footer bg-white border-light-subtle py-3">
                 {{ $bookings->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 
     <!-- CASE STATUS MODAL (Alpine controlled) -->
-    <div x-show="caseModalOpen" x-cloak class="modal fade" :class="{ 'show d-block': caseModalOpen }" tabindex="-1" style="background-color: rgba(0,0,0,0.75);">
+    <div x-show="caseModalOpen" x-cloak class="modal fade" :class="{ 'show d-block': caseModalOpen }" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark border-secondary text-white shadow-lg">
-                <div class="modal-header border-secondary py-3">
+            <div class="modal-content bg-white border-light-subtle text-dark shadow-lg">
+                <div class="modal-header border-light-subtle py-3">
                     <h5 class="modal-title font-bold h6 text-uppercase text-danger d-flex align-items-center gap-2">
                         <i class="bi bi-exclamation-octagon"></i> Manage Case Status (#<span x-text="caseBookingRef"></span>)
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" @click="caseModalOpen = false"></button>
+                    <button type="button" class="btn-close" @click="caseModalOpen = false"></button>
                 </div>
                 <form :action="`/admin/bookings/${caseBookingId}/update-case-status`" method="POST">
                     @csrf
@@ -306,7 +316,7 @@
                             <label for="update_booking_status_to_void" class="form-check-label text-secondary small">Set Booking Status to VOID as well</label>
                         </div>
                     </div>
-                    <div class="modal-footer border-secondary">
+                    <div class="modal-footer border-light-subtle">
                         <button type="button" @click="caseModalOpen = false" class="btn btn-outline-secondary btn-sm fw-semibold">Cancel</button>
                         <button type="submit" class="btn btn-danger btn-sm fw-bold">Save Case Status</button>
                     </div>
@@ -317,20 +327,20 @@
 </div>
 
 <!-- Assign Ticketing Modal -->
-<div x-show="assignModalOpen" x-cloak style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1055; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);" class="d-flex align-items-center justify-content-center" tabindex="-1">
+<div x-show="assignModalOpen" x-cloak style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="d-flex align-items-center justify-content-center" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered w-100" style="max-width: 500px;">
-        <div class="modal-content card bg-dark border-primary shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-dark border-primary d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2">
+        <div class="modal-content card bg-white border-primary-subtle shadow-lg w-100" style="pointer-events: auto;">
+            <div class="card-header bg-white border-primary-subtle d-flex justify-content-between align-items-center py-3">
+                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
                     <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
                 </h5>
-                <button type="button" @click="assignModalOpen = false" class="btn-close btn-close-white"></button>
+                <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
             </div>
             <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
                 @csrf
                 <div class="card-body p-4">
                     <p class="text-secondary small mb-3">
-                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-white" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
+                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-dark" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
                     </p>
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
@@ -344,7 +354,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="card-footer bg-dark border-secondary d-flex justify-content-end gap-2 py-3">
+                <div class="card-footer bg-white border-light-subtle d-flex justify-content-end gap-2 py-3">
                     <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
                         <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
@@ -354,8 +364,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script>
     function adminBookingState() {

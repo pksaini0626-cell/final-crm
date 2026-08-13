@@ -36,7 +36,7 @@
         <div class="card-body p-3">
             <form method="GET" action="{{ route('call-logs.index') }}" class="row g-2 align-items-center">
                 <!-- Search Keyword -->
-                <div class="col-md-2">
+                <div class="col-md-2.5">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-light text-secondary border-end-0">
                             <i class="bi bi-search"></i>
@@ -68,7 +68,7 @@
                 </div>
 
                 <!-- Single Date -->
-                <div class="col-md-1">
+                <div class="col-md-1.5">
                     <input type="date" name="date" value="{{ request('date') }}" title="Specific Call Date" class="form-control form-control-sm" placeholder="Specific Date">
                 </div>
 
@@ -89,7 +89,7 @@
                 </div>
 
                 <!-- Follow-up Filter -->
-                <div class="col-md-1">
+                <div class="col-md-1.5">
                     <select name="follow_up" class="form-select form-select-sm">
                         <option value="">-- Follow-Up --</option>
                         <option value="1" {{ request('follow_up') === '1' ? 'selected' : '' }}>Yes (Required)</option>

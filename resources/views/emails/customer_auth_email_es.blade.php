@@ -77,7 +77,7 @@
                                 <tr>
                                     <td style="padding: 14px 18px; font-size: 13px; color: #334155; line-height: 1.6; font-family: Arial, sans-serif;">
                                         <p style="margin: 0 0 10px 0;">
-                                            Según nuestra conversación telefónica, yo, <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Cliente' }}</strong>, autorizo a {{ $airlineName }} / {{ $merchantName }} a procesar los cargos mencionados anteriormente bajo sus respectivos comercios para cargar mi tarjeta <strong style="color: #0f172a;">******{{ $booking->card_last_4 ?: 'XXXX' }}</strong> por la reserva del itinerario mencionado a continuación con {{ $airlineName }}.
+                                            Según nuestra conversación telefónica, yo, <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Cliente' }}</strong>, autorizo a {{ $airlineName }} / {{ $merchantName }} a procesar los cargos mencionados anteriormente bajo sus respectivos comercios para cargar mi tarjeta <strong style="color: #0f172a;">{{ $booking->card_type ?? 'Tarjeta'}}</strong>&nbsp;<strong style="color: #0f172a;">******{{ $booking->card_last_4 ?: 'XXXX' }}</strong> por la reserva del itinerario mencionado a continuación con {{ $airlineName }}.
                                         </p>
                                         <p style="margin: 0 0 10px 0;">
                                             Esta autorización de pago es por el monto indicado anteriormente y es válida para un solo uso. Certifico que soy <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Cliente' }}</strong>, un usuario autorizado de esta tarjeta y que no disputaré el pago con mi compañía de tarjeta de crédito/débito o banco.
@@ -141,8 +141,8 @@
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->first_name }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->middle_name ?: '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->last_name }}</td>
-                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->title == 'MS' || $pax->title == 'MRS' ? 'Femenino' : 'Masculino' }}</td>
-                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">-</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->gender ? ($pax->gender == 'F' ? 'Femenino' : ($pax->gender == 'O' ? 'Otro' : 'Masculino')) : ($pax->title == 'MS' || $pax->title == 'MRS' ? 'Femenino' : 'Masculino') }}</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->dob ? ($pax->dob instanceof \DateTimeInterface ? $pax->dob->format('d M Y') : \Carbon\Carbon::parse($pax->dob)->format('d M Y')) : '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->currency }} {{ number_format($booking->total_amount / max(count($booking->passengers), 1), 2) }}</td>
                                         </tr>
                                     @empty
@@ -296,7 +296,7 @@
                                 @endif
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Dirección de Facturación:</td>
-                                    <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->billing_address ?: ($booking->billing_phone ?: 'N/A') }}</td>
+                                    <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->billing_address ?: 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Teléfono de Contacto:</td>

@@ -55,7 +55,7 @@
                 @csrf
                 <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
                     <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
-                        <i class="bi bi-pencil-square text-warning"></i> 1. Edit Ticket, Seats &amp; Trip Type
+                        <i class="bi bi-pencil-square text-warning"></i> 1. Edit Passenger Names, Tickets &amp; Seats
                     </h2>
                     <button type="submit" class="btn btn-warning btn-sm fw-bold">
                         <i class="bi bi-check2-circle me-1"></i> Save Changes
@@ -73,22 +73,39 @@
                     </div>
 
                     <!-- Passenger Roster Edit Table -->
-                    <label class="form-label text-secondary small fw-bold text-uppercase mb-2">Passenger Ticket &amp; Seat Roster</label>
+                    <label class="form-label text-secondary small fw-bold text-uppercase mb-2">Passenger Roster &amp; Details</label>
                     <div class="table-responsive rounded border border-secondary">
                         <table class="table table-dark table-striped table-bordered align-middle mb-0 small">
                             <thead>
-                                <tr class="text-secondary text-uppercase">
-                                    <th>Passenger</th>
-                                    <th style="width: 140px;">Ticket #</th>
-                                    <th style="width: 80px;">Seat #</th>
+                                <tr class="text-secondary text-uppercase extra-small">
+                                    <th style="width: 70px;">Title</th>
+                                    <th>First Name</th>
+                                    <th>Middle Name</th>
+                                    <th>Last Name</th>
+                                    <th style="width: 120px;">Ticket #</th>
+                                    <th style="width: 70px;">Seat #</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($booking->passengers as $pax)
                                     <tr>
                                         <td>
-                                            <div class="fw-bold text-dark">{{ trim(($pax->title ? $pax->title . ' ' : '') . $pax->first_name . ($pax->middle_name ? ' ' . $pax->middle_name : '') . ($pax->last_name ? ' ' . $pax->last_name : '')) }}</div>
-                                            <small class="text-secondary font-monospace">{{ $pax->pax_index ?: 'P' . ($loop->index + 1) }}</small>
+                                            <select name="passengers[{{ $pax->id }}][title]" class="form-select form-select-sm p-1 text-center font-monospace">
+                                                <option value="MR" {{ old("passengers.{$pax->id}.title", strtoupper($pax->title ?? '')) === 'MR' ? 'selected' : '' }}>MR</option>
+                                                <option value="MRS" {{ old("passengers.{$pax->id}.title", strtoupper($pax->title ?? '')) === 'MRS' ? 'selected' : '' }}>MRS</option>
+                                                <option value="MS" {{ old("passengers.{$pax->id}.title", strtoupper($pax->title ?? '')) === 'MS' ? 'selected' : '' }}>MS</option>
+                                                <option value="MISS" {{ old("passengers.{$pax->id}.title", strtoupper($pax->title ?? '')) === 'MISS' ? 'selected' : '' }}>MISS</option>
+                                                <option value="MSTR" {{ old("passengers.{$pax->id}.title", strtoupper($pax->title ?? '')) === 'MSTR' ? 'selected' : '' }}>MSTR</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="passengers[{{ $pax->id }}][first_name]" value="{{ old("passengers.{$pax->id}.first_name", $pax->first_name) }}" required class="form-control form-control-sm">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="passengers[{{ $pax->id }}][middle_name]" value="{{ old("passengers.{$pax->id}.middle_name", $pax->middle_name) }}" class="form-control form-control-sm">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="passengers[{{ $pax->id }}][last_name]" value="{{ old("passengers.{$pax->id}.last_name", $pax->last_name) }}" required class="form-control form-control-sm">
                                         </td>
                                         <td>
                                             <input type="text" name="passengers[{{ $pax->id }}][ticket_number]" value="{{ old("passengers.{$pax->id}.ticket_number", $pax->ticket_number) }}" placeholder="e.g. 0062451992" class="form-control form-control-sm font-monospace text-info">

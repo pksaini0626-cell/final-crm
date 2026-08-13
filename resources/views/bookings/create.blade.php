@@ -365,6 +365,7 @@
                                         <th>Middle Name <span class="text-secondary small font-normal">(Opt)</span></th>
                                         <th>Last Name</th>
                                         <th style="width: 140px;">DOB <span class="text-danger">*</span></th>
+                                        <th style="width: 100px;">Gender <span class="text-danger">*</span></th>
                                         <th>Ticket #</th>
                                         <th style="width: 90px;">Seat</th>
                                         <th style="width: 60px;" class="text-center">Remove</th>
@@ -397,6 +398,14 @@
                                             </td>
                                             <td>
                                                 <input type="date" :name="`passengers[${index}][dob]`" x-model="pax.dob" required class="form-control form-control-sm font-monospace">
+                                            </td>
+                                            <td>
+                                                <select :name="`passengers[${index}][gender]`" x-model="pax.gender" required class="form-select form-select-sm">
+                                                    <option value="">Gender</option>
+                                                    <option value="M">M</option>
+                                                    <option value="F">F</option>
+                                                    <option value="O">O</option>
+                                                </select>
                                             </td>
                                             <td>
                                                 <input type="text" :name="`passengers[${index}][ticket_number]`" x-model="pax.ticket_number" placeholder="Ticket #" class="form-control form-control-sm font-monospace">
@@ -812,6 +821,7 @@
                     middle_name: p.middle_name || '',
                     last_name: p.last_name || '',
                     dob: p.dob ? String(p.dob).slice(0, 10) : '',
+                    gender: p.gender || '',
                     ticket_number: p.ticket_number || '',
                     seat_number: p.seat_number || ''
                 });
@@ -934,6 +944,16 @@
             },
 
             addPassenger(pax = {}) {
+                const titleUpper = (pax.title || '').toUpperCase();
+                let defaultGender = pax.gender || '';
+                if (!defaultGender) {
+                    if (['MRS', 'MS', 'MISS'].includes(titleUpper)) {
+                        defaultGender = 'F';
+                    } else if (['MR', 'MSTR'].includes(titleUpper)) {
+                        defaultGender = 'M';
+                    }
+                }
+
                 this.passengers.push({
                     pax_index: pax.pax_index || `P${this.passengers.length + 1}`,
                     title: pax.title || '',
@@ -941,6 +961,7 @@
                     middle_name: pax.middle_name || '',
                     last_name: pax.last_name || '',
                     dob: pax.dob ? String(pax.dob).slice(0, 10) : '',
+                    gender: defaultGender,
                     ticket_number: pax.ticket_number || '',
                     seat_number: pax.seat_number || ''
                 });

@@ -52,7 +52,7 @@ class BookingEnhancementsTest extends TestCase
             ]
         ]);
 
-        $response->assertSessionHasErrors(['call_type', 'merchant', 'passengers.0.dob']);
+        $response->assertSessionHasErrors(['call_type', 'merchant', 'passengers.0.dob', 'passengers.0.gender']);
     }
 
     public function test_booking_creation_succeeds_with_valid_dob_call_type_and_merchant(): void
@@ -103,6 +103,7 @@ class BookingEnhancementsTest extends TestCase
                     'first_name' => 'John',
                     'last_name' => 'Doe',
                     'dob' => '1990-05-15',
+                    'gender' => 'M',
                 ]
             ]
         ];

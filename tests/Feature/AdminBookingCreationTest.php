@@ -75,7 +75,7 @@ class AdminBookingCreationTest extends TestCase
             'total_mco' => 100,
             'payment_status' => 'pending',
             'passengers' => [
-                ['first_name' => 'John', 'last_name' => 'Doe', 'dob' => '1990-01-01']
+                ['first_name' => 'John', 'last_name' => 'Doe', 'dob' => '1990-01-01', 'gender' => 'M']
             ],
         ];
 
@@ -122,7 +122,7 @@ class AdminBookingCreationTest extends TestCase
             'total_mco' => 100,
             'payment_status' => 'pending',
             'passengers' => [
-                ['first_name' => 'Alice', 'last_name' => 'Smith', 'dob' => '1990-01-01']
+                ['first_name' => 'Alice', 'last_name' => 'Smith', 'dob' => '1990-01-01', 'gender' => 'F']
             ],
         ];
 
@@ -152,7 +152,7 @@ class AdminBookingCreationTest extends TestCase
             'total_mco' => 100,
             'payment_status' => 'pending',
             'passengers' => [
-                ['first_name' => 'Bob', 'last_name' => 'Marley', 'dob' => '1990-01-01']
+                ['first_name' => 'Bob', 'last_name' => 'Marley', 'dob' => '1990-01-01', 'gender' => 'M']
             ],
         ];
 

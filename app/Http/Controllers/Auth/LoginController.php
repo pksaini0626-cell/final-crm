@@ -42,6 +42,8 @@ class LoginController extends Controller
                 ])->onlyInput('email');
             }
 
+            $user->forceFill(['last_login_at' => now()])->save();
+
             $request->session()->regenerate();
 
             return $this->redirectBasedOnRole($user);
@@ -71,7 +73,7 @@ class LoginController extends Controller
     protected function redirectBasedOnRole($user)
     {
         return match($user->role) {
-            'admin' => redirect()->route('admin.bookings.index'),
+            'admin' => redirect()->route('admin.dashboard'),
             'manager' => redirect()->route('manager.tickets.index'),
             default => redirect()->route('bookings.index'),
         };

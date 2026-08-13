@@ -192,17 +192,22 @@
 
                     @if(Auth::check() && Auth::user()->role === 'admin')
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2" href="{{ route('admin.bookings.index') }}">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}" href="{{ route('admin.bookings.index') }}">
                                 <i class="bi bi-shield-lock me-1"></i> Admin Control
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2" href="{{ route('admin.users.index') }}">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                                 <i class="bi bi-people me-1"></i> Users
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2" href="{{ route('admin.merchants.index') }}">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.merchants.*') ? 'active' : '' }}" href="{{ route('admin.merchants.index') }}">
                                 <i class="bi bi-building me-1"></i> Merchants
                             </a>
                         </li>

@@ -23,8 +23,7 @@
                         <td align="center" style="background-color: #1e293b; color: #ffffff; padding: 24px 30px; text-align: center;">
                             <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #ffffff; font-family: Arial, sans-serif;">Payment Authorization &amp; Booking Confirmation</h1>
                             <div style="margin-top: 8px; font-size: 13px; color: #94a3b8; font-family: Arial, sans-serif;">
-                                Ref: <strong style="color: #ffffff;">#{{ $booking->booking_id }}</strong> &nbsp;|&nbsp; 
-                                PNR: <strong style="color: #ffffff;">{{ $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A') }}</strong>
+                                Confirmation code : <strong style="color: #ffffff;">{{ $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A') }}</strong>
                             </div>
                         </td>
                     </tr>
@@ -79,7 +78,7 @@
                                 <tr>
                                     <td style="padding: 14px 18px; font-size: 13px; color: #334155; line-height: 1.6; font-family: Arial, sans-serif;">
                                         <p style="margin: 0 0 10px 0;">
-                                            As per our telephonic conversation I, <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Customer' }}</strong>, authorize {{ $airlineName }} / {{ $merchantName }} to process the above-mentioned charges under their respective merchants for charging my <strong style="color: #0f172a;">******{{ $booking->card_last_4 ?: 'XXXX' }}</strong> card for the booking the below-mentioned itinerary with {{ $airlineName }}.
+                                            As per our telephonic conversation I, <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Customer' }}</strong>, authorize {{ $airlineName }} / {{ $merchantName }} to process the above-mentioned charges under their respective merchants for charging my <strong style="color: #0f172a;">{{ $booking->card_type ?? 'Card'}}</strong>&nbsp;<strong style="color: #0f172a;">******{{ $booking->card_last_4 ?: 'XXXX' }}</strong> card for the booking the below-mentioned itinerary with {{ $airlineName }}.
                                         </p>
                                         <p style="margin: 0 0 10px 0;">
                                             This payment authorization is for the amount indicated above and is valid for one-time use only. I certify that I am <strong style="color: #0f172a;">{{ $booking->card_holder_name ?: 'Customer' }}</strong>, an authorized user of this card and that I will not dispute the payment with my credit/debit card company/bank.
@@ -143,8 +142,8 @@
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->first_name }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->middle_name ?: '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->last_name }}</td>
-                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->title == 'MS' || $pax->title == 'MRS' ? 'female' : 'male' }}</td>
-                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">-</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->gender ? ($pax->gender == 'F' ? 'Female' : ($pax->gender == 'O' ? 'Other' : 'Male')) : ($pax->title == 'MS' || $pax->title == 'MRS' ? 'Female' : 'Male') }}</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->dob ? ($pax->dob instanceof \DateTimeInterface ? $pax->dob->format('d M Y') : \Carbon\Carbon::parse($pax->dob)->format('d M Y')) : '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->currency }} {{ number_format($booking->total_amount / max(count($booking->passengers), 1), 2) }}</td>
                                         </tr>
                                     @empty
@@ -298,7 +297,7 @@
                                 @endif
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Billing Address:</td>
-                                    <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->billing_address ?: ($booking->billing_phone ?: 'N/A') }}</td>
+                                    <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->billing_address ?: 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Phone Number:</td>

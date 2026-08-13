@@ -65,6 +65,54 @@
         </div>
     @endif
 
+    <!-- Approved Customer Authorization Banner (For Agents) -->
+    @if(isset($approvedAuthBookings) && $approvedAuthBookings->count() > 0)
+        <div class="card bg-white border-success-subtle shadow-sm mb-4">
+            <div class="card-header bg-success-subtle py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                    <h2 class="h6 font-bold text-success-emphasis mb-0 text-uppercase tracking-wider">
+                        Approved Customer Authorizations ({{ $approvedAuthBookings->count() }})
+                    </h2>
+                </div>
+                <span class="badge bg-success text-white font-monospace">Auth Mail Approved — Status: EMAIL AUTH DONE</span>
+            </div>
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    @foreach($approvedAuthBookings as $aBooking)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 bg-light rounded border border-success-subtle shadow-sm h-100 d-flex flex-column justify-content-between">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-primary font-monospace fs-6">#{{ $aBooking->booking_id }}</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle text-uppercase">EMAIL AUTH DONE</span>
+                                    </div>
+                                    <div class="small text-secondary">
+                                        <div class="mb-1"><strong class="text-dark">PNR:</strong> <span class="text-primary font-monospace fw-bold">{{ $aBooking->airline_pnr ?: ($aBooking->gk_pnr ?: 'N/A') }}</span></div>
+                                        <div class="mb-1"><strong class="text-dark">Customer:</strong> <span class="text-dark fw-semibold">{{ $aBooking->card_holder_name ?: 'N/A' }}</span></div>
+                                        <div class="mb-1"><strong class="text-dark">Email:</strong> {{ $aBooking->email_address }}</div>
+                                        <div class="mb-1"><strong class="text-dark">Amount:</strong> <span class="text-success font-monospace fw-bold">{{ $aBooking->currency }} {{ number_format($aBooking->total_amount, 2) }}</span></div>
+                                        <div class="text-muted small mt-1"><i class="bi bi-check2-circle text-success me-1"></i> Approved: {{ $aBooking->updated_at->diffForHumans() }}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
+                                    <button type="button" @click="openDetails({{ json_encode($aBooking) }})" class="btn btn-outline-success btn-sm fw-semibold">
+                                        <i class="bi bi-eye me-1"></i> View Details
+                                    </button>
+                                    @if(in_array($aBooking->booking_status, ['email_auth_done', 'ticketed', 'booking_complete']))
+                                        <button type="button" @click="openAssignModal({{ $aBooking->id }}, '{{ $aBooking->booking_id }}', {{ $aBooking->ticketing_user_id ?: 'null' }})" class="btn btn-primary btn-sm fw-bold">
+                                            <i class="bi bi-person-check me-1"></i> Assign Ticketing
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Filters & Search -->
     <div class="card bg-white border-light-subtle shadow-sm mb-4">
         <div class="card-body p-3">
@@ -146,7 +194,7 @@
                                         'booking_generated' => 'bg-info-subtle text-info border border-info-subtle',
                                         'email_auth_sent' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                         'email_auth_done' => 'bg-primary-subtle text-primary border border-primary-subtle',
-                                        'ticketed' => 'bg-purple-subtle text-purple border border-purple-subtle',
+                                        'ticketed' => 'bg-secondary text-light',
                                         'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
                                         'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
                                         default => 'bg-secondary-subtle text-secondary'
@@ -369,6 +417,90 @@
                             </div>
                         </div>
 
+                        <!-- Itinerary Flight Segments -->
+                        <div class="col-12">
+                            <div class="card bg-white border-light-subtle shadow-sm my-2">
+                                <div class="card-header bg-white border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-airplane-engines-fill text-primary"></i>
+                                        <h2 class="h6 font-bold text-dark mb-0 text-uppercase">Itinerary Flight Segments</h2>
+                                        <span class="badge bg-primary-subtle text-primary font-monospace ms-2" x-text="`${flights.length} Segment(s)`">0 Segment(s)</span>
+                                    </div>
+                                    <button type="button" @click="addFlight()" class="btn btn-outline-primary btn-sm fw-bold">
+                                        <i class="bi bi-plus-lg me-1"></i> Add Flight Segment
+                                    </button>
+                                </div>
+                                <div class="card-body p-3 border-bottom border-light-subtle bg-light">
+                                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Paste GDS Raw Text (Auto-Fill)</label>
+                                    <textarea x-model="rawPnr" rows="2" placeholder="Paste full GDS raw text lines here (e.g. 1 DL 450 Y 12OCT JFKLAX HK1 0800 1130...)" class="form-control font-monospace text-success small mb-2 bg-white"></textarea>
+                                    <button type="button" @click="parsePnrText()" class="btn btn-outline-success btn-sm fw-bold">
+                                        <i class="bi bi-magic me-1"></i> Parse &amp; Auto-Fill Flight Segments
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr class="small text-uppercase text-secondary border-bottom">
+                                                    <th style="width: 40px;" class="text-center">#</th>
+                                                    <th style="width: 85px;">Carrier</th>
+                                                    <th style="width: 95px;">Flight #</th>
+                                                    <th style="width: 80px;">Origin</th>
+                                                    <th style="width: 80px;">Dest</th>
+                                                    <th>Departure</th>
+                                                    <th>Arrival</th>
+                                                    <th style="width: 85px;">Class</th>
+                                                    <th style="width: 100px;">Status</th>
+                                                    <th style="width: 50px;" class="text-center">Del</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template x-for="(fl, index) in flights" :key="index">
+                                                    <tr>
+                                                        <td class="text-center font-monospace fw-bold text-secondary" x-text="index + 1"></td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][operating_carrier]`" x-model="fl.operating_carrier" placeholder="UA" class="form-control form-control-sm font-monospace text-uppercase fw-bold text-primary">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][flight_number]`" x-model="fl.flight_number" placeholder="354" class="form-control form-control-sm font-monospace text-uppercase">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][origin_airport]`" x-model="fl.origin_airport" placeholder="CMH" class="form-control form-control-sm font-monospace text-uppercase fw-bold">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][destination_airport]`" x-model="fl.destination_airport" placeholder="LAX" class="form-control form-control-sm font-monospace text-uppercase fw-bold">
+                                                        </td>
+                                                        <td>
+                                                            <input type="datetime-local" :name="`flights[${index}][departure_time]`" x-model="fl.departure_time" class="form-control form-control-sm small">
+                                                        </td>
+                                                        <td>
+                                                            <input type="datetime-local" :name="`flights[${index}][arrival_time]`" x-model="fl.arrival_time" class="form-control form-control-sm small">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][booking_class]`" x-model="fl.booking_class" placeholder="Y" class="form-control form-control-sm font-monospace text-uppercase">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" :name="`flights[${index}][status]`" x-model="fl.status" placeholder="Confirmed" class="form-control form-control-sm">
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <button type="button" @click="removeFlight(index)" class="btn btn-outline-danger btn-sm p-1 px-2" title="Remove Segment">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <tr x-show="flights.length === 0">
+                                                    <td colspan="10" class="text-center py-3 text-secondary small fst-italic">
+                                                        No flight segments added yet. Click "Parse &amp; Auto-Fill Flight Segments" or "Add Flight Segment" above.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Add New Remark (Optional)</label>
                             <input type="text" name="new_remark" placeholder="Add update note..." class="form-control form-control-sm mb-2">
@@ -385,30 +517,6 @@
                             </button>
                         </div>
                     </form>
-                </div>
-            </div>
-
-            <!-- Flight Segments -->
-            <div class="card bg-white border-light-subtle shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom border-light-subtle py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 text-dark fw-bold small text-uppercase"><i class="bi bi-airplane me-1 text-primary"></i> Flight Segments</h6>
-                    <span class="badge bg-primary-subtle text-primary font-monospace" x-text="`${(booking.flight_segments || booking.booking_flights || []).length} Segments`"></span>
-                </div>
-                <div class="card-body p-3">
-                    <div class="d-flex flex-column gap-2">
-                        <template x-for="(flight, fIdx) in (booking.flight_segments && booking.flight_segments.length > 0 ? booking.flight_segments : (booking.booking_flights || []))" :key="flight.id || fIdx">
-                            <div class="p-2 bg-light rounded border border-light-subtle d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-semibold text-dark small" x-text="`Segment #${flight.segment_number || (fIdx + 1)}: ${flight.operating_carrier || ''} ${flight.flight_number}`"></div>
-                                    <div class="text-secondary" style="font-size: 0.75rem;" x-text="`${flight.origin_airport} ➔ ${flight.destination_airport} | Class: ${flight.booking_class || 'N/A'} ${flight.cabin ? '(' + flight.cabin + ')' : ''}`"></div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="text-primary font-monospace" style="font-size: 0.75rem;" x-text="formatDateTime(flight.departure_time)"></div>
-                                    <div class="text-muted" style="font-size: 0.7rem;">Departure</div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
                 </div>
             </div>
 
@@ -509,6 +617,8 @@
             changeBookingCode: '',
             slideoverOpen: false,
             booking: {},
+            rawPnr: '',
+            flights: [],
 
             openRequestChangeModal(id, code) {
                 this.changeBookingId = id;
@@ -530,7 +640,86 @@
 
             openDetails(booking) {
                 this.booking = booking;
+                this.rawPnr = '';
+                const existingSegments = (booking.flight_segments && booking.flight_segments.length > 0)
+                    ? booking.flight_segments
+                    : (booking.booking_flights || []);
+
+                this.flights = existingSegments.map(fl => ({
+                    operating_carrier: fl.operating_carrier || '',
+                    flight_number: fl.flight_number || '',
+                    origin_airport: fl.origin_airport || fl.origin || '',
+                    destination_airport: fl.destination_airport || fl.destination || '',
+                    departure_time: fl.departure_time ? String(fl.departure_time).replace(' ', 'T').slice(0, 16) : '',
+                    arrival_time: fl.arrival_time ? String(fl.arrival_time).replace(' ', 'T').slice(0, 16) : '',
+                    booking_class: fl.booking_class || '',
+                    status: fl.status || 'Confirmed'
+                }));
                 this.slideoverOpen = true;
+            },
+
+            addFlight(fl = {}) {
+                this.flights.push({
+                    operating_carrier: fl.operating_carrier || '',
+                    flight_number: fl.flight_number || '',
+                    origin_airport: fl.origin_airport || fl.origin || '',
+                    destination_airport: fl.destination_airport || fl.destination || '',
+                    departure_time: fl.departure_time ? String(fl.departure_time).replace(' ', 'T').slice(0, 16) : '',
+                    arrival_time: fl.arrival_time ? String(fl.arrival_time).replace(' ', 'T').slice(0, 16) : '',
+                    booking_class: fl.booking_class || '',
+                    status: fl.status || 'Confirmed'
+                });
+            },
+
+            removeFlight(index) {
+                this.flights.splice(index, 1);
+            },
+
+            async parsePnrText() {
+                if (!this.rawPnr || !this.rawPnr.trim()) {
+                    alert('Please paste GDS raw text into the textarea.');
+                    return;
+                }
+                try {
+                    const response = await fetch('/pnr/parse', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({ raw_pnr: this.rawPnr })
+                    });
+
+                    const responseText = await response.text();
+                    let res;
+                    try {
+                        res = JSON.parse(responseText);
+                    } catch (jsonErr) {
+                        console.error('Non-JSON response from server:', responseText);
+                        alert('Unable to parse server response. Please refresh the page and try again.');
+                        return;
+                    }
+
+                    if (!response.ok || res.success === false) {
+                        alert('Error parsing GDS text: ' + (res.error || res.message || 'Parsing failed.'));
+                        return;
+                    }
+
+                    const data = res.data || res;
+                    if (data.flights && data.flights.length > 0) {
+                        // Clear old itinerary flight segments first
+                        this.flights = [];
+                        data.flights.forEach(fl => this.addFlight(fl));
+                        if (data.airline_pnr && (!this.booking.airline_pnr || this.booking.airline_pnr === 'N/A')) {
+                            this.booking.airline_pnr = data.airline_pnr;
+                        }
+                    } else {
+                        alert('Parsed GDS text, but no flight segments were recognized.');
+                    }
+                } catch (e) {
+                    alert('Error parsing GDS text: ' + e.message);
+                }
             },
 
             getRemarkAction() {
