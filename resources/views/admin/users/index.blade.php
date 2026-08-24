@@ -49,6 +49,7 @@
                         <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                         <option value="ticketing" {{ request('role') === 'ticketing' ? 'selected' : '' }}>Ticketing Desk</option>
                         <option value="changes" {{ request('role') === 'changes' ? 'selected' : '' }}>Booking Changes Desk</option>
+                        <option value="mis" {{ request('role') === 'mis' ? 'selected' : '' }}>MIS Agent</option>
                         <option value="agent" {{ request('role') === 'agent' ? 'selected' : '' }}>Agent</option>
                     </select>
                 </div>
@@ -105,6 +106,7 @@
                                         'manager' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                         'ticketing' => 'bg-info-subtle text-info border border-info-subtle',
                                         'changes' => 'bg-primary-subtle text-primary border border-primary-subtle',
+                                        'mis' => 'bg-success-subtle text-success border border-success-subtle',
                                         default => 'bg-secondary-subtle text-secondary border border-secondary-subtle'
                                     };
                                 @endphp

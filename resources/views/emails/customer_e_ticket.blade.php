@@ -147,8 +147,8 @@
 
                             @php
                                 $emailFlights = ($booking->flightSegments && $booking->flightSegments->isNotEmpty())
-                                    ? $booking->flightSegments
-                                    : $booking->bookingFlights;
+                                    ? $booking->flightSegments->sortBy('segment_number')->values()
+                                    : $booking->bookingFlights->values();
                             @endphp
 
                             @forelse($emailFlights as $flight)
@@ -175,6 +175,25 @@
                                     }
                                     if (!$logoUrl && !empty($flight->operating_carrier) && strlen(trim($flight->operating_carrier)) === 2) {
                                         $logoUrl = "https://pics.avs.io/200/50/" . strtoupper(trim($flight->operating_carrier)) . ".png";
+                                    }
+
+                                    $dayOffset = (int)($flight->day_offset ?? 0);
+                                    if ($dayOffset <= 0 && $flight->departure_time && $flight->arrival_time) {
+                                        $dayOffset = (int)$flight->arrival_time->diffInDays($flight->departure_time);
+                                    }
+
+                                    $transitText = $flight->transit_text;
+                                    if (!$transitText && isset($emailFlights[$loop->index + 1])) {
+                                        $nextFlight = $emailFlights[$loop->index + 1];
+                                        if ($flight->arrival_time && $nextFlight->departure_time) {
+                                            $diffMins = $flight->arrival_time->diffInMinutes($nextFlight->departure_time);
+                                            if ($diffMins > 0 && $diffMins <= 1440) {
+                                                $lHrs = floor($diffMins / 60);
+                                                $lMins = $diffMins % 60;
+                                                $destName = strtoupper($flight->destination_city ?: ($flight->destination_airport_name ?: $flight->destination_airport));
+                                                $transitText = "{$lHrs}h {$lMins}m TRANSIT AT {$destName}";
+                                            }
+                                        }
                                     }
                                 @endphp
                                 <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 14px; border-collapse: separate; overflow: hidden; font-family: Arial, sans-serif;">
@@ -229,6 +248,9 @@
                                                         <div style="font-size: 13px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->destination_city ?: $flight->destination_airport_name }}</div>
                                                         <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
                                                             Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                                            @if($dayOffset > 0)
+                                                                <span style="color: #dc2626; font-size: 11px; font-weight: bold; margin-left: 4px;">(+{{ $dayOffset }} {{ $dayOffset == 1 ? 'day' : 'days' }})</span>
+                                                            @endif
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -237,10 +259,10 @@
                                     </tr>
 
                                     <!-- Transit / Layover Banner Row -->
-                                    @if(!empty($flight->transit_text))
+                                    @if(!empty($transitText))
                                         <tr>
                                             <td align="center" style="background-color: #f1f5f9; padding: 6px 10px; font-size: 11px; font-weight: bold; color: #334155; border-top: 1px solid #e2e8f0; text-align: center;">
-                                                &#x1F550; {{ $flight->transit_text }}
+                                                &#x1F550; {{ $transitText }}
                                             </td>
                                         </tr>
                                     @endif

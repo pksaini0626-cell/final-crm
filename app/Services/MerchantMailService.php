@@ -73,6 +73,31 @@ class MerchantMailService
 
             Mail::to($recipientEmail)->send($mailable);
 
+            // Send separate copy of authorization email to the agent as proof of dispatch
+            $agentEmail = !empty($overrides['agent_email']) ? $overrides['agent_email'] : null;
+            if (!$agentEmail && $booking->agent && filter_var($booking->agent->email, FILTER_VALIDATE_EMAIL)) {
+                $agentEmail = $booking->agent->email;
+            }
+            if (!$agentEmail && auth()->check() && filter_var(auth()->user()->email, FILTER_VALIDATE_EMAIL)) {
+                $agentEmail = auth()->user()->email;
+            }
+
+            if ($agentEmail) {
+                $agentMailable = new CustomerAuthMail(
+                    $booking,
+                    $overrides['subject'] ?? null,
+                    $fromAddress,
+                    $fromName,
+                    $overrides['custom_note'] ?? null,
+                    $overrides['agent_name'] ?? null,
+                    $overrides['agent_ext'] ?? null,
+                    $overrides['email_language'] ?? 'english',
+                    $overrides['custom_html'] ?? null
+                );
+
+                Mail::to($agentEmail)->send($agentMailable);
+            }
+
         } catch (Exception $e) {
             Log::error('Dynamic SMTP Mail send failure', [
                 'merchant_id' => $merchant->id,

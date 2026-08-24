@@ -175,7 +175,7 @@
 
             $emailFlights = ($booking->flightSegments && $booking->flightSegments->isNotEmpty())
                 ? $booking->flightSegments->sortBy('segment_number')->values()
-                : $booking->bookingFlights->sortBy('departure_time')->values();
+                : $booking->bookingFlights->values();
 
             $firstFlight = $emailFlights->first();
             $mainLogoUrl = null;
@@ -316,6 +316,25 @@
                     $segLogoUrl = "https://pics.avs.io/200/50/" . strtoupper(trim($flight->operating_carrier)) . ".png";
                 }
                 $segLogoUrl = $fetchBase64Logo($segLogoUrl);
+
+                $dayOffset = (int)($flight->day_offset ?? 0);
+                if ($dayOffset <= 0 && $flight->departure_time && $flight->arrival_time) {
+                    $dayOffset = (int)$flight->arrival_time->diffInDays($flight->departure_time);
+                }
+
+                $transitText = $flight->transit_text;
+                if (!$transitText && isset($emailFlights[$loop->index + 1])) {
+                    $nextFlight = $emailFlights[$loop->index + 1];
+                    if ($flight->arrival_time && $nextFlight->departure_time) {
+                        $diffMins = $flight->arrival_time->diffInMinutes($nextFlight->departure_time);
+                        if ($diffMins > 0 && $diffMins <= 1440) {
+                            $lHrs = floor($diffMins / 60);
+                            $lMins = $diffMins % 60;
+                            $destName = strtoupper($flight->destination_city ?: ($flight->destination_airport_name ?: $flight->destination_airport));
+                            $transitText = "{$lHrs}h {$lMins}m TRANSIT AT {$destName}";
+                        }
+                    }
+                }
             @endphp
 
             <!-- Flight Segment Card -->
@@ -370,6 +389,9 @@
                                 <div style="font-size: 11px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->destination_city ?: $flight->destination_airport_name }}</div>
                                 <div style="font-size: 10px; color: #64748b; margin-top: 4px;">
                                     Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                    @if($dayOffset > 0)
+                                        <span style="color: #dc2626; font-size: 10px; font-weight: bold; margin-left: 4px;">(+{{ $dayOffset }} {{ $dayOffset == 1 ? 'day' : 'days' }})</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -377,10 +399,10 @@
                 </div>
             </div>
 
-            <!-- Connection Layover Bar (Only from PNR Expert if available) -->
-            @if(!empty($flight->transit_text))
+            <!-- Connection Layover Bar (Calculated via PNR Expert logic) -->
+            @if(!empty($transitText))
                 <div class="layover-bar">
-                    {{ $flight->transit_text }}
+                    {{ $transitText }}
                 </div>
             @endif
         @empty

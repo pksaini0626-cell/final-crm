@@ -184,6 +184,7 @@ class TicketController extends Controller
             'custom_note' => 'nullable|string',
             'booking_status' => 'required|in:ticketed,booking_complete',
             'notes' => 'nullable|string',
+            'custom_html' => 'nullable|string',
         ]);
 
         $merchant = $booking->merchantProfile ?: \App\Models\Merchant::where('name', $booking->merchant)->first();
@@ -212,6 +213,7 @@ class TicketController extends Controller
                     'custom_note' => $request->input('custom_note'),
                     'from_email' => $request->input('from_email'),
                     'from_name' => $request->input('from_name', 'Reservation Desk'),
+                    'custom_html' => $request->input('custom_html'),
                 ];
 
                 $this->mailService->sendETicketEmail($booking, $pdfBinary, $overrides);

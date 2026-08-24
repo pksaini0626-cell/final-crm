@@ -57,6 +57,12 @@ class CustomerETicketMail extends Mailable
      */
     public function content(): Content
     {
+        if (!empty($this->overrides['custom_html'])) {
+            return new Content(
+                htmlString: $this->overrides['custom_html'],
+            );
+        }
+
         return new Content(
             view: 'emails.customer_e_ticket',
             with: [

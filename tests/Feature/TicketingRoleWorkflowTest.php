@@ -41,6 +41,7 @@ class TicketingRoleWorkflowTest extends TestCase
             'from_address' => 'reservations@testmerchant.com',
             'from_name' => 'Test Reservations',
             'is_active' => true,
+            'is_smtp_active' => true,
         ]);
 
         $this->booking = Booking::create([
@@ -176,5 +177,27 @@ class TicketingRoleWorkflowTest extends TestCase
             'payment_status' => 'received',
             'email_address' => 'updated.customer@example.com',
         ]);
+    }
+
+    /** @test */
+    public function ticketing_user_can_send_e_ticket_with_custom_html_rich_text(): void
+    {
+        Mail::fake();
+
+        $customHtml = '<div id="custom-eticket-content"><h1>Customized E-Ticket Content</h1><p>Special instructions for passenger.</p></div>';
+
+        $response = $this->actingAs($this->ticketingUser)->post(route('manager.tickets.send', $this->booking), [
+            'email_address' => 'customer@example.com',
+            'subject' => 'Customized E-Ticket Itinerary',
+            'booking_status' => 'ticketed',
+            'custom_html' => $customHtml,
+        ]);
+
+        $response->assertRedirect();
+
+        Mail::assertSent(\App\Mail\CustomerETicketMail::class, function ($mail) use ($customHtml) {
+            return $mail->hasTo('customer@example.com') &&
+                   $mail->overrides['custom_html'] === $customHtml;
+        });
     }
 }

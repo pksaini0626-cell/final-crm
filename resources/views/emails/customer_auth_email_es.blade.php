@@ -131,6 +131,7 @@
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Género</th>
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Fecha Nac.</th>
                                         <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Precio</th>
+                                        <th style="background-color: #f1f5f9; color: #334155; font-weight: bold; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1;">Asiento</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -144,6 +145,7 @@
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->gender ? ($pax->gender == 'F' ? 'Femenino' : ($pax->gender == 'O' ? 'Otro' : 'Masculino')) : ($pax->title == 'MS' || $pax->title == 'MRS' ? 'Femenino' : 'Masculino') }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->dob ? ($pax->dob instanceof \DateTimeInterface ? $pax->dob->format('d M Y') : \Carbon\Carbon::parse($pax->dob)->format('d M Y')) : '-' }}</td>
                                             <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->currency }} {{ number_format($booking->total_amount / max(count($booking->passengers), 1), 2) }}</td>
+                                            <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $pax->seat_number ?: '-' }}</td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -248,7 +250,7 @@
                                             @if($flight->flight_duration || $flight->aircraft_type)
                                                 <div style="font-size: 11px; color: #64748b; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f1f5f9; font-family: Arial, sans-serif;">
                                                     @if($flight->flight_duration) <span>Duración: {{ $flight->flight_duration }}</span> @endif
-                                                    @if($flight->aircraft_type) <span style="margin-left: 14px;">Aeronave: {{ $flight->aircraft_type }}</span> @endif
+                                                    <!-- @if($flight->aircraft_type) <span style="margin-left: 14px;">Aeronave: {{ $flight->aircraft_type }}</span> @endif -->
                                                 </div>
                                             @endif
                                         </td>

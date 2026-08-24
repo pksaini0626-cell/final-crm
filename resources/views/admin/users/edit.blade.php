@@ -61,6 +61,7 @@
                             <option value="agent" {{ old('role', $user->role) === 'agent' ? 'selected' : '' }}>Agent</option>
                             <option value="ticketing" {{ old('role', $user->role) === 'ticketing' ? 'selected' : '' }}>Ticketing Agent</option>
                             <option value="changes" {{ old('role', $user->role) === 'changes' ? 'selected' : '' }}>Booking Changes Desk</option>
+                            <option value="mis" {{ old('role', $user->role) === 'mis' ? 'selected' : '' }}>MIS Agent</option>
                             <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>

@@ -154,7 +154,7 @@
         <div class="container-fluid px-lg-4">
             <a class="navbar-brand d-flex items-center gap-2 font-black fs-4" href="{{ route('bookings.index') }}">
                 <span class="p-1 px-2 rounded-3 bg-primary text-white me-1 fs-5"><i class="bi bi-send-fill"></i></span>
-                <span class="navbar-brand-gradient fw-bold">Flight CRM</span>
+                <!-- <span class="navbar-brand-gradient fw-bold">Flight CRM</span> -->
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCRM" aria-controls="navbarCRM" aria-expanded="false" aria-label="Toggle navigation">

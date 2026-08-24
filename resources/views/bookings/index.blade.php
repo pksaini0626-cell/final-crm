@@ -166,8 +166,9 @@
                     @forelse ($bookings as $booking)
                         <tr>
                             <!-- Booking ID -->
-                            <td class="ps-3 fw-bold text-primary font-monospace">
-                                #{{ $booking->booking_id }}
+                            <td class="px-3 py-3">
+                                <span class="fw-bold text-primary font-monospace fs-6 d-block">{{ $booking->booking_id }}</span>
+                                <span class="small text-secondary d-block">Agent: {{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</span>
                             </td>
                             <!-- PNR -->
                             <td>
@@ -350,6 +351,10 @@
                         <div class="col-12 pt-2 border-top border-light-subtle">
                             <div class="small text-secondary text-uppercase fw-bold">Billing Address</div>
                             <div class="small text-dark" x-text="booking.billing_address || 'No billing address recorded.'"></div>
+                        </div>
+                        <div class="col-12 pt-2 border-top border-light-subtle">
+                            <div class="small text-secondary text-uppercase fw-bold">Service provided</div>
+                            <div class="small text-success fw-bold text-capitalize" x-text="booking.service_provided"></div>
                         </div>
 
                         <div class="col-12 pt-2 border-top border-light-subtle">
@@ -562,43 +567,43 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Assign Ticketing Modal Popup -->
-<div x-show="assignModalOpen" x-cloak style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="d-flex align-items-center justify-content-center" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered w-100" style="max-width: 500px;">
-        <div class="modal-content card bg-white border-0 shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
-                    <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
-                </h5>
-                <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
-            </div>
-            <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
-                @csrf
-                <div class="card-body p-4">
-                    <p class="text-secondary small mb-3">
-                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-primary" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
-                        <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select">
-                            <option value="">-- Choose Ticketing Team Member --</option>
-                            @foreach($ticketingAgents as $tAgent)
-                                <option value="{{ $tAgent->id }}">
-                                    {{ $tAgent->alias_name ?: $tAgent->name }} ({{ $tAgent->email }})
-                                </option>
-                            @endforeach
-                        </select>
+    <!-- Assign Ticketing Modal Popup -->
+    <div x-show="assignModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': assignModalOpen }" tabindex="-1" x-cloak>
+        <div class="modal-dialog modal-dialog-centered w-100" style="max-width: 500px;">
+            <div class="modal-content card bg-white border-0 shadow-lg w-100" style="pointer-events: auto;">
+                <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                    <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
+                    </h5>
+                    <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
+                </div>
+                <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
+                    @csrf
+                    <div class="card-body p-4">
+                        <p class="text-secondary small mb-3">
+                            Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-primary" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
+                            <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select">
+                                <option value="">-- Choose Ticketing Team Member --</option>
+                                @foreach($ticketingAgents as $tAgent)
+                                    <option value="{{ $tAgent->id }}">
+                                        {{ $tAgent->alias_name ?: $tAgent->name }} ({{ $tAgent->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer bg-light border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
-                    <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
-                        <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
-                    </button>
-                </div>
-            </form>
+                    <div class="card-footer bg-light border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
+                        <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
+                            <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

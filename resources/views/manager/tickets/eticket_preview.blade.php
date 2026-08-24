@@ -122,8 +122,10 @@
             </form>
 
             <!-- Send E-Ticket Form -->
-            <form action="{{ route('manager.tickets.send', $booking) }}" method="POST" class="card bg-dark border-secondary shadow-sm">
+            <form id="eticket-send-form" action="{{ route('manager.tickets.send', $booking) }}" method="POST" class="card bg-dark border-secondary shadow-sm">
                 @csrf
+                <input type="hidden" name="custom_html" id="custom_html_input">
+
                 <div class="card-header bg-dark border-secondary py-3">
                     <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
                         <i class="bi bi-send-fill text-success"></i> 2. Send E-Ticket Email Settings
@@ -182,25 +184,139 @@
             </form>
         </div>
 
-        <!-- RIGHT COLUMN: LIVE HTML EMAIL PREVIEW -->
+        <!-- RIGHT COLUMN: LIVE HTML EMAIL PREVIEW & RICH TEXT EDITOR -->
         <div class="col-lg-7">
             <div class="card bg-dark border-secondary shadow-sm">
-                <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div class="card-header bg-dark border-secondary py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
-                        <i class="bi bi-eye text-info"></i> Live Email Template Preview
+                        <i class="bi bi-pencil-square text-info"></i> Live Rich Text Editor &amp; Email Preview
                     </h2>
-                    <span class="badge bg-info-subtle text-info border border-info-subtle">Customer Email View</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" onclick="resetTemplate()" class="btn btn-outline-warning btn-sm py-1 px-2 font-semibold" title="Revert to Original Template">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Template
+                        </button>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle">Customer Email View</span>
+                    </div>
                 </div>
-                <div class="card-body p-0 bg-white overflow-hidden text-dark" style="border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
-                    @include('emails.customer_e_ticket', [
-                        'booking' => $booking,
-                        'supportPhone' => old('support_phone', '+1-888-476-0932'),
-                        'customNote' => null
-                    ])
+
+                <!-- Rich Text Editor Formatting Toolbar -->
+                <div class="bg-secondary bg-opacity-25 border-bottom border-secondary p-2 d-flex flex-wrap align-items-center gap-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Text Formatting">
+                        <button type="button" onclick="formatText('bold')" class="btn btn-outline-light py-1 px-2" title="Bold (Ctrl+B)">
+                            <i class="bi bi-type-bold"></i>
+                        </button>
+                        <button type="button" onclick="formatText('italic')" class="btn btn-outline-light py-1 px-2" title="Italic (Ctrl+I)">
+                            <i class="bi bi-type-italic"></i>
+                        </button>
+                        <button type="button" onclick="formatText('underline')" class="btn btn-outline-light py-1 px-2" title="Underline (Ctrl+U)">
+                            <i class="bi bi-type-underline"></i>
+                        </button>
+                        <button type="button" onclick="formatText('strikeThrough')" class="btn btn-outline-light py-1 px-2" title="Strikethrough">
+                            <i class="bi bi-type-strikethrough"></i>
+                        </button>
+                    </div>
+
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Font Size">
+                        <button type="button" onclick="formatText('fontSize', '2')" class="btn btn-outline-light py-1 px-2" title="Small Text">Small</button>
+                        <button type="button" onclick="formatText('fontSize', '3')" class="btn btn-outline-light py-1 px-2" title="Normal Text">Normal</button>
+                        <button type="button" onclick="formatText('fontSize', '5')" class="btn btn-outline-light py-1 px-2" title="Large Text">Large</button>
+                    </div>
+
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Text Alignment">
+                        <button type="button" onclick="formatText('justifyLeft')" class="btn btn-outline-light py-1 px-2" title="Align Left">
+                            <i class="bi bi-text-left"></i>
+                        </button>
+                        <button type="button" onclick="formatText('justifyCenter')" class="btn btn-outline-light py-1 px-2" title="Align Center">
+                            <i class="bi bi-text-center"></i>
+                        </button>
+                        <button type="button" onclick="formatText('justifyRight')" class="btn btn-outline-light py-1 px-2" title="Align Right">
+                            <i class="bi bi-text-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1 me-1">
+                        <span class="text-light small me-1">Color:</span>
+                        <input type="color" onchange="formatText('foreColor', this.value)" class="form-control form-control-color form-control-sm p-0 border-0" title="Text Color" style="width: 28px; height: 28px; cursor: pointer;">
+                        <input type="color" value="#ffffaa" onchange="formatText('hiliteColor', this.value)" class="form-control form-control-color form-control-sm p-0 border-0 ms-1" title="Highlight Color" style="width: 28px; height: 28px; cursor: pointer;">
+                    </div>
+
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Insert Link">
+                        <button type="button" onclick="addLink()" class="btn btn-outline-info py-1 px-2" title="Insert Link">
+                            <i class="bi bi-link-45deg"></i>
+                        </button>
+                        <button type="button" onclick="formatText('removeFormat')" class="btn btn-outline-secondary py-1 px-2" title="Clear Formatting">
+                            <i class="bi bi-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rich Text Editable Container -->
+                <div class="card-body p-0 bg-white overflow-auto text-dark position-relative" style="min-height: 500px; max-height: 75vh; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                    <div id="email-preview-container" contenteditable="true" style="outline: none; min-height: 500px; padding: 0;">
+                        @include('emails.customer_e_ticket', [
+                            'booking' => $booking,
+                            'supportPhone' => old('support_phone', '+1-888-476-0932'),
+                            'customNote' => null
+                        ])
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
+
+<script>
+    let defaultTemplateHtml = '';
+
+    function formatText(command, value = null) {
+        document.execCommand(command, false, value);
+        syncHtml();
+    }
+
+    function addLink() {
+        const url = prompt('Enter URL link for insertion:', 'https://');
+        if (url) {
+            formatText('createLink', url);
+        }
+    }
+
+    function resetTemplate() {
+        if (confirm('Revert all live edits back to the default original template?')) {
+            const container = document.getElementById('email-preview-container');
+            if (container) {
+                container.innerHTML = defaultTemplateHtml;
+                syncHtml();
+            }
+        }
+    }
+
+    function syncHtml() {
+        const container = document.getElementById('email-preview-container');
+        const hiddenInput = document.getElementById('custom_html_input');
+        if (container && hiddenInput) {
+            hiddenInput.value = container.innerHTML;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('email-preview-container');
+        const form = document.getElementById('eticket-send-form');
+
+        if (container) {
+            defaultTemplateHtml = container.innerHTML;
+            syncHtml();
+
+            container.addEventListener('input', syncHtml);
+            container.addEventListener('keyup', syncHtml);
+            container.addEventListener('blur', syncHtml);
+        }
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                syncHtml();
+            });
+        }
+    });
+</script>
 @endsection

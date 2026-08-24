@@ -154,78 +154,78 @@
             </div>
         @endif
     </div>
-</div>
 
-<!-- Assign Ticketing Modal -->
-<div x-show="assignModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': assignModalOpen }" tabindex="-1" x-cloak>
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content card bg-white border-primary shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
-                    <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
-                </h5>
-                <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
-            </div>
-            <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
-                @csrf
-                <div class="card-body p-4">
-                    <p class="text-secondary small mb-3">
-                        Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-dark" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
-                        <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select border-primary">
-                            <option value="">-- Choose Ticketing Team Member --</option>
-                            @foreach($ticketingAgents as $tAgent)
-                                <option value="{{ $tAgent->id }}">
-                                    {{ $tAgent->alias_name ?: $tAgent->name }} ({{ $tAgent->email }})
-                                </option>
-                            @endforeach
-                        </select>
+    <!-- Assign Ticketing Modal -->
+    <div x-show="assignModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': assignModalOpen }" tabindex="-1" x-cloak>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card bg-white border-primary shadow-lg w-100" style="pointer-events: auto;">
+                <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                    <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-person-check text-primary"></i> Assign Booking to Ticketing Agent
+                    </h5>
+                    <button type="button" @click="assignModalOpen = false" class="btn-close"></button>
+                </div>
+                <form :action="getAssignAction()" @submit="$el.action = getAssignAction()" method="POST">
+                    @csrf
+                    <div class="card-body p-4">
+                        <p class="text-secondary small mb-3">
+                            Select a ticketing team member to generate and issue the e-ticket for Booking Reference <strong class="text-dark" x-text="`#${assignBookingCode}`"></strong>. An assignment notification email will be dispatched to the selected agent.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Select Ticketing Agent <span class="text-danger">*</span></label>
+                            <select name="ticketing_user_id" required x-model="assignTicketingUserId" class="form-select border-primary">
+                                <option value="">-- Choose Ticketing Team Member --</option>
+                                @foreach($ticketingAgents as $tAgent)
+                                    <option value="{{ $tAgent->id }}">
+                                        {{ $tAgent->alias_name ?: $tAgent->name }} ({{ $tAgent->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
-                    <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
-                        <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
-                    </button>
-                </div>
-            </form>
+                    <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
+                        <button type="button" @click="assignModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold">
+                            <i class="bi bi-send me-1"></i> Assign &amp; Send Notification
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Approve Payment Status Modal -->
-<div x-show="approveModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': approveModalOpen }" tabindex="-1" x-cloak>
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content card bg-white border-warning shadow-lg w-100" style="pointer-events: auto;">
-            <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
-                <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
-                    <i class="bi bi-credit-card-2-front text-warning"></i> Approve Payment Status
-                </h5>
-                <button type="button" @click="approveModalOpen = false" class="btn-close"></button>
-            </div>
-            <form :action="getApprovePaymentAction()" method="POST">
-                @csrf
-                <div class="card-body p-4">
-                    <p class="text-secondary small mb-3">
-                        Update payment status for Booking Reference <strong class="text-dark" x-text="`#${approveBookingRef}`"></strong>.
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold text-uppercase">New Payment Status <span class="text-danger">*</span></label>
-                        <select name="payment_status" required class="form-select border-warning">
-                            <option value="received">Received</option>
-                            <option value="refund">Refund</option>
-                        </select>
+    <!-- Approve Payment Status Modal -->
+    <div x-show="approveModalOpen" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" class="modal fade" :class="{ 'show d-block': approveModalOpen }" tabindex="-1" x-cloak>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card bg-white border-warning shadow-lg w-100" style="pointer-events: auto;">
+                <div class="card-header bg-white border-bottom border-light-subtle d-flex justify-content-between align-items-center py-3">
+                    <h5 class="modal-title text-dark fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-credit-card-2-front text-warning"></i> Approve Payment Status
+                    </h5>
+                    <button type="button" @click="approveModalOpen = false" class="btn-close"></button>
+                </div>
+                <form :action="getApprovePaymentAction()" method="POST">
+                    @csrf
+                    <div class="card-body p-4">
+                        <p class="text-secondary small mb-3">
+                            Update payment status for Booking Reference <strong class="text-dark" x-text="`#${approveBookingRef}`"></strong>.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">New Payment Status <span class="text-danger">*</span></label>
+                            <select name="payment_status" required class="form-select border-warning">
+                                <option value="received">Received</option>
+                                <option value="refund">Refund</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
-                    <button type="button" @click="approveModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
-                    <button type="submit" class="btn btn-warning btn-sm px-4 fw-bold text-dark">
-                        <i class="bi bi-check-circle me-1"></i> Update Payment Status
-                    </button>
-                </div>
-            </form>
+                    <div class="card-footer bg-white border-top border-light-subtle d-flex justify-content-end gap-2 py-3">
+                        <button type="button" @click="approveModalOpen = false" class="btn btn-outline-secondary btn-sm px-3">Cancel</button>
+                        <button type="submit" class="btn btn-warning btn-sm px-4 fw-bold text-dark">
+                            <i class="bi bi-check-circle me-1"></i> Update Payment Status
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

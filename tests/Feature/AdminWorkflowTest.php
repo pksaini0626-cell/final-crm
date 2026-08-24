@@ -143,6 +143,62 @@ class AdminWorkflowTest extends TestCase
     }
 
     /**
+     * Test Admin can create, edit, and filter user profiles with MIS role.
+     */
+    public function test_admin_can_create_and_manage_mis_user(): void
+    {
+        // Create MIS user
+        $payload = [
+            'name' => 'MIS Agent One',
+            'alias_name' => 'MIS Agent 1',
+            'email' => 'misagent@example.com',
+            'password' => 'password123',
+            'role' => 'mis',
+            'is_active' => '1',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.users.store'), $payload);
+
+        $response->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'misagent@example.com',
+            'alias_name' => 'MIS Agent 1',
+            'role' => 'mis',
+        ]);
+
+        $misUser = User::where('email', 'misagent@example.com')->first();
+
+        // Update MIS user
+        $updatePayload = [
+            'name' => 'MIS Agent Updated',
+            'alias_name' => 'MIS Agent 1 Updated',
+            'email' => 'misagent@example.com',
+            'role' => 'mis',
+            'is_active' => '1',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.users.update', $misUser), $updatePayload);
+
+        $response->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseHas('users', [
+            'id' => $misUser->id,
+            'name' => 'MIS Agent Updated',
+            'role' => 'mis',
+        ]);
+
+        // Filter user directory by MIS role
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.users.index', ['role' => 'mis']));
+
+        $response->assertStatus(200);
+        $response->assertSee('MIS Agent Updated');
+    }
+
+    /**
      * Test Admin multi-filtering and case status updates.
      */
     public function test_admin_booking_filtering_and_case_status_management(): void

@@ -147,10 +147,55 @@ class AuthEmailWorkflowTest extends TestCase
             return $mail->hasTo('customer@example.com');
         });
 
+        Mail::assertSent(CustomerAuthMail::class, function ($mail) {
+            return $mail->hasTo('agent@example.com');
+        });
+
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'booking_status' => 'email_auth_sent',
         ]);
+    }
+
+    /**
+     * Test authorization email is sent separately to both customer and agent without CC/BCC.
+     */
+    public function test_auth_email_sent_separately_to_agent_without_cc_or_bcc(): void
+    {
+        Mail::fake();
+
+        $booking = Booking::create([
+            'booking_date' => date('Y-m-d'),
+            'vertical' => 'flight',
+            'service_provided' => 'new_booking',
+            'booking_portal' => 'gds',
+            'currency' => 'USD',
+            'total_amount' => 500.00,
+            'paid_to_airline' => 400.00,
+            'total_mco' => 100.00,
+            'payment_status' => 'pending',
+            'booking_status' => 'booking_generated',
+            'agent_id' => $this->agent->id,
+            'email_address' => 'customer@example.com',
+        ]);
+
+        $service = new \App\Services\MerchantMailService();
+        $service->sendAuthorizationEmail($booking, [
+            'email_address' => 'customer@example.com',
+            'subject' => 'Authorization Mail Test',
+        ]);
+
+        // Verify two separate CustomerAuthMail mailables dispatched
+        Mail::assertSent(CustomerAuthMail::class, 2);
+
+        // Verify one is addressed to customer, one addressed to agent
+        Mail::assertSent(CustomerAuthMail::class, function ($mail) {
+            return $mail->hasTo('customer@example.com') && empty($mail->cc) && empty($mail->bcc);
+        });
+
+        Mail::assertSent(CustomerAuthMail::class, function ($mail) {
+            return $mail->hasTo('agent@example.com') && empty($mail->cc) && empty($mail->bcc);
+        });
     }
 
     /**

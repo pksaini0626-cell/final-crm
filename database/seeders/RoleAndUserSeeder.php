@@ -15,7 +15,7 @@ class RoleAndUserSeeder extends Seeder
     public function run(): void
     {
         // 1. Ensure Spatie roles exist
-        $roles = ['admin', 'manager', 'agent', 'ticketing', 'changes'];
+        $roles = ['admin', 'manager', 'agent', 'ticketing', 'changes', 'mis'];
         foreach ($roles as $roleName) {
             Role::firstOrCreate(['name' => $roleName]);
         }
