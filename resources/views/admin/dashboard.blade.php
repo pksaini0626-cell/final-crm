@@ -35,18 +35,42 @@
                     <span class="badge bg-primary text-white font-monospace small px-2 py-1">TODAY</span>
                 </div>
                 <div class="card-body p-3">
-                    <div class="row g-3 text-center">
-                        <div class="col-4 border-end border-light-subtle">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-3 text-center border-end border-light-subtle">
                             <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Bookings</span>
                             <span class="h4 fw-bold text-dark font-monospace mb-0">{{ number_format($todayBookingsCount) }}</span>
                         </div>
-                        <div class="col-4 border-end border-light-subtle">
-                            <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total Amount</span>
-                            <span class="h5 fw-bold text-primary font-monospace mb-0">${{ number_format($todayTotalAmount, 2) }}</span>
-                        </div>
-                        <div class="col-4">
-                            <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total MCO</span>
-                            <span class="h5 fw-bold text-success font-monospace mb-0">${{ number_format($todayTotalMco, 2) }}</span>
+                        <div class="col-9">
+                            @if(!isset($todayCurrencyBreakdown) || $todayCurrencyBreakdown->isEmpty())
+                                <div class="row text-center">
+                                    <div class="col-6 border-end border-light-subtle">
+                                        <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total Amount</span>
+                                        <span class="h6 fw-bold text-primary font-monospace mb-0">$0.00</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total MCO</span>
+                                        <span class="h6 fw-bold text-success font-monospace mb-0">$0.00</span>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="vstack gap-1">
+                                    @foreach($todayCurrencyBreakdown as $cCode => $cItem)
+                                        <div class="d-flex justify-content-between align-items-center px-2.5 py-1 bg-light rounded border border-light-subtle small font-monospace">
+                                            <span class="badge bg-primary text-white font-monospace">{{ $cCode }}</span>
+                                            <div class="d-flex gap-3">
+                                                <div>
+                                                    <span class="text-secondary small me-1">Amount:</span>
+                                                    <strong class="text-primary">{{ $cCode }} {{ number_format($cItem->total_amount, 2) }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="text-secondary small me-1">MCO:</span>
+                                                    <strong class="text-success">{{ $cCode }} {{ number_format($cItem->total_mco, 2) }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -63,18 +87,42 @@
                     <span class="badge bg-success text-white font-monospace small px-2 py-1">{{ strtoupper(now()->format('M Y')) }}</span>
                 </div>
                 <div class="card-body p-3">
-                    <div class="row g-3 text-center">
-                        <div class="col-4 border-end border-light-subtle">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-3 text-center border-end border-light-subtle">
                             <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Bookings</span>
                             <span class="h4 fw-bold text-dark font-monospace mb-0">{{ number_format($monthBookingsCount) }}</span>
                         </div>
-                        <div class="col-4 border-end border-light-subtle">
-                            <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total Amount</span>
-                            <span class="h5 fw-bold text-primary font-monospace mb-0">${{ number_format($monthTotalAmount, 2) }}</span>
-                        </div>
-                        <div class="col-4">
-                            <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total MCO</span>
-                            <span class="h5 fw-bold text-success font-monospace mb-0">${{ number_format($monthTotalMco, 2) }}</span>
+                        <div class="col-9">
+                            @if(!isset($monthCurrencyBreakdown) || $monthCurrencyBreakdown->isEmpty())
+                                <div class="row text-center">
+                                    <div class="col-6 border-end border-light-subtle">
+                                        <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total Amount</span>
+                                        <span class="h6 fw-bold text-primary font-monospace mb-0">$0.00</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Total MCO</span>
+                                        <span class="h6 fw-bold text-success font-monospace mb-0">$0.00</span>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="vstack gap-1">
+                                    @foreach($monthCurrencyBreakdown as $cCode => $cItem)
+                                        <div class="d-flex justify-content-between align-items-center px-2.5 py-1 bg-light rounded border border-light-subtle small font-monospace">
+                                            <span class="badge bg-success text-white font-monospace">{{ $cCode }}</span>
+                                            <div class="d-flex gap-3">
+                                                <div>
+                                                    <span class="text-secondary small me-1">Amount:</span>
+                                                    <strong class="text-primary">{{ $cCode }} {{ number_format($cItem->total_amount, 2) }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="text-secondary small me-1">MCO:</span>
+                                                    <strong class="text-success">{{ $cCode }} {{ number_format($cItem->total_mco, 2) }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -133,9 +181,17 @@
                                     </span>
                                 </td>
                                 <td class="px-3 py-3 text-end">
-                                    <span class="fw-bold text-success font-monospace fs-6">
-                                        ${{ number_format($agent->today_total_mco ?? 0, 2) }}
-                                    </span>
+                                    @if(isset($agent->today_currency_mco) && $agent->today_currency_mco->count() > 0)
+                                        @foreach($agent->today_currency_mco as $cCode => $cMco)
+                                            <div class="fw-bold text-success font-monospace small">
+                                                {{ $cCode }} {{ number_format($cMco->total_mco, 2) }}
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <span class="fw-bold text-success font-monospace fs-6">
+                                            ${{ number_format($agent->today_total_mco ?? 0, 2) }}
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -290,10 +346,22 @@
                                             </span>
                                         </td>
                                         <td class="px-3 py-3 text-end font-monospace text-secondary fw-semibold">
-                                            ${{ number_format($tAgent->month_total_amount ?? 0, 2) }}
+                                            @if(isset($tAgent->month_currency_mco) && $tAgent->month_currency_mco->count() > 0)
+                                                @foreach($tAgent->month_currency_mco as $cCode => $cMco)
+                                                    <div class="small">{{ $cCode }} {{ number_format($cMco->total_amount, 2) }}</div>
+                                                @endforeach
+                                            @else
+                                                ${{ number_format($tAgent->month_total_amount ?? 0, 2) }}
+                                            @endif
                                         </td>
-                                        <td class="px-3 py-3 text-end font-monospace fw-bold text-success fs-6">
-                                            ${{ number_format($tAgent->month_total_mco ?? 0, 2) }}
+                                        <td class="px-3 py-3 text-end font-monospace fw-bold text-success">
+                                            @if(isset($tAgent->month_currency_mco) && $tAgent->month_currency_mco->count() > 0)
+                                                @foreach($tAgent->month_currency_mco as $cCode => $cMco)
+                                                    <div class="small">{{ $cCode }} {{ number_format($cMco->total_mco, 2) }}</div>
+                                                @endforeach
+                                            @else
+                                                ${{ number_format($tAgent->month_total_mco ?? 0, 2) }}
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

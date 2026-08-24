@@ -19,14 +19,28 @@ class AdminDashboardController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        // 1. Top Section - KPI Cards Summary
+        // 1. Top Section - KPI Cards Summary (Grouped by Currency)
         $todayBookingsCount = Booking::whereDate('created_at', $today)->count();
         $todayTotalAmount = (float) Booking::whereDate('created_at', $today)->sum('total_amount');
         $todayTotalMco = (float) Booking::whereDate('created_at', $today)->sum('total_mco');
 
+        $todayCurrencyBreakdown = Booking::whereDate('created_at', $today)
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco, COUNT(*) as booking_count")
+            ->groupBy('currency_code')
+            ->orderBy('currency_code')
+            ->get()
+            ->keyBy('currency_code');
+
         $monthBookingsCount = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
         $monthTotalAmount = (float) Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('total_amount');
         $monthTotalMco = (float) Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('total_mco');
+
+        $monthCurrencyBreakdown = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco, COUNT(*) as booking_count")
+            ->groupBy('currency_code')
+            ->orderBy('currency_code')
+            ->get()
+            ->keyBy('currency_code');
 
         // 2. Second Section - Currently Logged in Agents (role = 'agent', logged in today)
         $loggedInAgents = User::where('role', 'agent')
@@ -40,6 +54,15 @@ class AdminDashboardController extends Controller
             }], 'total_mco')
             ->orderByDesc('last_login_at')
             ->get();
+
+        foreach ($loggedInAgents as $agent) {
+            $agent->today_currency_mco = Booking::where('agent_id', $agent->id)
+                ->whereDate('created_at', $today)
+                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_mco) as total_mco")
+                ->groupBy('currency_code')
+                ->get()
+                ->keyBy('currency_code');
+        }
 
         // All active agents count for context
         $totalActiveAgents = User::where('role', 'agent')->where('is_active', true)->count();
@@ -71,6 +94,15 @@ class AdminDashboardController extends Controller
                 return $agent;
             });
 
+        foreach ($topAgents as $agent) {
+            $agent->month_currency_mco = Booking::where('agent_id', $agent->id)
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_mco) as total_mco, SUM(total_amount) as total_amount")
+                ->groupBy('currency_code')
+                ->get()
+                ->keyBy('currency_code');
+        }
+
         // Chart Data formatting for Top 5 Agents MCO Pie Chart
         $chartLabels = $topAgents->pluck('alias_name')->map(fn($name, $i) => $name ?: 'Agent #' . ($i + 1))->toArray();
         $chartData = $topAgents->pluck('month_total_mco')->toArray();
@@ -79,9 +111,11 @@ class AdminDashboardController extends Controller
             'todayBookingsCount',
             'todayTotalAmount',
             'todayTotalMco',
+            'todayCurrencyBreakdown',
             'monthBookingsCount',
             'monthTotalAmount',
             'monthTotalMco',
+            'monthCurrencyBreakdown',
             'loggedInAgents',
             'totalActiveAgents',
             'latestBookings',
