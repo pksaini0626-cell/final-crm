@@ -34,6 +34,17 @@ class MerchantController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        }
+        if ($request->has('is_smtp_active')) {
+            $request->merge([
+                'is_smtp_active' => $request->boolean('is_smtp_active'),
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'merchant_code' => 'required|string|unique:merchants,merchant_code|max:255',
@@ -43,7 +54,7 @@ class MerchantController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'support_mail' => 'nullable|email|max:255',
             'wallet_balance' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
             'notes' => 'nullable|string',
             
             // SMTP Settings
@@ -56,7 +67,7 @@ class MerchantController extends Controller
             'from_name' => 'nullable|string|max:255',
             'reply_to_email' => 'nullable|email|max:255',
             'reply_to_name' => 'nullable|string|max:255',
-            'is_smtp_active' => 'boolean',
+            'is_smtp_active' => 'nullable|boolean',
 
             // Extra details
             'code' => 'nullable|string|max:255',
@@ -64,9 +75,9 @@ class MerchantController extends Controller
             'currency' => 'required|string|max:3',
         ]);
 
-        // Default toggles to false if missing
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_smtp_active'] = $request->has('is_smtp_active');
+        // Default toggles if missing
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : true;
+        $validated['is_smtp_active'] = $request->has('is_smtp_active') ? $request->boolean('is_smtp_active') : false;
 
         Merchant::create($validated);
 
@@ -87,6 +98,17 @@ class MerchantController extends Controller
      */
     public function update(Request $request, Merchant $merchant)
     {
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        }
+        if ($request->has('is_smtp_active')) {
+            $request->merge([
+                'is_smtp_active' => $request->boolean('is_smtp_active'),
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'merchant_code' => 'required|string|max:255|unique:merchants,merchant_code,' . $merchant->id,
@@ -96,7 +118,7 @@ class MerchantController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'support_mail' => 'nullable|email|max:255',
             'wallet_balance' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
             'notes' => 'nullable|string',
             
             // SMTP Settings
@@ -109,7 +131,7 @@ class MerchantController extends Controller
             'from_name' => 'nullable|string|max:255',
             'reply_to_email' => 'nullable|email|max:255',
             'reply_to_name' => 'nullable|string|max:255',
-            'is_smtp_active' => 'boolean',
+            'is_smtp_active' => 'nullable|boolean',
 
             // Extra details
             'code' => 'nullable|string|max:255',
@@ -117,8 +139,8 @@ class MerchantController extends Controller
             'currency' => 'required|string|max:3',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_smtp_active'] = $request->has('is_smtp_active');
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : false;
+        $validated['is_smtp_active'] = $request->has('is_smtp_active') ? $request->boolean('is_smtp_active') : false;
 
         // Only update password if a new one is provided
         if (empty($validated['smtp_password'])) {

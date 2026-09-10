@@ -128,6 +128,30 @@ class Booking extends Model
         );
     }
 
+    public function getPnrAttribute(): string
+    {
+        return $this->airline_pnr ?: ($this->gk_pnr ?: ($this->booking_id ?: ''));
+    }
+
+    public function getPassengerNameAttribute(): string
+    {
+        $firstPassenger = $this->relationLoaded('passengers') ? $this->passengers->first() : $this->passengers()->first();
+        if ($firstPassenger) {
+            return trim("{$firstPassenger->first_name} {$firstPassenger->last_name}");
+        }
+        return $this->card_holder_name ?: 'N/A';
+    }
+
+    public function getEmailAttribute(): ?string
+    {
+        return $this->email_address;
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->billing_phone ?: $this->calling_number;
+    }
+
     /**
      * Get the agent who owns the booking.
      */
@@ -206,5 +230,21 @@ class Booking extends Model
     public function latestChangeRequest(): HasOne
     {
         return $this->hasOne(ChangeRequest::class, 'booking_id')->latestOfMany();
+    }
+
+    /**
+     * Get the payment links for the booking.
+     */
+    public function paymentLinks(): HasMany
+    {
+        return $this->hasMany(PaymentLink::class, 'booking_id')->latest();
+    }
+
+    /**
+     * Get the NMI transactions for the booking.
+     */
+    public function nmiTransactions(): HasMany
+    {
+        return $this->hasMany(NmiTransaction::class, 'booking_id')->latest();
     }
 }

@@ -165,19 +165,19 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
                     <li class="nav-item">
                         <a class="nav-link fw-semibold px-3 rounded-2" href="{{ route('bookings.index') }}">
-                            <i class="bi bi-journal-bookmark me-1"></i> Bookings
+                            Bookings
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('call-logs.*') ? 'active' : '' }}" href="{{ route('call-logs.index') }}">
-                            <i class="bi bi-telephone-inbound me-1"></i> Call Logs
+                            Calls
                         </a>
                     </li>
                     
-                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'ticketing']))
+                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'ticketing', 'agent']))
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2" href="{{ route('manager.tickets.index') }}">
-                                <i class="bi bi-ticket-detailed me-1"></i> Ticketing Queue
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('manager.tickets.*') ? 'active' : '' }}" href="{{ route('manager.tickets.index') }}">
+                                Ticketing
                             </a>
                         </li>
                     @endif
@@ -185,31 +185,88 @@
                     @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'changes']))
                         <li class="nav-item">
                             <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('changes.*') ? 'active' : '' }}" href="{{ route('changes.index') }}">
-                                <i class="bi bi-arrow-repeat me-1"></i> Changes Queue
+                                Changes
                             </a>
                         </li>
                     @endif
 
+                    @if(Auth::check() && in_array(Auth::user()->role, ['hr', 'accounts']))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-semibold px-3 rounded-2 {{ request()->routeIs('payroll.*') ? 'active text-primary' : '' }}" href="#" id="payrollDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-wallet-fill me-1 text-primary"></i> HR &amp; Payroll
+                            </a>
+                            <ul class="dropdown-menu shadow border-light-subtle rounded-3 py-2" aria-labelledby="payrollDropdown">
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('payroll.employees.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('payroll.employees.index') }}">
+                                        <i class="bi bi-people-fill text-primary"></i> Employee Profiles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('payroll.payslips.index') ? 'active bg-primary text-white' : '' }}" href="{{ route('payroll.payslips.index') }}">
+                                        <i class="bi bi-receipt text-success"></i> Monthly Payslips
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('payroll.payslips.create') ? 'active bg-primary text-white' : '' }}" href="{{ route('payroll.payslips.create') }}">
+                                        <i class="bi bi-file-earmark-plus text-warning"></i> Generate Payslip
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('payroll.leaves.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('payroll.leaves.index') }}">
+                                        <i class="bi bi-calendar-check text-info"></i> Leave Balances
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    @endif
+
+                    @auth
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('employee.payslips.*') ? 'active text-primary' : '' }}" href="{{ route('employee.payslips.index') }}">
+                                <i class="bi bi-wallet2 me-1"></i> My Payslips
+                            </a>
+                        </li>
+                    @endauth
+
                     @if(Auth::check() && Auth::user()->role === 'admin')
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                                <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.*') ? 'active text-primary' : '' }}" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-shield-lock-fill me-1 text-primary"></i> Admin Panel
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}" href="{{ route('admin.bookings.index') }}">
-                                <i class="bi bi-shield-lock me-1"></i> Admin Control
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
-                                <i class="bi bi-people me-1"></i> Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.merchants.*') ? 'active' : '' }}" href="{{ route('admin.merchants.index') }}">
-                                <i class="bi bi-building me-1"></i> Merchants
-                            </a>
+                            <ul class="dropdown-menu shadow border-light-subtle rounded-3 py-2" aria-labelledby="adminDropdown">
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.dashboard') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.dashboard') }}">
+                                        <i class="bi bi-speedometer2 text-primary"></i> Executive Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.reports.daily') }}">
+                                        <i class="bi bi-file-earmark-bar-graph text-success"></i> Daily Report
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.bookings.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.bookings.index') }}">
+                                        <i class="bi bi-shield-lock text-warning"></i> Admin Control
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.users.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.users.index') }}">
+                                        <i class="bi bi-people text-info"></i> User Management
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.merchants.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.merchants.index') }}">
+                                        <i class="bi bi-building text-secondary"></i> Merchant Profiles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.charges.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.charges.index') }}">
+                                        <i class="bi bi-credit-card-2-front text-danger"></i> Charges &amp; Links
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     @endif
                 </ul>
@@ -278,6 +335,9 @@
             &copy; {{ date('Y') }} Flight CRM System. All rights reserved.
         </div>
     </footer>
+
+    <!-- Global Booking Details Modal Partial -->
+    @include('partials.show')
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -10,7 +10,7 @@
             </h1>
             <p class="text-secondary small mb-0">Full override controls for all booking parameters.</p>
         </div>
-        <a href="{{ Auth::user()->role === 'ticketing' ? route('manager.tickets.index') : route('admin.bookings.index') }}" class="btn btn-outline-secondary btn-sm fw-semibold d-inline-flex align-items-center gap-2">
+        <a href="{{ in_array(Auth::user()->role, ['ticketing', 'agent']) ? route('manager.tickets.index') : route('admin.bookings.index') }}" class="btn btn-outline-secondary btn-sm fw-semibold d-inline-flex align-items-center gap-2">
             <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>
@@ -316,8 +316,14 @@
                         <input type="text" name="calling_number" value="{{ old('calling_number', $booking->calling_number) }}" class="form-control">
                     </div>
 
+                    <!-- Billing Phone -->
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Billing Phone</label>
+                        <input type="text" name="billing_phone" value="{{ old('billing_phone', $booking->billing_phone) }}" class="form-control">
+                    </div>
+
                     <!-- Billing Address -->
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Billing Address</label>
                         <input type="text" name="billing_address" value="{{ old('billing_address', $booking->billing_address) }}" class="form-control" placeholder="Full billing address">
                     </div>

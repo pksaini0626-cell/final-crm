@@ -23,23 +23,46 @@ class TicketController extends Controller
     /**
      * Display a list of bookings awaiting approval or ready for ticketing.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $query = Booking::whereNotIn('booking_status', ['void'])
             ->with(['passengers', 'bookingFlights', 'merchantProfile', 'agent', 'ticketingUser']);
 
-        if ($user && $user->role === 'ticketing') {
+        // Search query across booking_id, airline_pnr, gk_pnr, card_holder_name, email, and passenger names
+        $search = trim($request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_id', 'like', "%{$search}%")
+                  ->orWhere('airline_pnr', 'like', "%{$search}%")
+                  ->orWhere('gk_pnr', 'like', "%{$search}%")
+                  ->orWhere('card_holder_name', 'like', "%{$search}%")
+                  ->orWhere('email_address', 'like', "%{$search}%")
+                  ->orWhereHas('passengers', function ($qp) use ($search) {
+                      $qp->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Scope filter: 'all' vs 'my'
+        $scope = $request->input('scope', 'all');
+        if ($scope === 'my' && $user) {
+            $query->where(function ($q) use ($user) {
+                $q->where('agent_id', $user->id)
+                  ->orWhere('ticketing_user_id', $user->id);
+            });
+        } elseif ($user && $user->role === 'ticketing') {
             $query->where(function ($q) use ($user) {
                 $q->where('ticketing_user_id', $user->id)
                   ->orWhereNull('ticketing_user_id');
             });
         }
 
-        $bookings = $query->latest()->paginate(10);
+        $bookings = $query->latest()->paginate(10)->withQueryString();
         $ticketingAgents = \App\Models\User::where('role', 'ticketing')->where('is_active', true)->orderBy('alias_name')->get();
 
-        return view('manager.tickets.index', compact('bookings', 'ticketingAgents'));
+        return view('manager.tickets.index', compact('bookings', 'ticketingAgents', 'scope', 'search'));
     }
 
     /**

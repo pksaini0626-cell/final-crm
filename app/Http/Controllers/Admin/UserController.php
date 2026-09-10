@@ -49,21 +49,28 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'employee_name' => 'nullable|string|max:255',
             'alias_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
             'contact' => 'nullable|string|max:255',
             'extension' => 'nullable|string|max:255',
-            'role' => 'required|in:admin,manager,agent,ticketing,changes,mis',
+            'role' => 'required|in:admin,manager,agent,ticketing,changes,mis,hr,accounts',
             'agent_language' => 'nullable|in:english,spanish,both',
             'joining_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : true;
 
         $user = User::create($validated);
 
@@ -88,14 +95,21 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        if ($request->has('is_active')) {
+            $request->merge([
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'employee_name' => 'nullable|string|max:255',
             'alias_name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:6',
             'contact' => 'nullable|string|max:255',
             'extension' => 'nullable|string|max:255',
-            'role' => 'required|in:admin,manager,agent,ticketing,changes,mis',
+            'role' => 'required|in:admin,manager,agent,ticketing,changes,mis,hr,accounts',
             'agent_language' => 'nullable|in:english,spanish,both',
             'joining_date' => 'nullable|date',
             'is_active' => 'nullable|boolean',
@@ -107,7 +121,7 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : false;
 
         $user->update($validated);
 

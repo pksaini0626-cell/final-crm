@@ -64,4 +64,20 @@ class Merchant extends Model
     {
         return $this->hasMany(Booking::class, 'merchant_id');
     }
+
+    /**
+     * Get the payment links generated for the merchant.
+     */
+    public function paymentLinks(): HasMany
+    {
+        return $this->hasMany(PaymentLink::class);
+    }
+
+    /**
+     * Get the NMI transactions processed by the merchant.
+     */
+    public function nmiTransactions(): HasMany
+    {
+        return $this->hasMany(NmiTransaction::class);
+    }
 }

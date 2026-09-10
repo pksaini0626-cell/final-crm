@@ -246,12 +246,12 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Calling Phone</label>
-                                <input type="text" name="calling_number" x-model="callingNumber" @input="syncPhoneNumbers" class="form-control" placeholder="+15551234567">
+                                <input type="text" name="calling_number" x-model="formData.calling_number" @input="syncPhoneNumbers" class="form-control" placeholder="+15551234567">
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Billing Phone</label>
-                                <input type="text" name="billing_phone" x-model="billingPhone" class="form-control" placeholder="+15551234567">
+                                <input type="text" name="billing_phone" x-model="formData.billing_phone" class="form-control" placeholder="+15551234567">
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Billing Address</label>
@@ -795,6 +795,8 @@
             to_city: '',
             card_holder_name: '',
             card_type: '',
+            calling_number: dup ? (dup.calling_number || '') : '',
+            billing_phone: dup ? (dup.billing_phone || '') : '',
             billing_address: '',
             card_last_4: '',
             card_expiration: '',
@@ -1006,9 +1008,11 @@
             },
 
             syncPhoneNumbers() {
-                if (!this.billingPhone) {
-                    this.billingPhone = this.callingNumber;
+                if (!this.formData.billing_phone) {
+                    this.formData.billing_phone = this.formData.calling_number;
                 }
+                this.callingNumber = this.formData.calling_number;
+                this.billingPhone = this.formData.billing_phone;
             },
 
             formatDateHeader(dateStr) {
@@ -1103,6 +1107,15 @@
                             formDataObj.append(key, this.formData[key]);
                         }
                     });
+
+                    // Ensure calling_number and billing_phone are always appended
+                    if (!formDataObj.has('calling_number')) {
+                        formDataObj.append('calling_number', this.formData.calling_number || this.callingNumber || '');
+                    }
+                    if (!formDataObj.has('billing_phone')) {
+                        formDataObj.append('billing_phone', this.formData.billing_phone || this.billingPhone || '');
+                    }
+
                     formDataObj.append('initial_remark', this.initialRemark || '');
 
                     this.passengers.forEach((pax, idx) => {

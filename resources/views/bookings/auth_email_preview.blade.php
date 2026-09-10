@@ -67,6 +67,12 @@
                         <input type="email" name="email_address" value="{{ old('email_address', $booking->email_address) }}" required class="form-control">
                     </div>
 
+                    <!-- Customer Phone Number -->
+                    <div>
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Phone Number</label>
+                        <input type="text" name="customer_phone" value="{{ old('customer_phone', $booking->calling_number ?: ($booking->billing_phone ?: '')) }}" class="form-control font-monospace" placeholder="+15551234567">
+                    </div>
+
                     <!-- Subject Line -->
                     <div>
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Subject Line <span class="text-danger">*</span></label>
@@ -254,6 +260,17 @@
             container.addEventListener('input', syncHtml);
             container.addEventListener('keyup', syncHtml);
             container.addEventListener('blur', syncHtml);
+        }
+
+        const phoneInput = document.querySelector('input[name="customer_phone"]');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                const phoneCell = document.getElementById('auth_preview_phone_cell');
+                if (phoneCell) {
+                    phoneCell.textContent = this.value.trim() || 'N/A';
+                    syncHtml();
+                }
+            });
         }
 
         if (form) {

@@ -170,7 +170,7 @@
             <table class="table table-hover table-striped align-middle mb-0 text-nowrap">
                 <thead class="table-light text-secondary small text-uppercase border-bottom">
                     <tr>
-                        <th class="px-3 py-3">Booking ID / Agent</th>
+                        <th class="px-3 py-3">ID / Agent</th>
                         <th class="px-3 py-3">Customer Details</th>
                         <th class="px-3 py-3">Financials</th>
                         <th class="px-3 py-3">Booking Status</th>
@@ -251,13 +251,16 @@
                                         </button>
                                     @endif
                                     <a href="{{ route('bookings.request-change.create', $booking->id) }}" class="btn btn-outline-info btn-sm px-2 py-1" title="Request Changes from Changes Team">
-                                        <i class="bi bi-arrow-repeat"></i> Request Change
+                                        Changes
                                     </a>
                                     <a href="{{ route('bookings.create', ['duplicate' => $booking->id]) }}" class="btn btn-outline-secondary btn-sm px-2 py-1" title="Duplicate Booking">
-                                        <i class="bi bi-files"></i> Duplicate
+                                        <i class="bi bi-files"></i>
                                     </a>
+                                    <button type="button" onclick="showBookingDetailModal({{ $booking->id }})" class="btn btn-outline-primary btn-sm px-2 py-1" title="View Complete Booking Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                     <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn btn-outline-info btn-sm px-2 py-1" title="Edit Booking">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                        <i class="bi bi-pencil-square"></i> 
                                     </a>
                                     <form action="{{ route('admin.bookings.destroy', $booking) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this booking record?')">
                                         @csrf

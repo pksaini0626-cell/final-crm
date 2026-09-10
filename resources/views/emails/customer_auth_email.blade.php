@@ -303,7 +303,7 @@
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Phone Number:</td>
-                                    <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->calling_number ?: ($booking->billing_phone ?: 'N/A') }}</td>
+                                    <td id="auth_preview_phone_cell" style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">{{ $booking->calling_number ?: ($booking->billing_phone ?: 'N/A') }}</td>
                                 </tr>
                                 <tr>
                                     <td style="font-weight: bold; background-color: #f8fafc; padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155;">Email:</td>

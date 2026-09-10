@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\DailyReportController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\Manager\TicketController;
 
@@ -18,14 +19,22 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+use App\Http\Controllers\Admin\PaymentChargeController;
+use App\Http\Controllers\PublicPaymentController;
+
 // Public customer authorization signature flow
 Route::get('/booking/authorize/{booking}/{hash}', [CustomerAuthController::class, 'show'])->name('customer.authorize');
 Route::post('/booking/authorize/{booking}/{hash}', [CustomerAuthController::class, 'approve'])->name('customer.authorize.approve');
+
+// Public customer payment link checkout flow
+Route::get('/pay/{token}', [PublicPaymentController::class, 'show'])->name('payment.show');
+Route::post('/pay/{token}', [PublicPaymentController::class, 'process'])->name('payment.process');
 
 Route::middleware('auth')->group(function () {
     Route::post('/pnr/parse', [\App\Http\Controllers\Api\PnrController::class, 'parse'])->name('pnr.parse');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+    Route::get('/bookings/{booking}/json', [BookingController::class, 'getBookingJson'])->name('bookings.json');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/bookings/{booking}/remarks', [BookingController::class, 'addRemark'])->name('bookings.add-remark');
     Route::post('/bookings/{booking}/update-tickets', [BookingController::class, 'updateTicketsAndSeats'])->name('bookings.update-tickets');
@@ -55,7 +64,7 @@ Route::middleware(['auth', 'role:manager|admin|changes'])->group(function () {
     Route::post('/changes/requests/{changeRequest}/status', [\App\Http\Controllers\ChangeRequestController::class, 'updateStatus'])->name('changes.update-status');
 });
 
-Route::middleware(['auth', 'role:manager|admin|ticketing'])->group(function () {
+Route::middleware(['auth', 'role:manager|admin|ticketing|agent'])->group(function () {
     Route::post('/bookings/{booking}/approve-auth', [BookingController::class, 'approveAuth'])->name('bookings.approve-auth');
     Route::get('/manager/tickets', [TicketController::class, 'index'])->name('manager.tickets.index');
     Route::post('/manager/tickets/{booking}/approve-payment', [TicketController::class, 'approvePayment'])->name('manager.tickets.approve-payment');
@@ -65,8 +74,8 @@ Route::middleware(['auth', 'role:manager|admin|ticketing'])->group(function () {
     Route::post('/manager/tickets/{booking}/send', [TicketController::class, 'sendETicket'])->name('manager.tickets.send');
 });
 
-// Booking Edit & Update (Accessible to Admin, Manager, and Ticketing)
-Route::middleware(['auth', 'role:admin|manager|ticketing'])->prefix('admin')->name('admin.')->group(function () {
+// Booking Edit & Update (Accessible to Admin, Manager, Ticketing, and Agent)
+Route::middleware(['auth', 'role:admin|manager|ticketing|agent'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
 });
@@ -86,7 +95,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/merchants/{merchant}', [MerchantController::class, 'update'])->name('merchants.update');
     Route::post('/merchants/{merchant}/toggle-active', [MerchantController::class, 'toggleActive'])->name('merchants.toggle-active');
     Route::post('/merchants/{merchant}/test-smtp', [MerchantController::class, 'testSmtp'])->name('merchants.test-smtp');
-
+                                                
     // User Management
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -102,4 +111,50 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/bookings/{booking}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
     Route::post('/bookings/{booking}/add-admin-remark', [AdminBookingController::class, 'addAdminRemark'])->name('bookings.add-admin-remark');
     Route::post('/bookings/{booking}/update-case-status', [AdminBookingController::class, 'updateCaseStatus'])->name('bookings.update-case-status');
+
+    // Merchant Payment Charges & Link Management
+    Route::get('/charges', [PaymentChargeController::class, 'index'])->name('charges.index');
+    Route::post('/charges/link', [PaymentChargeController::class, 'storeLink'])->name('charges.store-link');
+    Route::post('/charges/link/{paymentLink}/cancel', [PaymentChargeController::class, 'cancelLink'])->name('charges.cancel-link');
+    Route::post('/charges/direct', [PaymentChargeController::class, 'directCharge'])->name('charges.direct');
+    Route::get('/charges/find-booking', [PaymentChargeController::class, 'findBookingByPnr'])->name('charges.find-booking');
+    // Daily Reports
+    Route::get('/reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
+    Route::get('/reports/daily/detail', [DailyReportController::class, 'detail'])->name('reports.daily.detail');
+    Route::get('/reports/daily/export', [DailyReportController::class, 'exportCsv'])->name('reports.daily.export');
 });
+
+// HR & Accounts Exclusive Payroll Management Routes
+use App\Http\Controllers\Payroll\EmployeeProfileController;
+use App\Http\Controllers\Payroll\PayslipController;
+use App\Http\Controllers\Payroll\LeaveManagementController;
+use App\Http\Controllers\Employee\MyPayslipController;
+
+Route::middleware(['auth', 'role:hr|accounts'])->prefix('payroll')->name('payroll.')->group(function () {
+    // Employee Profile & Salary Management
+    Route::get('/employees', [EmployeeProfileController::class, 'index'])->name('employees.index');
+    Route::get('/employees/{user}/edit', [EmployeeProfileController::class, 'edit'])->name('employees.edit');
+    Route::put('/employees/{user}', [EmployeeProfileController::class, 'update'])->name('employees.update');
+    Route::get('/employees/{user}/salary-data', [EmployeeProfileController::class, 'getSalaryData'])->name('employees.salary-data');
+
+    // Monthly Payslips
+    Route::get('/payslips', [PayslipController::class, 'index'])->name('payslips.index');
+    Route::get('/payslips/create', [PayslipController::class, 'create'])->name('payslips.create');
+    Route::post('/payslips/preview', [PayslipController::class, 'calculatePreview'])->name('payslips.preview');
+    Route::post('/payslips', [PayslipController::class, 'store'])->name('payslips.store');
+    Route::get('/payslips/{payslip}', [PayslipController::class, 'show'])->name('payslips.show');
+    Route::get('/payslips/{payslip}/pdf', [PayslipController::class, 'downloadPdf'])->name('payslips.download-pdf');
+    Route::delete('/payslips/{payslip}', [PayslipController::class, 'destroy'])->name('payslips.destroy');
+
+    // Leave Balances & Accrual
+    Route::get('/leaves', [LeaveManagementController::class, 'index'])->name('leaves.index');
+    Route::put('/leaves/{user}', [LeaveManagementController::class, 'update'])->name('leaves.update');
+    Route::post('/leaves/accrue', [LeaveManagementController::class, 'triggerAccrual'])->name('leaves.accrue');
+});
+
+// Employee Portal: Self-service view and download password-protected payslips
+Route::middleware('auth')->group(function () {
+    Route::get('/my-payslips', [MyPayslipController::class, 'index'])->name('employee.payslips.index');
+    Route::get('/my-payslips/{payslip}/pdf', [MyPayslipController::class, 'downloadPdf'])->name('employee.payslips.download-pdf');
+});
+

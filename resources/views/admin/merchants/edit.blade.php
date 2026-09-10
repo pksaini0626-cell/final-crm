@@ -5,8 +5,8 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold text-white mb-1 d-flex align-items-center gap-2">
-                <i class="bi bi-pencil-square text-primary"></i> Edit Merchant Profile
+            <h1 class="h3 fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-pencil-square text-dark"></i> Edit Merchant Profile
             </h1>
             <p class="text-secondary small mb-0">Update merchant details and verify SMTP connectivity.</p>
         </div>
@@ -105,11 +105,26 @@
                                 <input type="number" step="0.01" name="wallet_balance" value="{{ old('wallet_balance', $merchant->wallet_balance) }}" required class="form-control font-monospace">
                             </div>
 
-                            <div class="col-md-4 d-flex align-items-end">
-                                <div class="form-check mb-2">
-                                    <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $merchant->is_active) ? 'checked' : '' }} class="form-check-input">
-                                    <label for="is_active" class="form-check-label text-white fw-semibold">Active Profile</label>
+                            <div class="col-md-4 d-flex flex-column justify-content-end">
+                                <label class="form-label text-secondary small fw-bold text-uppercase mb-2">Profile Status</label>
+                                @php
+                                    $merchantActive = (string) old('is_active', $merchant->is_active ? '1' : '0');
+                                @endphp
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check form-check-inline mb-0">
+                                        <input type="radio" name="is_active" id="merchant_active_1" value="1" {{ $merchantActive === '1' ? 'checked' : '' }} class="form-check-input">
+                                        <label for="merchant_active_1" class="form-check-label text-white fw-semibold" style="cursor: pointer;">
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> Active</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline mb-0">
+                                        <input type="radio" name="is_active" id="merchant_active_0" value="0" {{ $merchantActive === '0' ? 'checked' : '' }} class="form-check-input">
+                                        <label for="merchant_active_0" class="form-check-label text-white fw-semibold" style="cursor: pointer;">
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> Inactive</span>
+                                        </label>
+                                    </div>
                                 </div>
+                                @error('is_active')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
 
                             <!-- Notes -->

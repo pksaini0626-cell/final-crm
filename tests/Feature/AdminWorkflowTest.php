@@ -295,4 +295,76 @@ class AdminWorkflowTest extends TestCase
             'id' => $userToDelete->id,
         ]);
     }
+
+    /**
+     * Test is_active radio button values (1, 0, true, false) and form rendering.
+     */
+    public function test_admin_user_active_radio_button_states_and_validation(): void
+    {
+        // 1. Verify create form renders active and inactive radio buttons
+        $createPageResponse = $this->actingAs($this->admin)
+            ->get(route('admin.users.create'));
+        $createPageResponse->assertStatus(200);
+        $createPageResponse->assertSee('name="is_active"', false);
+        $createPageResponse->assertSee('value="1"', false);
+        $createPageResponse->assertSee('value="0"', false);
+
+        // 2. Create user with Inactive radio button (value = "0")
+        $inactiveUserPayload = [
+            'name' => 'Inactive Agent',
+            'alias_name' => 'Inact A',
+            'email' => 'inact@example.com',
+            'password' => 'password123',
+            'role' => 'agent',
+            'is_active' => '0',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.users.store'), $inactiveUserPayload);
+        $response->assertRedirect(route('admin.users.index'));
+
+        $user = User::where('email', 'inact@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertFalse((bool) $user->is_active);
+
+        // 3. Update user to Active with radio button (value = "1")
+        $updatePayload = [
+            'name' => 'Inactive Agent',
+            'alias_name' => 'Inact A',
+            'email' => 'inact@example.com',
+            'role' => 'agent',
+            'is_active' => '1',
+        ];
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.users.update', $user), $updatePayload);
+        $response->assertRedirect(route('admin.users.index'));
+
+        $user->refresh();
+        $this->assertTrue((bool) $user->is_active);
+
+        // 4. Update user with "0" to deactivate
+        $updatePayload['is_active'] = '0';
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.users.update', $user), $updatePayload);
+        $response->assertRedirect(route('admin.users.index'));
+
+        $user->refresh();
+        $this->assertFalse((bool) $user->is_active);
+
+        // 5. Verify string values like "true" and "false" do not fail validation
+        $updatePayload['is_active'] = 'true';
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.users.update', $user), $updatePayload);
+        $response->assertSessionHasNoErrors();
+        $user->refresh();
+        $this->assertTrue((bool) $user->is_active);
+
+        $updatePayload['is_active'] = 'false';
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.users.update', $user), $updatePayload);
+        $response->assertSessionHasNoErrors();
+        $user->refresh();
+        $this->assertFalse((bool) $user->is_active);
+    }
 }
+

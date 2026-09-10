@@ -281,6 +281,8 @@ class BookingController extends Controller
             'airline_pnr' => 'nullable|string|max:255',
             'trip_type' => 'nullable|in:one_way,round_trip,multi_city',
             'card_last_4' => 'nullable|string|max:4',
+            'calling_number' => 'nullable|string|max:255',
+            'billing_phone' => 'nullable|string|max:255',
             'billing_address' => 'nullable|string|max:1000',
             'payment_info' => 'nullable|string',
             'new_remark' => 'nullable|string',
@@ -311,6 +313,12 @@ class BookingController extends Controller
             }
             if ($request->has('card_last_4')) {
                 $updateFields['card_last_4'] = $request->input('card_last_4');
+            }
+            if ($request->has('calling_number')) {
+                $updateFields['calling_number'] = $request->input('calling_number');
+            }
+            if ($request->has('billing_phone')) {
+                $updateFields['billing_phone'] = $request->input('billing_phone');
             }
             if ($request->has('billing_address')) {
                 $updateFields['billing_address'] = $request->input('billing_address');
@@ -473,8 +481,23 @@ class BookingController extends Controller
             'custom_note' => 'nullable|string',
             'agent_name' => 'nullable|string',
             'agent_ext' => 'nullable|string',
+            'customer_phone' => 'nullable|string|max:255',
             'custom_html' => 'nullable|string',
         ]);
+
+        $phoneToUpdate = $request->input('customer_phone') ?: $request->input('calling_number');
+        if ($phoneToUpdate) {
+            $phoneUpdates = [];
+            if (empty($booking->calling_number) || $booking->calling_number === 'N/A') {
+                $phoneUpdates['calling_number'] = $phoneToUpdate;
+            }
+            if (empty($booking->billing_phone) || $booking->billing_phone === 'N/A') {
+                $phoneUpdates['billing_phone'] = $phoneToUpdate;
+            }
+            if (!empty($phoneUpdates)) {
+                $booking->update($phoneUpdates);
+            }
+        }
 
         $booking->load(['passengers', 'bookingFlights', 'agent']);
 
@@ -544,5 +567,29 @@ class BookingController extends Controller
         }
 
         return redirect()->back()->with('success', 'Customer authorization approved successfully for Booking #' . $booking->booking_id . '. Status updated to EMAIL AUTH DONE & notification email sent to agent.');
+    }
+
+    /**
+     * Get complete booking details in JSON format for the modal.
+     */
+    public function getBookingJson(Booking $booking)
+    {
+        $booking->load([
+            'agent',
+            'ticketingUser',
+            'merchantProfile',
+            'passengers',
+            'bookingFlights',
+            'flightSegments',
+            'bookingRemarks.user',
+            'bookingCards',
+            'paymentLinks.merchant',
+            'nmiTransactions'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'booking' => $booking
+        ]);
     }
 }

@@ -120,6 +120,7 @@ class AdminBookingController extends Controller
             'card_expiration' => 'nullable|string',
             'email_address' => 'required|email',
             'calling_number' => 'nullable|string',
+            'billing_phone' => 'nullable|string',
             'billing_address' => 'nullable|string|max:1000',
             'airline_name' => 'nullable|string',
             'airline_pnr' => 'nullable|string',
@@ -196,7 +197,7 @@ class AdminBookingController extends Controller
             ]);
         });
 
-        if (Auth::user()->role === 'ticketing') {
+        if (in_array(Auth::user()->role, ['ticketing', 'agent'])) {
             return redirect()->route('manager.tickets.index')->with('success', 'Booking updated successfully.');
         }
 

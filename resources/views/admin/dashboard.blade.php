@@ -9,11 +9,15 @@
                 <i class="bi bi-speedometer2 text-primary"></i> Executive Admin Dashboard
             </h1>
             <p class="text-secondary small mb-0">System performance, live agent activity, recent bookings, and revenue breakdowns.</p>
+            <code>Current Server time : {{ now()->format('H:i:s') }}</code>
         </div>
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-white text-secondary border border-light-subtle px-3 py-2 fw-semibold shadow-sm">
                 <i class="bi bi-calendar3 me-1 text-primary"></i> {{ now()->format('l, M j, Y') }}
             </span>
+            <a href="{{ route('admin.reports.daily') }}" class="btn btn-success btn-sm fw-bold px-3 py-2 shadow-sm">
+                <i class="bi bi-file-earmark-bar-graph me-1"></i> Daily Report
+            </a>
             <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-primary btn-sm fw-bold px-3 py-2 shadow-sm">
                 <i class="bi bi-shield-lock me-1"></i> Admin Control
             </a>
@@ -235,7 +239,7 @@
                         @forelse($latestBookings as $booking)
                             <tr>
                                 <td class="px-3 py-3">
-                                    <span class="fw-bold text-primary font-monospace fs-6 d-block">#{{ $booking->airli }}</span>
+                                    <span class="fw-bold text-primary font-monospace fs-6 d-block">#{{ $booking->airline_pnr }}</span>
                                     <span class="small text-secondary">Agent: <strong class="text-dark">{{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</strong></span>
                                 </td>
                                 <td class="px-3 py-3">
@@ -275,9 +279,9 @@
                                 </td>
                                 <td class="px-3 py-3 text-end">
                                     <div class="d-inline-flex gap-1">
-                                        <a href="{{ route('admin.bookings.index') }}?q={{ $booking->booking_id }}" class="btn btn-outline-primary btn-sm px-2 py-1" title="View Booking">
-                                            <i class="bi bi-eye me-1"></i> View
-                                        </a>
+                                        <button type="button" onclick="showBookingDetailModal({{ $booking->id }})" class="btn btn-outline-primary btn-sm px-2 py-1" title="View Complete Booking Details">
+                                             <i class="bi bi-eye me-1"></i> View
+                                         </button>
                                         <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn btn-outline-info btn-sm px-2 py-1" title="Edit Booking">
                                             <i class="bi bi-pencil-square me-1"></i> Edit
                                         </a>

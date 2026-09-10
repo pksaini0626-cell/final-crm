@@ -95,15 +95,20 @@
                                         <div class="text-muted small mt-1"><i class="bi bi-check2-circle text-success me-1"></i> Approved: {{ $aBooking->updated_at->diffForHumans() }}</div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
-                                    <button type="button" @click="openDetails({{ json_encode($aBooking) }})" class="btn btn-outline-success btn-sm fw-semibold">
-                                        <i class="bi bi-eye me-1"></i> View Details
+                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle gap-1">
+                                    <button type="button" @click="openDetails({{ json_encode($aBooking) }})" class="btn btn-outline-secondary btn-sm fw-semibold">
+                                        <i class="bi bi-eye me-1"></i> Details
                                     </button>
-                                    @if(in_array($aBooking->booking_status, ['email_auth_done', 'ticketed', 'booking_complete']))
-                                        <button type="button" @click="openAssignModal({{ $aBooking->id }}, '{{ $aBooking->booking_id }}', {{ $aBooking->ticketing_user_id ?: 'null' }})" class="btn btn-primary btn-sm fw-bold">
-                                            <i class="bi bi-person-check me-1"></i> Assign Ticketing
-                                        </button>
-                                    @endif
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('manager.tickets.preview-email', $aBooking) }}" class="btn btn-success btn-sm fw-bold">
+                                            <i class="bi bi-envelope-paper me-1"></i> Send E-Ticket
+                                        </a>
+                                        @if(in_array($aBooking->booking_status, ['email_auth_done', 'ticketed', 'booking_complete']))
+                                            <button type="button" @click="openAssignModal({{ $aBooking->id }}, '{{ $aBooking->booking_id }}', {{ $aBooking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary btn-sm fw-semibold" title="Assign to Ticketing Agent">
+                                                <i class="bi bi-person-check"></i>
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -221,6 +226,11 @@
                                         <i class="bi bi-envelope me-1"></i>
                                         {{ in_array($booking->booking_status, ['email_auth_sent', 'email_auth_done']) ? 'Resend Auth' : 'Auth Mail' }}
                                     </a>
+                                    @if(in_array($booking->booking_status, ['email_auth_done', 'ticketed', 'booking_complete']))
+                                        <a href="{{ route('manager.tickets.preview-email', $booking->id) }}" class="btn btn-outline-success" title="Preview & Send E-Ticket">
+                                            <i class="bi bi-ticket-perforated me-1"></i> E-Ticket
+                                        </a>
+                                    @endif
                                      @if($booking->booking_status !== 'void')
                                          <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary" title="Assign to Ticketing Agent">
                                              <i class="bi bi-person-check me-1"></i>
@@ -299,8 +309,8 @@
     </div>
 
     <!-- DETAIL OFF-CANVAS / DRAWER POPUP -->
-    <div x-show="slideoverOpen" class="offcanvas offcanvas-end bg-white border-start border-light-subtle text-dark" :class="{ 'show': slideoverOpen }" tabindex="-1" style="width: 650px; max-width: 90vw;" x-cloak>
-        <div class="offcanvas-header bg-white border-bottom border-light-subtle py-3">
+    <div x-show="slideoverOpen" class="offcanvas offcanvas-end bg-white border-start border-light-subtle text-dark shadow" :class="{ 'show': slideoverOpen }" tabindex="-1" style="width: 650px; max-width: 90vw;" x-cloak>
+        <div class="offcanvas-header bg-white border-bottom border-light-subtle py-3 d-flex align-items-start justify-content-between">
             <div>
                 <h5 class="offcanvas-title h6 text-dark fw-bold mb-0 text-uppercase">
                     Booking Details <span class="text-primary font-monospace ms-2" x-text="`#${booking.booking_id}`"></span>
@@ -356,6 +366,12 @@
                             <div class="small text-secondary text-uppercase fw-bold">Service provided</div>
                             <div class="small text-success fw-bold text-capitalize" x-text="booking.service_provided"></div>
                         </div>
+                        <div class="col-12 pt-2 border-top border-light-subtle">
+                            <div class="small text-secondary text-uppercase fw-bold">Customer details</div>
+                            <div class="small text-dark fw-bold" x-text="booking.card_holder_name || 'N/A'"></div>
+                            <div class="small text-primary font-monospace" x-text="booking.calling_number || booking.billing_phone || 'No phone recorded'"></div>
+                            <div class="small text-secondary" x-text="booking.email_address"></div>
+                        </div>
 
                         <div class="col-12 pt-2 border-top border-light-subtle">
                             <div class="small text-primary text-uppercase fw-bold mb-1"><i class="bi bi-journal-text me-1"></i> Payment Info Notes / Remarks</div>
@@ -388,6 +404,14 @@
                         <div class="col-sm-4">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Card Last 4</label>
                             <input type="text" name="card_last_4" :value="booking.card_last_4" maxlength="4" minlength="4" placeholder="4321" class="form-control form-control-sm font-monospace">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Calling Phone</label>
+                            <input type="text" name="calling_number" :value="booking.calling_number" placeholder="Calling Phone Number" class="form-control form-control-sm font-monospace">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Billing Phone</label>
+                            <input type="text" name="billing_phone" :value="booking.billing_phone" placeholder="Billing Phone Number" class="form-control form-control-sm font-monospace">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Billing Address</label>

@@ -27,6 +27,39 @@
         </div>
     @endif
 
+    <!-- Search and Scope Filter Bar -->
+    <div class="card bg-white border-light-subtle shadow-sm mb-4">
+        <div class="card-body p-3">
+            <form action="{{ route('manager.tickets.index') }}" method="GET" class="row g-2 align-items-center">
+                <input type="hidden" name="scope" value="{{ $scope ?? 'all' }}">
+                <div class="col-md-6 col-lg-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-secondary border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control border-start-0" placeholder="Search by PNR, Reference, Customer, Email...">
+                        @if(!empty($search))
+                            <a href="{{ route('manager.tickets.index', ['scope' => $scope ?? 'all']) }}" class="btn btn-outline-secondary border-start-0" title="Clear Search">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        @endif
+                        <button type="submit" class="btn btn-primary fw-semibold">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center gap-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Scope Filter">
+                        <a href="{{ route('manager.tickets.index', array_merge(request()->except('page'), ['scope' => 'all'])) }}" class="btn {{ ($scope ?? 'all') === 'all' ? 'btn-primary active' : 'btn-outline-secondary' }} fw-semibold">
+                            <i class="bi bi-list-task me-1"></i> All Tickets Queue
+                        </a>
+                        <a href="{{ route('manager.tickets.index', array_merge(request()->except('page'), ['scope' => 'my'])) }}" class="btn {{ ($scope ?? 'all') === 'my' ? 'btn-primary active' : 'btn-outline-secondary' }} fw-semibold">
+                            <i class="bi bi-person-badge me-1"></i> My Bookings
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Bookings Table -->
     <div class="card bg-white border-light-subtle shadow-sm overflow-hidden mb-4">
         <div class="table-responsive">
@@ -128,7 +161,7 @@
                                     <a href="{{ route('manager.tickets.preview', $booking) }}" target="_blank" class="btn btn-outline-info btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1">
                                         <i class="bi bi-file-earmark-pdf"></i> PDF
                                     </a>
-                                    @if(Auth::user()->hasAnyRole(['admin', 'manager']))
+                                    @if(Auth::user()->hasAnyRole(['admin', 'manager', 'agent']) || in_array(Auth::user()->role, ['admin', 'manager', 'agent']))
                                         <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1" title="Assign to Ticketing Agent">
                                             <i class="bi bi-person-check"></i> Assign
                                         </button>

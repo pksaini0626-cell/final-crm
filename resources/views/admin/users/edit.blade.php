@@ -27,21 +27,28 @@
             <div class="card-body p-4">
                 <div class="row g-3">
                     <!-- Full Name -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Full Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="form-control">
                         @error('name')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
 
+                    <!-- Employee Name (Official/Real Name) -->
+                    <div class="col-md-3">
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Employee Name <small class="text-muted">(Payslip)</small></label>
+                        <input type="text" name="employee_name" value="{{ old('employee_name', $user->employee_name) }}" placeholder="Real/legal name" class="form-control">
+                        @error('employee_name')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+
                     <!-- Mandatory Alias Name -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Mandatory Alias Name <span class="text-danger">*</span></label>
                         <input type="text" name="alias_name" value="{{ old('alias_name', $user->alias_name) }}" required class="form-control font-monospace fw-bold text-info">
                         @error('alias_name')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
 
                     <!-- Email -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Email Address <span class="text-danger">*</span></label>
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="form-control">
                         @error('email')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
@@ -62,6 +69,8 @@
                             <option value="ticketing" {{ old('role', $user->role) === 'ticketing' ? 'selected' : '' }}>Ticketing Agent</option>
                             <option value="changes" {{ old('role', $user->role) === 'changes' ? 'selected' : '' }}>Booking Changes Desk</option>
                             <option value="mis" {{ old('role', $user->role) === 'mis' ? 'selected' : '' }}>MIS Agent</option>
+                            <option value="hr" {{ old('role', $user->role) === 'hr' ? 'selected' : '' }}>HR Operations</option>
+                            <option value="accounts" {{ old('role', $user->role) === 'accounts' ? 'selected' : '' }}>Accounts & Payroll</option>
                             <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
@@ -97,12 +106,27 @@
                         <input type="date" name="joining_date" value="{{ old('joining_date', $user->joining_date ? $user->joining_date->format('Y-m-d') : '') }}" class="form-control">
                     </div>
 
-                    <!-- Active Status -->
+                    <!-- Active Status Radio -->
                     <div class="col-md-12 pt-2">
-                        <div class="form-check">
-                            <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="form-check-input">
-                            <label for="is_active" class="form-check-label text-white fw-semibold">Active Account</label>
+                        <label class="form-label text-secondary small fw-bold text-uppercase d-block mb-2">Account Status <span class="text-danger">*</span></label>
+                        @php
+                            $currentActive = (string) old('is_active', $user->is_active ? '1' : '0');
+                        @endphp
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="is_active" id="is_active_1" value="1" {{ $currentActive === '1' ? 'checked' : '' }}>
+                                <label class="form-check-label text-white fw-semibold" for="is_active_1" style="cursor: pointer;">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> Active</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="is_active" id="is_active_0" value="0" {{ $currentActive === '0' ? 'checked' : '' }}>
+                                <label class="form-check-label text-white fw-semibold" for="is_active_0" style="cursor: pointer;">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> Inactive</span>
+                                </label>
+                            </div>
                         </div>
+                        @error('is_active')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
