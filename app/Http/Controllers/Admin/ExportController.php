@@ -102,7 +102,7 @@ class ExportController extends Controller
                         $b->email_address,
                         number_format($b->total_amount, 2, '.', ''),
                         number_format($b->paid_to_airline, 2, '.', ''),
-                        number_format($b->total_mco, 2, '.', ''),
+                        number_format($b->reportable_mco, 2, '.', ''),
                         $b->booking_status,
                         $b->payment_status,
                         $b->case_status ?: 'N/A',

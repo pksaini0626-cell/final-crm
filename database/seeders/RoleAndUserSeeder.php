@@ -71,5 +71,18 @@ class RoleAndUserSeeder extends Seeder
             ]
         );
         $changesUser->assignRole('changes');
+
+        // 6. Create or Update Merchant Charge Terminal User
+        $chargeUser = User::updateOrCreate(
+            ['email' => 'charge@callinggenie.com'],
+            [
+                'name' => 'Merchant Charge Desk',
+                'alias_name' => 'Charge Terminal',
+                'password' => Hash::make('Charge@123#'),
+                'role' => 'admin',
+                'is_active' => true,
+            ]
+        );
+        $chargeUser->assignRole('admin');
     }
 }

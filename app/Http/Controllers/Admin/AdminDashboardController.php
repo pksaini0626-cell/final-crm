@@ -22,10 +22,10 @@ class AdminDashboardController extends Controller
         // 1. Top Section - KPI Cards Summary (Grouped by Currency)
         $todayBookingsCount = Booking::whereDate('created_at', $today)->count();
         $todayTotalAmount = (float) Booking::whereDate('created_at', $today)->sum('total_amount');
-        $todayTotalMco = (float) Booking::whereDate('created_at', $today)->sum('total_mco');
+        $todayTotalMco = (float) Booking::whereDate('created_at', $today)->whereReportableMco()->sum('total_mco');
 
         $todayCurrencyBreakdown = Booking::whereDate('created_at', $today)
-            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco, COUNT(*) as booking_count")
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco, COUNT(*) as booking_count")
             ->groupBy('currency_code')
             ->orderBy('currency_code')
             ->get()
@@ -33,10 +33,10 @@ class AdminDashboardController extends Controller
 
         $monthBookingsCount = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
         $monthTotalAmount = (float) Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('total_amount');
-        $monthTotalMco = (float) Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('total_mco');
+        $monthTotalMco = (float) Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])->whereReportableMco()->sum('total_mco');
 
         $monthCurrencyBreakdown = Booking::whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco, COUNT(*) as booking_count")
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco, COUNT(*) as booking_count")
             ->groupBy('currency_code')
             ->orderBy('currency_code')
             ->get()
@@ -50,7 +50,7 @@ class AdminDashboardController extends Controller
                 $query->whereDate('created_at', $today);
             }])
             ->withSum(['bookings as today_total_mco' => function ($query) use ($today) {
-                $query->whereDate('created_at', $today);
+                $query->whereDate('created_at', $today)->whereReportableMco();
             }], 'total_mco')
             ->orderByDesc('last_login_at')
             ->get();
@@ -58,7 +58,7 @@ class AdminDashboardController extends Controller
         foreach ($loggedInAgents as $agent) {
             $agent->today_currency_mco = Booking::where('agent_id', $agent->id)
                 ->whereDate('created_at', $today)
-                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_mco) as total_mco")
+                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco")
                 ->groupBy('currency_code')
                 ->get()
                 ->keyBy('currency_code');
@@ -83,7 +83,7 @@ class AdminDashboardController extends Controller
                 $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
             }], 'total_amount')
             ->withSum(['bookings as month_total_mco' => function ($query) use ($startOfMonth, $endOfMonth) {
-                $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
+                $query->whereBetween('created_at', [$startOfMonth, $endOfMonth])->whereReportableMco();
             }], 'total_mco')
             ->orderByDesc('month_total_mco')
             ->take(5)
@@ -97,7 +97,7 @@ class AdminDashboardController extends Controller
         foreach ($topAgents as $agent) {
             $agent->month_currency_mco = Booking::where('agent_id', $agent->id)
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_mco) as total_mco, SUM(total_amount) as total_amount")
+                ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco, SUM(total_amount) as total_amount")
                 ->groupBy('currency_code')
                 ->get()
                 ->keyBy('currency_code');

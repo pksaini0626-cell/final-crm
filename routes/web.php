@@ -21,6 +21,26 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 use App\Http\Controllers\Admin\PaymentChargeController;
 use App\Http\Controllers\PublicPaymentController;
+use App\Http\Controllers\MerchantChargeController;
+
+// Dedicated Merchant Charge Terminal Routes (Standalone Portal)
+Route::get('/merchentcharge', [MerchantChargeController::class, 'index'])->name('merchant.charge.index');
+Route::get('/merchantcharge', [MerchantChargeController::class, 'index']);
+Route::post('/merchentcharge/login', [MerchantChargeController::class, 'login'])->name('merchant.charge.login');
+Route::post('/merchantcharge/login', [MerchantChargeController::class, 'login']);
+Route::post('/merchentcharge/logout', [MerchantChargeController::class, 'logout'])->name('merchant.charge.logout');
+Route::post('/merchantcharge/logout', [MerchantChargeController::class, 'logout']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('/merchentcharge/search-bookings', [MerchantChargeController::class, 'searchBookings'])->name('merchant.charge.search');
+    Route::get('/merchantcharge/search-bookings', [MerchantChargeController::class, 'searchBookings']);
+    Route::get('/merchentcharge/booking/{booking}', [MerchantChargeController::class, 'getBooking'])->name('merchant.charge.booking');
+    Route::get('/merchantcharge/booking/{booking}', [MerchantChargeController::class, 'getBooking']);
+    Route::post('/merchentcharge/process', [MerchantChargeController::class, 'charge'])->name('merchant.charge.process');
+    Route::post('/merchantcharge/process', [MerchantChargeController::class, 'charge']);
+    Route::get('/merchentcharge/transactions', [MerchantChargeController::class, 'transactions'])->name('merchant.charge.transactions');
+    Route::get('/merchantcharge/transactions', [MerchantChargeController::class, 'transactions']);
+});
 
 // Public customer authorization signature flow
 Route::get('/booking/authorize/{booking}/{hash}', [CustomerAuthController::class, 'show'])->name('customer.authorize');
@@ -38,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/bookings/{booking}/remarks', [BookingController::class, 'addRemark'])->name('bookings.add-remark');
     Route::post('/bookings/{booking}/update-tickets', [BookingController::class, 'updateTicketsAndSeats'])->name('bookings.update-tickets');
+    Route::post('/bookings/{booking}/update-status', [BookingController::class, 'updateStatus'])->name('bookings.update-status');
     
     // Auth Email Generation & Preview Routes
     Route::get('/bookings/{booking}/auth-email/preview', [BookingController::class, 'previewAuthEmail'])->name('bookings.auth-email.preview');
@@ -64,7 +85,7 @@ Route::middleware(['auth', 'role:manager|admin|changes'])->group(function () {
     Route::post('/changes/requests/{changeRequest}/status', [\App\Http\Controllers\ChangeRequestController::class, 'updateStatus'])->name('changes.update-status');
 });
 
-Route::middleware(['auth', 'role:manager|admin|ticketing|agent'])->group(function () {
+Route::middleware(['auth', 'role:manager|admin|ticketing'])->group(function () {
     Route::post('/bookings/{booking}/approve-auth', [BookingController::class, 'approveAuth'])->name('bookings.approve-auth');
     Route::get('/manager/tickets', [TicketController::class, 'index'])->name('manager.tickets.index');
     Route::post('/manager/tickets/{booking}/approve-payment', [TicketController::class, 'approvePayment'])->name('manager.tickets.approve-payment');

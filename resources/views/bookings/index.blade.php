@@ -193,7 +193,7 @@
                                     <span class="text-secondary small">No Passengers</span>
                                 @endif
                             </td>
-                            <!-- Status Badge -->
+                            <!-- Status Badge & Direct Update Icon -->
                             <td>
                                 @php
                                     $badgeClass = match($booking->booking_status) {
@@ -207,9 +207,45 @@
                                     };
                                     $statusLabel = str_replace('_', ' ', ucfirst($booking->booking_status));
                                 @endphp
-                                <span class="badge {{ $badgeClass }} px-2.5 py-1.5 text-uppercase">
-                                    {{ $statusLabel }}
-                                </span>
+                                <div class="d-inline-flex align-items-center gap-1.5">
+                                    <span class="badge {{ $badgeClass }} px-2.5 py-1.5 text-uppercase">
+                                        {{ $statusLabel }}
+                                    </span>
+                                    @if(auth()->check() && (auth()->user()->hasAnyRole(['admin', 'manager']) || in_array(auth()->user()->role, ['admin', 'manager'])))
+                                        <button type="button" 
+                                                @click="openStatusModal({{ json_encode([
+                                                    'id' => $booking->id,
+                                                    'booking_id' => $booking->booking_id,
+                                                    'airline_pnr' => $booking->airline_pnr ?: ($booking->gk_pnr ?: 'N/A'),
+                                                    'customer_name' => $booking->card_holder_name ?: ($booking->passengers->isNotEmpty() ? $booking->passengers->first()->first_name . ' ' . $booking->passengers->first()->last_name : 'N/A'),
+                                                    'customer_email' => $booking->email_address ?: 'N/A',
+                                                    'booking_status' => $booking->booking_status,
+                                                    'payment_status' => $booking->payment_status ?: 'pending',
+                                                    'currency' => $booking->currency ?: 'USD',
+                                                    'total_mco' => number_format($booking->total_mco, 2),
+                                                    'total_amount' => number_format($booking->total_amount, 2),
+                                                ]) }})" 
+                                                class="btn btn-sm btn-light border border-secondary-subtle px-1.5 py-0.5 text-primary shadow-xs" 
+                                                style="line-height: 1; font-size: 0.85rem;"
+                                                title="Check & Update Status directly">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                    @endif
+                                </div>
+                                @if($booking->payment_status)
+                                    <div class="mt-1">
+                                        @php
+                                            $payColor = match($booking->payment_status) {
+                                                'received', 'booking_complete' => 'text-success',
+                                                'refund', 'cancelled' => 'text-danger',
+                                                default => 'text-warning-emphasis'
+                                            };
+                                        @endphp
+                                        <span class="small font-monospace {{ $payColor }}" style="font-size: 0.72rem;">
+                                            <i class="bi bi-credit-card me-1"></i>Pay: {{ strtoupper($booking->payment_status) }}
+                                        </span>
+                                    </div>
+                                @endif
                             </td>
                             <!-- Total MCO -->
                             <td class="fw-bold text-success font-monospace">
@@ -269,6 +305,101 @@
                 {{ $bookings->links('pagination::bootstrap-5') }}
             </div>
         @endif
+    </div>
+
+    <!-- CHECK & UPDATE STATUS MODAL POPUP -->
+    <div x-show="statusModalOpen" class="modal fade" :class="{ 'show d-block': statusModalOpen }" tabindex="-1" style="display: none; z-index: 1055; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);" x-cloak>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card bg-white border-0 shadow-lg w-100">
+                <div class="modal-header border-bottom border-light-subtle py-3">
+                    <h5 class="modal-header-title h6 text-dark mb-0 text-uppercase fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-pencil-square text-primary"></i>
+                        <span>Check &amp; Update Status</span>
+                        <span class="badge bg-primary-subtle text-primary font-monospace ms-1" x-text="`#${statusModalData.booking_id || ''}`"></span>
+                    </h5>
+                    <button type="button" class="btn-close" @click="statusModalOpen = false"></button>
+                </div>
+                <form :action="getStatusAction()" @submit="$el.action = getStatusAction()" method="POST">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <!-- Current Details Check Summary Card -->
+                        <div class="p-3 bg-light rounded border border-light-subtle mb-3">
+                            <div class="row g-2 small">
+                                <div class="col-6">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Customer</div>
+                                    <div class="fw-semibold text-dark text-truncate" x-text="statusModalData.customer_name || 'N/A'"></div>
+                                    <div class="text-muted text-truncate" style="font-size: 0.75rem;" x-text="statusModalData.customer_email || ''"></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Airline PNR</div>
+                                    <span class="badge bg-light text-primary border border-primary-subtle font-monospace fs-6" x-text="statusModalData.airline_pnr || 'N/A'"></span>
+                                </div>
+                                <div class="col-6 pt-2 border-top border-light-subtle">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Current Booking Status</div>
+                                    <span class="badge bg-primary-subtle text-primary text-uppercase" x-text="capitalize(statusModalData.booking_status || '')"></span>
+                                </div>
+                                <div class="col-6 pt-2 border-top border-light-subtle">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Current Payment Status</div>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis text-uppercase" x-text="statusModalData.payment_status || 'PENDING'"></span>
+                                </div>
+                                <div class="col-12 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary fw-semibold">Total Amount / MCO:</span>
+                                    <span class="fw-bold text-success font-monospace" x-text="`${statusModalData.currency || 'USD'} ${statusModalData.total_amount || '0.00'} (MCO: ${statusModalData.total_mco || '0.00'})`"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking Status Field -->
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between">
+                                <span>Booking Status <span class="text-danger">*</span></span>
+                            </label>
+                            <select name="booking_status" x-model="newBookingStatus" @change="onBookingStatusChange()" required class="form-select">
+                                <option value="booking_generated">Booking Generated</option>
+                                <option value="email_auth_sent">Email Auth Sent</option>
+                                <option value="email_auth_done">Email Auth Done</option>
+                                <option value="ticketed">Ticketed</option>
+                                <option value="booking_complete">Booking Complete</option>
+                                <option value="void">Void</option>
+                            </select>
+                            <div class="form-text small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>Setting to <strong>Ticketed</strong> or <strong>Booking Complete</strong> automatically marks payment as <strong>Received</strong>.
+                            </div>
+                        </div>
+
+                        <!-- Payment Status Field -->
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between">
+                                <span>Payment Status <span class="text-danger">*</span></span>
+                            </label>
+                            <select name="payment_status" x-model="newPaymentStatus" required class="form-select">
+                                <option value="pending">Pending</option>
+                                <option value="received">Received</option>
+                                <option value="refund">Refund</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <div class="form-text small text-muted">
+                                <i class="bi bi-graph-up-arrow me-1"></i>MCO is counted in reports only when Booking Status is <strong>Ticketed/Complete</strong> and Payment is <strong>Received</strong>. If Refund/Cancelled, MCO will not be counted.
+                            </div>
+                        </div>
+
+                        <!-- Remark / Reason Field -->
+                        <div class="mb-2">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">
+                                Reason / Update Note <span class="text-muted fw-normal">(Optional)</span>
+                            </label>
+                            <textarea name="remark" rows="2" class="form-control form-control-sm" placeholder="Add an optional note about this status update..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-light-subtle bg-light py-2">
+                        <button type="button" @click="statusModalOpen = false" class="btn btn-outline-secondary btn-sm fw-bold">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3">
+                            <i class="bi bi-check2-circle me-1"></i> Update Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- REMARK MODAL POPUP (MULTIPLE ATTACHMENT SUPPORT) -->
@@ -644,10 +775,29 @@
             changeModalOpen: false,
             changeBookingId: null,
             changeBookingCode: '',
+            statusModalOpen: false,
+            statusModalData: {},
+            newBookingStatus: '',
+            newPaymentStatus: '',
             slideoverOpen: false,
             booking: {},
             rawPnr: '',
             flights: [],
+
+            openStatusModal(data) {
+                this.statusModalData = data;
+                this.newBookingStatus = data.booking_status;
+                this.newPaymentStatus = data.payment_status || 'pending';
+                this.statusModalOpen = true;
+            },
+
+            onBookingStatusChange() {
+                if (['ticketed', 'booking_complete'].includes(this.newBookingStatus)) {
+                    if (!this.newPaymentStatus || this.newPaymentStatus === 'pending') {
+                        this.newPaymentStatus = 'received';
+                    }
+                }
+            },
 
             openRequestChangeModal(id, code) {
                 this.changeBookingId = id;
@@ -749,6 +899,11 @@
                 } catch (e) {
                     alert('Error parsing GDS text: ' + e.message);
                 }
+            },
+
+            getStatusAction() {
+                if (!this.statusModalData || !this.statusModalData.id) return '#';
+                return `/bookings/${this.statusModalData.id}/update-status`;
             },
 
             getRemarkAction() {

@@ -592,4 +592,73 @@ class BookingController extends Controller
             'booking' => $booking
         ]);
     }
+
+    /**
+     * Update booking status and payment status directly (Admin / Manager).
+     */
+    public function updateStatus(Request $request, Booking $booking)
+    {
+        $user = Auth::user();
+        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])), 403, 'Unauthorized access.');
+
+        $validated = $request->validate([
+            'booking_status' => 'required|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void',
+            'payment_status' => 'required|string|in:pending,received,refund,cancelled',
+            'remark' => 'nullable|string|max:1000',
+        ]);
+
+        $oldBookingStatus = $booking->booking_status;
+        $oldPaymentStatus = $booking->payment_status;
+
+        $newBookingStatus = $validated['booking_status'];
+        $newPaymentStatus = $validated['payment_status'];
+
+        DB::transaction(function () use ($booking, $user, $newBookingStatus, $newPaymentStatus, $oldBookingStatus, $oldPaymentStatus, $validated) {
+            $booking->booking_status = $newBookingStatus;
+            $booking->payment_status = $newPaymentStatus;
+
+            if (in_array($newBookingStatus, ['ticketed', 'booking_complete'])) {
+                $booking->email_auth_taken = true;
+            }
+
+            $booking->save();
+
+            $roleLabel = match($user->role) {
+                'manager' => 'Manager',
+                'admin' => 'Administrator',
+                default => 'Staff'
+            };
+
+            $changes = [];
+            if ($oldBookingStatus !== $newBookingStatus) {
+                $changes[] = 'Booking Status: ' . strtoupper(str_replace('_', ' ', (string)$oldBookingStatus)) . ' -> ' . strtoupper(str_replace('_', ' ', $newBookingStatus));
+            }
+            if ($oldPaymentStatus !== $newPaymentStatus) {
+                $changes[] = 'Payment Status: ' . strtoupper(str_replace('_', ' ', (string)$oldPaymentStatus ?: 'none')) . ' -> ' . strtoupper(str_replace('_', ' ', $newPaymentStatus));
+            }
+
+            $noteText = !empty($validated['remark']) ? ' | Reason: ' . trim($validated['remark']) : '';
+            $logText = !empty($changes)
+                ? "Status updated by {$roleLabel} ({$user->name}): " . implode(', ', $changes) . $noteText
+                : "Status verified by {$roleLabel} ({$user->name})" . $noteText;
+
+            $booking->bookingRemarks()->create([
+                'user_id' => $user->id,
+                'remark' => $logText,
+                'type' => 'admin_remark',
+            ]);
+        });
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Booking #{$booking->booking_id} status updated successfully.",
+                'booking_status' => $booking->booking_status,
+                'payment_status' => $booking->payment_status
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Booking #{$booking->booking_id} status updated successfully.");
+    }
 }
+

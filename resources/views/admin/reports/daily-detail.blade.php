@@ -136,7 +136,7 @@
 
                             <!-- 6. Total MCO -->
                             <td class="px-3 py-3 font-monospace fw-bold text-success">
-                                {{ $booking->currency ?: 'USD' }} {{ number_format($booking->total_mco, 2) }}
+                                {{ $booking->currency ?: 'USD' }} {{ number_format($booking->reportable_mco, 2) }}
                             </td>
 
                             <!-- 7. Booking Status -->

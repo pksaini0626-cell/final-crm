@@ -95,6 +95,13 @@ class Booking extends Model
                     $booking->merchant_id = $merchantObj->id;
                 }
             }
+
+            if (in_array($booking->booking_status, ['ticketed', 'booking_complete'])) {
+                $booking->email_auth_taken = true;
+                if (empty($booking->payment_status) || $booking->payment_status === 'pending') {
+                    $booking->payment_status = 'received';
+                }
+            }
         });
     }
 
@@ -246,5 +253,31 @@ class Booking extends Model
     public function nmiTransactions(): HasMany
     {
         return $this->hasMany(NmiTransaction::class, 'booking_id')->latest();
+    }
+
+    /**
+     * Check if total_mco should be counted in reports.
+     */
+    public function isReportableMco(): bool
+    {
+        return in_array($this->booking_status, ['ticketed', 'booking_complete'])
+            && in_array($this->payment_status, ['received', 'booking_complete']);
+    }
+
+    /**
+     * Accessor for reportable MCO amount.
+     */
+    public function getReportableMcoAttribute(): float
+    {
+        return $this->isReportableMco() ? (float) $this->total_mco : 0.0;
+    }
+
+    /**
+     * Scope a query to only include bookings with reportable MCO.
+     */
+    public function scopeWhereReportableMco($query)
+    {
+        return $query->whereIn('booking_status', ['ticketed', 'booking_complete'])
+                    ->whereIn('payment_status', ['received', 'booking_complete']);
     }
 }

@@ -42,7 +42,7 @@ class DailyReportController extends Controller
         $currencyBreakdowns = [];
         if (!empty($datesOnPage)) {
             $currencyRows = Booking::whereIn(DB::raw('DATE(booking_date)'), $datesOnPage)
-                ->selectRaw("DATE(booking_date) as report_date, COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco")
+                ->selectRaw("DATE(booking_date) as report_date, COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco")
                 ->groupBy(DB::raw('DATE(booking_date)'), 'currency_code')
                 ->orderBy('currency_code')
                 ->get();
@@ -86,7 +86,7 @@ class DailyReportController extends Controller
         // Calculate summary for this specific date
         $summaryTotalBookings = Booking::whereDate('booking_date', $date)->count();
         $currencyBreakdown = Booking::whereDate('booking_date', $date)
-            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(total_mco) as total_mco")
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'USD') as currency_code, SUM(total_amount) as total_amount, SUM(CASE WHEN booking_status IN ('ticketed', 'booking_complete') AND payment_status IN ('received', 'booking_complete') THEN total_mco ELSE 0 END) as total_mco")
             ->groupBy('currency_code')
             ->orderBy('currency_code')
             ->get()
@@ -163,7 +163,7 @@ class DailyReportController extends Controller
 
                     $curr = $b->currency ?: 'USD';
                     $totalAmountStr = "{$curr} " . number_format((float)$b->total_amount, 2, '.', '');
-                    $totalMcoStr = "{$curr} " . number_format((float)$b->total_mco, 2, '.', '');
+                    $totalMcoStr = "{$curr} " . number_format((float)$b->reportable_mco, 2, '.', '');
                     $bookingStatusStr = ucwords(str_replace('_', ' ', $b->booking_status ?: 'N/A'));
 
                     fputcsv($handle, [
