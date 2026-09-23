@@ -50,14 +50,18 @@ class Booking extends Model
         'email_address',
         'booking_status',
         'case_status',
+        'dispute_type',
         'email_auth_taken',
         'currency',
         'merchant',
         'total_amount',
         'paid_to_airline',
         'total_mco',
+        'company_card_used',
+        'company_card_amount',
         'payment_status',
         'payment_info',
+        'eticket_top_text',
     ];
 
     /**
@@ -71,9 +75,11 @@ class Booking extends Model
             'booking_date' => 'date',
             'travel_date' => 'date',
             'email_auth_taken' => 'boolean',
+            'company_card_used' => 'boolean',
             'total_amount' => 'decimal:2',
             'paid_to_airline' => 'decimal:2',
             'total_mco' => 'decimal:2',
+            'company_card_amount' => 'decimal:2',
         ];
     }
 
@@ -133,6 +139,19 @@ class Booking extends Model
                 'total_mco' => (float)$value,
             ]
         );
+    }
+
+    /**
+     * Get the amount charged to customer on merchant account.
+     * When company card is used, the full total_amount was charged to merchant.
+     * When company card was not used, merchant amount is total_amount - paid_to_airline.
+     */
+    public function getMerchantChargeAmountAttribute(): float
+    {
+        if ($this->company_card_used) {
+            return (float) $this->total_amount;
+        }
+        return max(0.0, (float) $this->total_amount - (float) $this->paid_to_airline);
     }
 
     public function getPnrAttribute(): string
@@ -253,6 +272,14 @@ class Booking extends Model
     public function nmiTransactions(): HasMany
     {
         return $this->hasMany(NmiTransaction::class, 'booking_id')->latest();
+    }
+
+    /**
+     * Get the chargeback control records for the booking.
+     */
+    public function chargebackControls(): HasMany
+    {
+        return $this->hasMany(ChargebackControl::class, 'booking_id')->latest();
     }
 
     /**

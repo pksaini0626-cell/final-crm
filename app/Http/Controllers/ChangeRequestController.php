@@ -153,7 +153,7 @@ class ChangeRequestController extends Controller
             'fop' => 'nullable|string|max:150',
             'final_remark' => 'nullable|string|max:2000',
             'changes_remark' => 'nullable|string|max:2000',
-            'booking_status' => 'nullable|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void',
+            'booking_status' => 'nullable|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void,failed',
             'case_status' => 'nullable|string|in:rdr,retrieval,chargeback,refund,void',
             'attachments.*' => 'nullable|file|mimes:pdf,png,jpg,jpeg,webp,gif,svg|max:10240',
         ]);

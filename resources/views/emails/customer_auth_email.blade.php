@@ -93,10 +93,11 @@
                             <!-- CHARGES DESCRIPTION -->
                             @php
                                 $paidToAirline = floatval($booking->paid_to_airline ?? 0);
+                                $isCompanyCard = !empty($booking->company_card_used);
                                 $agencyFee = max(0, floatval($booking->total_amount ?? 0) - $paidToAirline);
                             @endphp
 
-                            @if($paidToAirline > 0)
+                            @if($paidToAirline > 0 && !$isCompanyCard)
                                 <div style="font-size: 14px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; font-family: Arial, sans-serif;">
                                     Charges Description:
                                 </div>

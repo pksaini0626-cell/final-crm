@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div x-data="{ saving: false, supportPhone: '{{ addslashes(old('support_phone', '+1-888-476-0932')) }}', customNote: '{{ addslashes(old('custom_note', '')) }}' }">
+<div x-data="{ saving: false, eticketTopText: '{{ addslashes(old('eticket_top_text', $booking->eticket_top_text ?? '')) }}', supportPhone: '{{ addslashes(old('support_phone', '+1-888-476-0932')) }}', customNote: '{{ addslashes(old('custom_note', '')) }}' }">
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
@@ -50,9 +50,41 @@
         <!-- LEFT COLUMN: EDIT DETAILS & EMAIL SETTINGS -->
         <div class="col-lg-5">
             
+            <!-- Quick Save E-Ticket Top Header Text Form -->
+            <form action="{{ route('manager.tickets.update-top-text', $booking) }}" method="POST" class="card bg-dark border-secondary shadow-sm mb-4">
+                @csrf
+                <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
+                    <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
+                        <i class="bi bi-card-heading text-info"></i> E-Ticket Top Header Text
+                    </h2>
+                    <span class="badge bg-info-subtle text-info border border-info-subtle extra-small">Top of E-Ticket</span>
+                </div>
+                <div class="card-body p-3">
+                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">
+                        Header Text Line (Appears before Passenger Details)
+                    </label>
+                    <div class="input-group">
+                        <input type="text" 
+                               name="eticket_top_text" 
+                               x-model="eticketTopText" 
+                               @input="$nextTick(() => syncHtml())"
+                               class="form-control font-semibold" 
+                               placeholder="e.g. IMPORTANT NOTICE: Flight schedule updated / Check-in 3 hours prior..." 
+                               value="{{ old('eticket_top_text', $booking->eticket_top_text ?? '') }}">
+                        <button type="submit" class="btn btn-primary fw-bold px-3 d-flex align-items-center gap-1">
+                            <i class="bi bi-save2 me-1"></i> Save
+                        </button>
+                    </div>
+                    <div class="form-text text-secondary extra-small mt-1">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Text appears live at the top of the e-ticket preview after the header and before Passenger &amp; Ticket Details.
+                    </div>
+                </div>
+            </form>
+
             <!-- Quick Save Ticket Details Form -->
             <form action="{{ route('manager.tickets.update-ticket-details', $booking) }}" method="POST" class="card bg-dark border-secondary shadow-sm mb-4">
                 @csrf
+                <input type="hidden" name="eticket_top_text" :value="eticketTopText">
                 <div class="card-header bg-dark border-secondary py-3 d-flex justify-content-between align-items-center">
                     <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
                         <i class="bi bi-pencil-square text-warning"></i> 1. Edit Passenger Names, Tickets &amp; Seats
@@ -125,6 +157,7 @@
             <form id="eticket-send-form" action="{{ route('manager.tickets.send', $booking) }}" method="POST" class="card bg-dark border-secondary shadow-sm">
                 @csrf
                 <input type="hidden" name="custom_html" id="custom_html_input">
+                <input type="hidden" name="eticket_top_text" :value="eticketTopText">
 
                 <div class="card-header bg-dark border-secondary py-3">
                     <h2 class="h6 font-bold text-white mb-0 text-uppercase d-flex align-items-center gap-2">
@@ -256,7 +289,8 @@
                         @include('emails.customer_e_ticket', [
                             'booking' => $booking,
                             'supportPhone' => old('support_phone', '+1-888-476-0932'),
-                            'customNote' => null
+                            'customNote' => null,
+                            'topText' => old('eticket_top_text', $booking->eticket_top_text ?? '')
                         ])
                     </div>
                 </div>

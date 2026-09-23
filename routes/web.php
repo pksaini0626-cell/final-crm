@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/bookings/{booking}/remarks', [BookingController::class, 'addRemark'])->name('bookings.add-remark');
     Route::post('/bookings/{booking}/update-tickets', [BookingController::class, 'updateTicketsAndSeats'])->name('bookings.update-tickets');
     Route::post('/bookings/{booking}/update-status', [BookingController::class, 'updateStatus'])->name('bookings.update-status');
+    Route::post('/bookings/{booking}/company-card', [BookingController::class, 'updateCompanyCard'])->name('bookings.update-company-card');
     
     // Auth Email Generation & Preview Routes
     Route::get('/bookings/{booking}/auth-email/preview', [BookingController::class, 'previewAuthEmail'])->name('bookings.auth-email.preview');
@@ -85,13 +86,15 @@ Route::middleware(['auth', 'role:manager|admin|changes'])->group(function () {
     Route::post('/changes/requests/{changeRequest}/status', [\App\Http\Controllers\ChangeRequestController::class, 'updateStatus'])->name('changes.update-status');
 });
 
-Route::middleware(['auth', 'role:manager|admin|ticketing'])->group(function () {
+Route::middleware(['auth', 'role:manager|admin|ticketing|agent'])->group(function () {
     Route::post('/bookings/{booking}/approve-auth', [BookingController::class, 'approveAuth'])->name('bookings.approve-auth');
+    Route::post('/bookings/{booking}/cancel-auth', [BookingController::class, 'cancelAuth'])->name('bookings.cancel-auth');
     Route::get('/manager/tickets', [TicketController::class, 'index'])->name('manager.tickets.index');
     Route::post('/manager/tickets/{booking}/approve-payment', [TicketController::class, 'approvePayment'])->name('manager.tickets.approve-payment');
     Route::get('/manager/tickets/{booking}/preview', [TicketController::class, 'previewETicket'])->name('manager.tickets.preview');
     Route::get('/manager/tickets/{booking}/preview-email', [TicketController::class, 'previewETicketEmail'])->name('manager.tickets.preview-email');
     Route::post('/manager/tickets/{booking}/update-ticket-details', [TicketController::class, 'updateTicketDetails'])->name('manager.tickets.update-ticket-details');
+    Route::post('/manager/tickets/{booking}/update-top-text', [TicketController::class, 'updateTopText'])->name('manager.tickets.update-top-text');
     Route::post('/manager/tickets/{booking}/send', [TicketController::class, 'sendETicket'])->name('manager.tickets.send');
 });
 
@@ -178,4 +181,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-payslips', [MyPayslipController::class, 'index'])->name('employee.payslips.index');
     Route::get('/my-payslips/{payslip}/pdf', [MyPayslipController::class, 'downloadPdf'])->name('employee.payslips.download-pdf');
 });
+
+// Chargeback Control Panel Routes (Exclusively managed by Chargeback Team)
+use App\Http\Controllers\Chargeback\ChargebackController;
+use App\Http\Controllers\Chargeback\ChargebackCsvController;
+
+Route::middleware(['auth', 'role:chargeback'])->prefix('chargeback')->name('chargeback.')->group(function () {
+    Route::get('/', [ChargebackController::class, 'index'])->name('index');
+    Route::get('/create', [ChargebackController::class, 'create'])->name('create');
+    Route::post('/', [ChargebackController::class, 'store'])->name('store');
+    Route::get('/export', [ChargebackCsvController::class, 'exportCsv'])->name('export');
+    Route::get('/csv-export', [ChargebackCsvController::class, 'exportCsv'])->name('csv.export');
+    Route::get('/upload-csv', [ChargebackCsvController::class, 'uploadScreen'])->name('csv.upload');
+    Route::post('/upload-csv', [ChargebackCsvController::class, 'uploadCsv'])->name('upload.process');
+    Route::get('/csv-template', [ChargebackCsvController::class, 'downloadTemplate'])->name('csv.template');
+    Route::get('/lookup-booking', [ChargebackController::class, 'lookupBooking'])->name('lookup-booking');
+    Route::post('/portals', [ChargebackController::class, 'addPortal'])->name('portals.store');
+    Route::get('/{chargeback}', [ChargebackController::class, 'show'])->name('show');
+    Route::get('/{chargeback}/edit', [ChargebackController::class, 'edit'])->name('edit');
+    Route::put('/{chargeback}', [ChargebackController::class, 'update'])->name('update');
+    Route::delete('/{chargeback}', [ChargebackController::class, 'destroy'])->name('destroy');
+    Route::post('/{chargeback}/remarks', [ChargebackController::class, 'addRemark'])->name('remarks.store');
+});
+
+// Direct Dispute Type Management (Strictly restricted to Chargeback Team)
+Route::middleware(['auth', 'role:chargeback'])->group(function () {
+    Route::post('/bookings/{booking}/update-dispute-type', [BookingController::class, 'updateDisputeType'])->name('bookings.update-dispute-type');
+});
+
+
 

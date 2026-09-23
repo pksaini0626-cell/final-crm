@@ -50,6 +50,9 @@
                         <option value="ticketing" {{ request('role') === 'ticketing' ? 'selected' : '' }}>Ticketing Desk</option>
                         <option value="changes" {{ request('role') === 'changes' ? 'selected' : '' }}>Booking Changes Desk</option>
                         <option value="mis" {{ request('role') === 'mis' ? 'selected' : '' }}>MIS Agent</option>
+                        <option value="hr" {{ request('role') === 'hr' ? 'selected' : '' }}>HR Operations</option>
+                        <option value="accounts" {{ request('role') === 'accounts' ? 'selected' : '' }}>Accounts & Payroll</option>
+                        <option value="chargeback" {{ request('role') === 'chargeback' ? 'selected' : '' }}>Chargeback Desk</option>
                         <option value="agent" {{ request('role') === 'agent' ? 'selected' : '' }}>Agent</option>
                     </select>
                 </div>
@@ -107,6 +110,9 @@
                                         'ticketing' => 'bg-info-subtle text-info border border-info-subtle',
                                         'changes' => 'bg-primary-subtle text-primary border border-primary-subtle',
                                         'mis' => 'bg-success-subtle text-success border border-success-subtle',
+                                        'chargeback' => 'bg-dark text-white border border-secondary',
+                                        'hr' => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+                                        'accounts' => 'bg-success-subtle text-success-emphasis border border-success-subtle',
                                         default => 'bg-secondary-subtle text-secondary border border-secondary-subtle'
                                     };
                                 @endphp

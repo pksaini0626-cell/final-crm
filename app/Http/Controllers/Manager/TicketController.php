@@ -26,7 +26,7 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Booking::whereNotIn('booking_status', ['void'])
+        $query = Booking::whereNotIn('booking_status', ['void', 'failed'])
             ->with(['passengers', 'bookingFlights', 'merchantProfile', 'agent', 'ticketingUser']);
 
         // Search query across booking_id, airline_pnr, gk_pnr, card_holder_name, email, and passenger names
@@ -196,6 +196,42 @@ class TicketController extends Controller
     }
 
     /**
+     * Update the e-ticket top header text line.
+     */
+    public function updateTopText(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'eticket_top_text' => 'nullable|string|max:1000',
+        ]);
+
+        $topText = !empty($validated['eticket_top_text']) ? trim($validated['eticket_top_text']) : null;
+
+        $booking->update([
+            'eticket_top_text' => $topText,
+        ]);
+
+        $remarkText = !empty($topText)
+            ? "Updated E-Ticket top header text: \"" . \Illuminate\Support\Str::limit($topText, 60) . "\""
+            : "Cleared E-Ticket top header text.";
+
+        $booking->bookingRemarks()->create([
+            'user_id' => Auth::id(),
+            'remark' => $remarkText,
+            'type' => 'admin_remark',
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'E-Ticket top text line updated successfully.',
+                'eticket_top_text' => $booking->eticket_top_text,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'E-Ticket top text line updated successfully.');
+    }
+
+    /**
      * Send e-ticket PDF to customer.
      */
     public function sendETicket(Request $request, Booking $booking)
@@ -205,10 +241,15 @@ class TicketController extends Controller
             'subject' => 'nullable|string|max:255',
             'support_phone' => 'nullable|string|max:255',
             'custom_note' => 'nullable|string',
+            'eticket_top_text' => 'nullable|string|max:1000',
             'booking_status' => 'required|in:ticketed,booking_complete',
             'notes' => 'nullable|string',
             'custom_html' => 'nullable|string',
         ]);
+
+        if ($request->has('eticket_top_text')) {
+            $booking->update(['eticket_top_text' => $request->input('eticket_top_text')]);
+        }
 
         $merchant = $booking->merchantProfile ?: \App\Models\Merchant::where('name', $booking->merchant)->first();
         if (!$merchant) {

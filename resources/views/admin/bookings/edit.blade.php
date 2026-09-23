@@ -114,6 +114,8 @@
                             <option value="ticketed" {{ old('booking_status', $booking->booking_status) === 'ticketed' ? 'selected' : '' }}>Ticketed</option>
                             <option value="booking_complete" {{ old('booking_status', $booking->booking_status) === 'booking_complete' ? 'selected' : '' }}>Booking Complete</option>
                             <option value="void" {{ old('booking_status', $booking->booking_status) === 'void' ? 'selected' : '' }}>Void</option>
+                            <option value="failed" {{ old('booking_status', $booking->booking_status) === 'failed' ? 'selected' : '' }}>Failed</option>
+                            <option value="chargeback" {{ old('booking_status', $booking->booking_status) === 'chargeback' ? 'selected' : '' }}>Chargeback</option>
                         </select>
                     </div>
 
@@ -140,6 +142,18 @@
                             <option value="void" {{ old('case_status', $booking->case_status) === 'void' ? 'selected' : '' }}>Void</option>
                         </select>
                     </div>
+
+                    <!-- Dispute Type (Chargeback Exclusive) -->
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">
+                            Dispute Type
+                            <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;">CHARGEBACK ONLY</span>
+                        </label>
+                        <div class="p-2 rounded bg-dark border border-secondary text-white font-monospace fw-bold d-flex align-items-center justify-content-between">
+                            <span class="text-danger">{{ $booking->dispute_type ? strtoupper($booking->dispute_type) : 'None' }}</span>
+                            <span class="text-muted small"><i class="bi bi-lock-fill"></i> Managed Exclusively by Chargeback</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,27 +168,46 @@
             <div class="card-body p-4">
                 <div class="row g-3">
                     <!-- Currency -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Currency <span class="text-danger">*</span></label>
                         <input type="text" name="currency" value="{{ old('currency', $booking->currency) }}" required class="form-control font-monospace fw-bold">
                     </div>
 
                     <!-- Total Amount -->
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Total Amount <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="total_amount" value="{{ old('total_amount', $booking->total_amount) }}" required class="form-control font-monospace">
                     </div>
 
                     <!-- Paid to Airline -->
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Paid to Airline <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="paid_to_airline" value="{{ old('paid_to_airline', $booking->paid_to_airline) }}" required class="form-control font-monospace">
                     </div>
 
                     <!-- Total MCO -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Total MCO <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="total_mco" value="{{ old('total_mco', $booking->total_mco) }}" required class="form-control font-monospace fw-bold text-success">
+                    </div>
+
+                    <!-- Company Card -->
+                    <div class="col-md-3">
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1 d-flex justify-content-between align-items-center">
+                            <span>Company Card</span>
+                            <span id="company_card_status_badge" class="badge {{ old('company_card_used', $booking->company_card_used) ? 'bg-warning-subtle text-warning border border-warning-subtle' : 'bg-light text-muted border' }}">
+                                {{ old('company_card_used', $booking->company_card_used) ? 'Used' : 'Not Used' }}
+                            </span>
+                        </label>
+                        <div class="input-group">
+                            <div class="input-group-text bg-white">
+                                <input class="form-check-input mt-0" type="checkbox" name="company_card_used" id="edit_company_card_check" value="1" {{ old('company_card_used', $booking->company_card_used) ? 'checked' : '' }} onchange="onCompanyCardCheckChange(this)">
+                            </div>
+                            <input type="number" step="0.01" min="0" name="company_card_amount" id="edit_company_card_amount" value="{{ old('company_card_amount', number_format((float)$booking->company_card_amount, 2, '.', '')) }}" class="form-control font-monospace fw-bold text-warning-emphasis" placeholder="0.00">
+                            <button type="button" class="btn btn-outline-warning" onclick="openEditCompanyCardModal()" title="Open Company Card Popup">
+                                <i class="bi bi-credit-card-2-front"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -359,4 +392,145 @@
         </div>
     </form>
 </div>
+
+<!-- Company Card Amount Popup Modal -->
+<div class="modal fade" id="companyCardEditModal" tabindex="-1" aria-labelledby="companyCardEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header bg-dark text-white py-2.5 px-3">
+                <h6 class="modal-title fw-bold mb-0 text-uppercase d-flex align-items-center gap-2">
+                    <i class="bi bi-credit-card-2-front-fill text-warning"></i> Company Card Used
+                </h6>
+                <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="small text-secondary mb-3">
+                    Add or update the amount charged on the agency company card for this booking.
+                </p>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-bold text-uppercase">Company Card Amount ({{ $booking->currency }}) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text font-monospace fw-bold">{{ $booking->currency }}</span>
+                        <input type="number" step="0.01" min="0" id="modal_company_card_input" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); applyAndSaveCompanyCard({{ $booking->id }}); }" class="form-control form-control-lg font-monospace fw-bold text-dark" placeholder="0.00">
+                    </div>
+                </div>
+                <div id="company_card_modal_alert" class="alert alert-success py-2 px-3 small d-none mb-0"></div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCompanyCard({{ $booking->id }})">Remove Card</button>
+                    <button type="button" class="btn btn-warning btn-sm px-3 fw-bold text-dark" onclick="applyAndSaveCompanyCard({{ $booking->id }})">
+                        <i class="bi bi-check-circle me-1"></i> Submit &amp; Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function onCompanyCardCheckChange(checkbox) {
+        const amtInput = document.getElementById('edit_company_card_amount');
+        const badge = document.getElementById('company_card_status_badge');
+        if (checkbox.checked) {
+            badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
+            badge.textContent = 'Used';
+            if (!parseFloat(amtInput.value)) {
+                openEditCompanyCardModal();
+            }
+        } else {
+            badge.className = 'badge bg-light text-muted border';
+            badge.textContent = 'Not Used';
+            amtInput.value = '0.00';
+        }
+    }
+
+    function openEditCompanyCardModal() {
+        const amtInput = document.getElementById('edit_company_card_amount');
+        const modalInput = document.getElementById('modal_company_card_input');
+        modalInput.value = parseFloat(amtInput.value) > 0 ? amtInput.value : '';
+        const modalEl = document.getElementById('companyCardEditModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+        setTimeout(() => {
+            modalInput.focus();
+            modalInput.select();
+        }, 300);
+    }
+
+    function removeCompanyCard(bookingId) {
+        document.getElementById('edit_company_card_check').checked = false;
+        document.getElementById('edit_company_card_amount').value = '0.00';
+        const badge = document.getElementById('company_card_status_badge');
+        if (badge) {
+            badge.className = 'badge bg-light text-muted border';
+            badge.textContent = 'Not Used';
+        }
+        const modalEl = document.getElementById('companyCardEditModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        if (bookingId) {
+            fetch(`/bookings/${bookingId}/company-card`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    company_card_used: 0,
+                    company_card_amount: 0
+                })
+            }).catch(console.error);
+        }
+    }
+
+    function applyAndSaveCompanyCard(bookingId) {
+        const modalInput = document.getElementById('modal_company_card_input');
+        const val = parseFloat(modalInput.value);
+        if (isNaN(val) || val <= 0) {
+            alert('Please enter a valid amount greater than 0, or click Remove Card.');
+            return;
+        }
+
+        const amtStr = val.toFixed(2);
+        document.getElementById('edit_company_card_check').checked = true;
+        document.getElementById('edit_company_card_amount').value = amtStr;
+        const badge = document.getElementById('company_card_status_badge');
+        if (badge) {
+            badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle';
+            badge.textContent = 'Used';
+        }
+
+        // Submit via AJAX to immediately persist if desired
+        fetch(`/bookings/${bookingId}/company-card`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                company_card_used: 1,
+                company_card_amount: val
+            })
+        }).then(res => res.json()).then(data => {
+            const alertBox = document.getElementById('company_card_modal_alert');
+            alertBox.textContent = 'Company card amount saved successfully!';
+            alertBox.classList.remove('d-none');
+            setTimeout(() => {
+                const modalEl = document.getElementById('companyCardEditModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                alertBox.classList.add('d-none');
+            }, 600);
+        }).catch(err => {
+            const modalEl = document.getElementById('companyCardEditModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        });
+    }
+</script>
 @endsection

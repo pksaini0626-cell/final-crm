@@ -221,6 +221,14 @@
                         </li>
                     @endif
 
+                    @if(Auth::check() && Auth::user()->role === 'chargeback')
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('chargeback.*') ? 'active text-danger' : '' }}" href="{{ route('chargeback.index') }}">
+                                <i class="bi bi-shield-exclamation text-danger me-1"></i> Chargeback Control
+                            </a>
+                        </li>
+                    @endif
+
                     @auth
                         <li class="nav-item">
                             <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('employee.payslips.*') ? 'active text-primary' : '' }}" href="{{ route('employee.payslips.index') }}">

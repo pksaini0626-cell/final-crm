@@ -148,6 +148,7 @@
                                         'ticketed' => 'bg-secondary text-white',
                                         'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
                                         'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        'failed' => 'bg-danger text-white border border-danger',
                                         default => 'bg-light text-dark border border-secondary-subtle'
                                     };
                                 @endphp

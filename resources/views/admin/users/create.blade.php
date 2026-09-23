@@ -70,6 +70,7 @@
                             <option value="mis" {{ old('role') === 'mis' ? 'selected' : '' }}>MIS Agent</option>
                             <option value="hr" {{ old('role') === 'hr' ? 'selected' : '' }}>HR Operations</option>
                             <option value="accounts" {{ old('role') === 'accounts' ? 'selected' : '' }}>Accounts & Payroll</option>
+                            <option value="chargeback" {{ old('role') === 'chargeback' ? 'selected' : '' }}>Chargeback Desk</option>
                             <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>

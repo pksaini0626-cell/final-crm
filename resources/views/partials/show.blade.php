@@ -20,6 +20,9 @@
                     <span class="badge bg-danger text-uppercase px-2.5 py-1 d-none" id="modal_case_status_badge">
                         Case: N/A
                     </span>
+                    <span class="badge bg-danger text-white font-monospace text-uppercase px-2.5 py-1 d-none" id="modal_dispute_type_badge">
+                        DISPUTE: NONE
+                    </span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <a href="#" id="modal_edit_btn" class="btn btn-outline-light btn-sm fw-semibold d-inline-flex align-items-center gap-1">
@@ -85,6 +88,27 @@
                                 <span class="text-secondary small text-uppercase fw-bold d-block">Trip Type</span>
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle text-capitalize" id="modal_trip_type">N/A</span>
                             </div>
+                            <div class="col-md-3 col-6">
+                                <span class="text-secondary small text-uppercase fw-bold d-block">Dispute Type</span>
+                                @if(Auth::check() && (Auth::user()->role === 'chargeback' || Auth::user()->hasRole('chargeback')))
+                                    <form id="modal_dispute_type_form" method="POST" action="" class="d-flex align-items-center gap-1 mt-1">
+                                        @csrf
+                                        <select name="dispute_type" id="modal_dispute_type_select" class="form-select form-select-sm font-monospace fw-bold text-danger py-0.5 border-danger-subtle">
+                                            <option value="">None</option>
+                                            <option value="CHARGEBACK">CHARGEBACK</option>
+                                            <option value="RDR">RDR</option>
+                                            <option value="ALERT">ALERT</option>
+                                            <option value="RETRIEVAL">RETRIEVAL</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger fw-bold px-2 py-0.5" title="Save Dispute Type">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="badge bg-danger text-white font-monospace mt-1 px-2 py-1 d-none" id="modal_dispute_type_badge_label">NONE</span>
+                                    <span class="text-muted small mt-1 d-block" id="modal_dispute_type_none_label">None</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,21 +159,29 @@
                     </div>
                     <div class="card-body p-3">
                         <div class="row g-3 text-center text-md-start">
-                            <div class="col-md-3 col-6 border-end border-light-subtle">
+                            <div class="col-md-2 col-6 border-end border-light-subtle">
                                 <span class="text-secondary small text-uppercase fw-bold d-block">Currency</span>
                                 <span class="badge bg-primary text-white font-monospace fs-6 px-3 py-1" id="modal_currency">USD</span>
                             </div>
-                            <div class="col-md-3 col-6 border-end border-light-subtle">
-                                <span class="text-secondary small text-uppercase fw-bold d-block">Total Booking Amount</span>
-                                <span class="h5 fw-bold text-primary font-monospace mb-0" id="modal_total_amount">$0.00</span>
+                            <div class="col-md-2 col-6 border-end border-light-subtle">
+                                <span class="text-secondary small text-uppercase fw-bold d-block">Total Booking</span>
+                                <span class="h5 fw-bold text-dark font-monospace mb-0" id="modal_total_amount">$0.00</span>
                             </div>
-                            <div class="col-md-3 col-6 border-end border-light-subtle">
+                            <div class="col-md-2 col-6 border-end border-light-subtle">
+                                <span class="text-secondary small text-uppercase fw-bold d-block">On Merchant</span>
+                                <span class="h6 fw-bold text-primary font-monospace mb-0" id="modal_merchant_amount">$0.00</span>
+                            </div>
+                            <div class="col-md-2 col-6 border-end border-light-subtle">
                                 <span class="text-secondary small text-uppercase fw-bold d-block">Paid to Airline</span>
                                 <span class="h6 fw-semibold text-secondary font-monospace mb-0" id="modal_paid_airline">$0.00</span>
                             </div>
-                            <div class="col-md-3 col-6">
+                            <div class="col-md-2 col-6 border-end border-light-subtle">
                                 <span class="text-secondary small text-uppercase fw-bold d-block">Total MCO</span>
                                 <span class="h5 fw-bold text-success font-monospace mb-0" id="modal_total_mco">$0.00</span>
+                            </div>
+                            <div class="col-md-2 col-6">
+                                <span class="text-secondary small text-uppercase fw-bold d-block">Company Card</span>
+                                <span class="h6 fw-bold text-warning-emphasis font-monospace mb-0" id="modal_company_card">None</span>
                             </div>
                         </div>
                         <div class="mt-3 pt-2 border-top border-light-subtle d-none" id="modal_payment_info_row">
@@ -354,6 +386,36 @@
             caseBadge.classList.add('d-none');
         }
 
+        const disputeBadge = document.getElementById('modal_dispute_type_badge');
+        if (disputeBadge) {
+            if (b.dispute_type) {
+                disputeBadge.textContent = 'DISPUTE: ' + b.dispute_type.toUpperCase();
+                disputeBadge.classList.remove('d-none');
+            } else {
+                disputeBadge.classList.add('d-none');
+            }
+        }
+
+        const disputeSelect = document.getElementById('modal_dispute_type_select');
+        const disputeForm = document.getElementById('modal_dispute_type_form');
+        if (disputeSelect && disputeForm) {
+            disputeSelect.value = b.dispute_type ? b.dispute_type.toUpperCase() : '';
+            disputeForm.action = `/bookings/${b.id}/update-dispute-type`;
+        }
+
+        const dispLabel = document.getElementById('modal_dispute_type_badge_label');
+        const dispNone = document.getElementById('modal_dispute_type_none_label');
+        if (dispLabel && dispNone) {
+            if (b.dispute_type) {
+                dispLabel.textContent = b.dispute_type.toUpperCase();
+                dispLabel.classList.remove('d-none');
+                dispNone.classList.add('d-none');
+            } else {
+                dispLabel.classList.add('d-none');
+                dispNone.classList.remove('d-none');
+            }
+        }
+
         document.getElementById('modal_edit_btn').href = `/admin/bookings/${b.id}/edit`;
 
         // Quick Remark Form Action
@@ -391,8 +453,26 @@
         const curr = b.currency || 'USD';
         document.getElementById('modal_currency').textContent = curr;
         document.getElementById('modal_total_amount').textContent = `${curr} ${Number(b.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        const merchantAmtElem = document.getElementById('modal_merchant_amount');
+        if (merchantAmtElem) {
+            const totalAmt = Number(b.total_amount || 0);
+            const paidAir = Number(b.paid_to_airline || 0);
+            const mAmount = b.company_card_used ? totalAmt : Math.max(0, totalAmt - paidAir);
+            merchantAmtElem.textContent = `${curr} ${mAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` + (b.company_card_used ? ' (Full)' : '');
+        }
         document.getElementById('modal_paid_airline').textContent = `${curr} ${Number(b.paid_to_airline || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('modal_total_mco').textContent = `${curr} ${Number(b.total_mco || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+        const coCardElem = document.getElementById('modal_company_card');
+        if (coCardElem) {
+            if (b.company_card_used && Number(b.company_card_amount || 0) > 0) {
+                coCardElem.textContent = `${curr} ${Number(b.company_card_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                coCardElem.className = 'h6 fw-bold text-warning-emphasis font-monospace mb-0';
+            } else {
+                coCardElem.textContent = 'None';
+                coCardElem.className = 'small text-muted font-monospace mb-0';
+            }
+        }
 
         const infoRow = document.getElementById('modal_payment_info_row');
         const infoText = document.getElementById('modal_payment_info');

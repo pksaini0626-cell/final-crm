@@ -15,7 +15,7 @@ class RoleAndUserSeeder extends Seeder
     public function run(): void
     {
         // 1. Ensure Spatie roles exist
-        $roles = ['admin', 'manager', 'agent', 'ticketing', 'changes', 'mis'];
+        $roles = ['admin', 'manager', 'agent', 'ticketing', 'changes', 'mis', 'chargeback'];
         foreach ($roles as $roleName) {
             Role::firstOrCreate(['name' => $roleName]);
         }
@@ -84,5 +84,18 @@ class RoleAndUserSeeder extends Seeder
             ]
         );
         $chargeUser->assignRole('admin');
+
+        // 7. Create or Update Chargeback Team User
+        $chargebackUser = User::updateOrCreate(
+            ['email' => 'chargeback@callinggenie.com'],
+            [
+                'name' => 'Chargeback Desk',
+                'alias_name' => 'Chargeback Team',
+                'password' => Hash::make('Welcome@123'),
+                'role' => 'chargeback',
+                'is_active' => true,
+            ]
+        );
+        $chargebackUser->assignRole('chargeback');
     }
 }

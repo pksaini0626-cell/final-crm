@@ -30,6 +30,33 @@
                     <tr>
                         <td style="padding: 25px 30px; background-color: #ffffff;">
                             
+                            <!-- E-TICKET TOP HEADER TEXT LINE -->
+                            @php
+                                $currentTopText = $topText ?? ($booking->eticket_top_text ?? '');
+                            @endphp
+                            <div x-show="eticketTopText &amp;&amp; eticketTopText.trim().length > 0" style="{{ empty($currentTopText) ? 'display: none;' : '' }} margin-bottom: 20px;">
+                                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #eff6ff; border-left: 4px solid #2563eb; border-top: 1px solid #bfdbfe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; border-radius: 6px;">
+                                    <tr>
+                                        <td style="padding: 12px 18px; font-size: 14px; font-weight: bold; color: #1e40af; line-height: 1.5; font-family: Arial, sans-serif;">
+                                            <span x-text="eticketTopText">{{ $currentTopText }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            @if(!empty($currentTopText))
+                                <template x-if="typeof eticketTopText === 'undefined'">
+                                    <div style="margin-bottom: 20px;">
+                                        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #eff6ff; border-left: 4px solid #2563eb; border-top: 1px solid #bfdbfe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; border-radius: 6px;">
+                                            <tr>
+                                                <td style="padding: 12px 18px; font-size: 14px; font-weight: bold; color: #1e40af; line-height: 1.5; font-family: Arial, sans-serif;">
+                                                    <span>{{ $currentTopText }}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </template>
+                            @endif
+
                             <!-- SALUTATION & GREETING -->
                             @php
                                 $passengerName = $booking->card_holder_name;
@@ -233,7 +260,7 @@
                                                         <div style="font-size: 20px; font-weight: 900; color: #0f172a; font-family: Arial, sans-serif;">{{ $flight->origin_airport }}</div>
                                                         <div style="font-size: 13px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->origin_city ?: $flight->origin_airport_name }}</div>
                                                         <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                                                            Departure: <strong style="color: #0f172a;">{{ $flight->departure_time ? $flight->departure_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                                            Departure: <strong style="color: #0f172a;">{{ $flight->departure_time ? $flight->departure_time->format('h:i A') : 'N/A' }}</strong>
                                                         </div>
                                                     </td>
 
@@ -247,7 +274,7 @@
                                                         <div style="font-size: 20px; font-weight: 900; color: #0f172a; font-family: Arial, sans-serif;">{{ $flight->destination_airport }}</div>
                                                         <div style="font-size: 13px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->destination_city ?: $flight->destination_airport_name }}</div>
                                                         <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                                                            Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                                            Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('h:i A') : 'N/A' }}</strong>
                                                             @if($dayOffset > 0)
                                                                 <span style="color: #dc2626; font-size: 11px; font-weight: bold; margin-left: 4px;">(+{{ $dayOffset }} {{ $dayOffset == 1 ? 'day' : 'days' }})</span>
                                                             @endif

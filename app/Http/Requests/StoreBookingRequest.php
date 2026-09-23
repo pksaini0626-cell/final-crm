@@ -16,6 +16,23 @@ class StoreBookingRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('company_card_used')) {
+            $this->merge([
+                'company_card_used' => filter_var($this->company_card_used, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
+        if ($this->has('email_auth_taken')) {
+            $this->merge([
+                'email_auth_taken' => filter_var($this->email_auth_taken, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -70,7 +87,7 @@ class StoreBookingRequest extends FormRequest
             'booking_cards.*.card_expiration' => 'nullable|string|max:20',
             
             // Status Tracking (Auto-assigned to booking_generated if empty)
-            'booking_status' => 'nullable|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void',
+            'booking_status' => 'nullable|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void,failed',
             'case_status' => 'nullable|required_if:booking_status,void|in:rdr,retrieval,chargeback,refund,void',
             'email_auth_taken' => 'nullable|boolean',
             
@@ -80,6 +97,8 @@ class StoreBookingRequest extends FormRequest
             'total_amount' => 'required|numeric|min:0',
             'paid_to_airline' => 'required|numeric|min:0',
             'total_mco' => 'required|numeric|min:0',
+            'company_card_used' => 'nullable|boolean',
+            'company_card_amount' => 'nullable|numeric|min:0',
             'payment_status' => 'required|in:pending,received,refund,cancelled',
             'payment_info' => 'nullable|string',
 

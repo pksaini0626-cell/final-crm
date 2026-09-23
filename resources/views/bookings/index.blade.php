@@ -50,12 +50,22 @@
                                         <i class="bi bi-eye me-1"></i> View
                                     </button>
 
-                                    <form action="{{ route('bookings.approve-auth', $pBooking->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" onclick="return confirm('Confirm customer authorization reply received for Booking #{{ $pBooking->booking_id }}? Status will change to EMAIL AUTH DONE.')" class="btn btn-success btn-sm fw-bold">
-                                            <i class="bi bi-check-lg me-1"></i> Approve Auth
-                                        </button>
-                                    </form>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <form action="{{ route('bookings.cancel-auth', $pBooking->id) }}" method="POST" class="d-inline" onsubmit="return handleCancelAuthBooking(this, '{{ $pBooking->booking_id }}');">
+                                            @csrf
+                                            <input type="hidden" name="reason" value="">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm fw-bold" title="Cancel Authorization & Mark as Failed">
+                                                <i class="bi bi-x-circle me-1"></i> Cancel
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('bookings.approve-auth', $pBooking->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" onclick="return confirm('Confirm customer authorization reply received for Booking #{{ $pBooking->booking_id }}? Status will change to EMAIL AUTH DONE.')" class="btn btn-success btn-sm fw-bold">
+                                                <i class="bi bi-check-lg me-1"></i> Approve Auth
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +132,7 @@
     <div class="card bg-white border-light-subtle shadow-sm mb-4">
         <div class="card-body p-3">
             <form action="{{ route('bookings.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-6 col-lg-7">
+                <div class="col-md-5 col-lg-5">
                     <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Search Bookings</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
@@ -130,7 +140,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 col-lg-3">
+                <div class="col-md-3 col-lg-3">
                     <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Status Filter</label>
                     <select name="status" class="form-select">
                         <option value="">All Statuses</option>
@@ -140,13 +150,31 @@
                         <option value="ticketed" {{ request('status') === 'ticketed' ? 'selected' : '' }}>Ticketed</option>
                         <option value="booking_complete" {{ request('status') === 'booking_complete' ? 'selected' : '' }}>Booking Complete</option>
                         <option value="void" {{ request('status') === 'void' ? 'selected' : '' }}>Void</option>
+                        <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed</option>
+                        <option value="chargeback" {{ request('status') === 'chargeback' ? 'selected' : '' }}>Chargeback</option>
                     </select>
                 </div>
 
                 <div class="col-md-2 col-lg-2">
+                    <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Dispute Type</label>
+                    <select name="dispute_type" class="form-select font-monospace fw-semibold">
+                        <option value="">All Types</option>
+                        <option value="CHARGEBACK" {{ request('dispute_type') === 'CHARGEBACK' ? 'selected' : '' }}>CHARGEBACK</option>
+                        <option value="RDR" {{ request('dispute_type') === 'RDR' ? 'selected' : '' }}>RDR</option>
+                        <option value="ALERT" {{ request('dispute_type') === 'ALERT' ? 'selected' : '' }}>ALERT</option>
+                        <option value="RETRIEVAL" {{ request('dispute_type') === 'RETRIEVAL' ? 'selected' : '' }}>RETRIEVAL</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-lg-2 d-flex gap-1">
                     <button type="submit" class="btn btn-outline-secondary w-100 fw-semibold">
                         <i class="bi bi-filter me-1"></i> Filter
                     </button>
+                    @if(request()->hasAny(['search', 'status', 'dispute_type']))
+                        <a href="{{ route('bookings.index') }}" class="btn btn-light border text-secondary" title="Clear Filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -174,6 +202,23 @@
                             <td class="px-3 py-3">
                                 <span class="fw-bold text-primary font-monospace fs-6 d-block">{{ $booking->booking_id }}</span>
                                 <span class="small text-secondary d-block">Agent: {{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</span>
+                                @if($booking->dispute_type)
+                                    @php
+                                        $dtBadge = match(strtoupper($booking->dispute_type)) {
+                                            'CHARGEBACK' => 'bg-danger text-white border border-danger',
+                                            'RDR' => 'text-white',
+                                            'ALERT' => 'bg-warning text-dark border border-warning',
+                                            'RETRIEVAL' => 'bg-primary text-white border border-primary',
+                                            default => 'bg-danger text-white'
+                                        };
+                                        $dtStyle = strtoupper($booking->dispute_type) === 'RDR' ? 'background-color: #6f42c1 !important; color: #fff !important;' : '';
+                                    @endphp
+                                    <div class="mt-1">
+                                        <span class="badge {{ $dtBadge }} font-monospace px-2 py-0.5 shadow-xs" style="font-size: 0.72rem; {{ $dtStyle }}" title="Dispute Type: {{ strtoupper($booking->dispute_type) }} (Managed by Chargeback Team)">
+                                            <i class="bi bi-shield-exclamation me-1"></i>{{ strtoupper($booking->dispute_type) }}
+                                        </span>
+                                    </div>
+                                @endif
                             </td>
                             <!-- PNR -->
                             <td>
@@ -203,6 +248,8 @@
                                         'ticketed' => 'bg-secondary text-light',
                                         'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
                                         'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        'failed' => 'bg-danger text-white border border-danger',
+                                        'chargeback' => 'bg-danger text-white border border-danger',
                                         default => 'bg-secondary-subtle text-secondary'
                                     };
                                     $statusLabel = str_replace('_', ' ', ucfirst($booking->booking_status));
@@ -211,7 +258,7 @@
                                     <span class="badge {{ $badgeClass }} px-2.5 py-1.5 text-uppercase">
                                         {{ $statusLabel }}
                                     </span>
-                                    @if(auth()->check() && (auth()->user()->hasAnyRole(['admin', 'manager']) || in_array(auth()->user()->role, ['admin', 'manager'])))
+                                    @if(auth()->check() && (auth()->user()->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array(auth()->user()->role, ['admin', 'manager', 'chargeback'])))
                                         <button type="button" 
                                                 @click="openStatusModal({{ json_encode([
                                                     'id' => $booking->id,
@@ -220,6 +267,7 @@
                                                     'customer_name' => $booking->card_holder_name ?: ($booking->passengers->isNotEmpty() ? $booking->passengers->first()->first_name . ' ' . $booking->passengers->first()->last_name : 'N/A'),
                                                     'customer_email' => $booking->email_address ?: 'N/A',
                                                     'booking_status' => $booking->booking_status,
+                                                    'dispute_type' => $booking->dispute_type,
                                                     'payment_status' => $booking->payment_status ?: 'pending',
                                                     'currency' => $booking->currency ?: 'USD',
                                                     'total_mco' => number_format($booking->total_mco, 2),
@@ -248,8 +296,15 @@
                                 @endif
                             </td>
                             <!-- Total MCO -->
-                            <td class="fw-bold text-success font-monospace">
-                                {{ $booking->currency }} {{ number_format($booking->total_mco, 2) }}
+                            <td>
+                                <div class="fw-bold text-success font-monospace">
+                                    {{ $booking->currency }} {{ number_format($booking->total_mco, 2) }}
+                                </div>
+                                @if($booking->company_card_used && (float)$booking->company_card_amount > 0)
+                                    <div class="small font-monospace text-warning-emphasis" style="font-size: 0.72rem;" title="Company Card Used">
+                                        <i class="bi bi-credit-card-fill me-0.5"></i>Co: {{ $booking->currency }} {{ number_format($booking->company_card_amount, 2) }}
+                                    </div>
+                                @endif
                             </td>
                             <!-- Date -->
                             <td class="small text-secondary">
@@ -267,7 +322,7 @@
                                             <i class="bi bi-ticket-perforated me-1"></i> E-Ticket
                                         </a>
                                     @endif
-                                     @if($booking->booking_status !== 'void')
+                                     @if(!in_array($booking->booking_status, ['void', 'failed']))
                                          <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary" title="Assign to Ticketing Agent">
                                              <i class="bi bi-person-check me-1"></i>
                                              {{ $booking->ticketingUser ? ($booking->ticketingUser->alias_name ?: $booking->ticketingUser->name) : 'Assign Ticketing' }}
@@ -334,13 +389,17 @@
                                     <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Airline PNR</div>
                                     <span class="badge bg-light text-primary border border-primary-subtle font-monospace fs-6" x-text="statusModalData.airline_pnr || 'N/A'"></span>
                                 </div>
-                                <div class="col-6 pt-2 border-top border-light-subtle">
-                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Current Booking Status</div>
+                                <div class="col-4 pt-2 border-top border-light-subtle">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Booking Status</div>
                                     <span class="badge bg-primary-subtle text-primary text-uppercase" x-text="capitalize(statusModalData.booking_status || '')"></span>
                                 </div>
-                                <div class="col-6 pt-2 border-top border-light-subtle">
-                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Current Payment Status</div>
+                                <div class="col-4 pt-2 border-top border-light-subtle">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Payment Status</div>
                                     <span class="badge bg-warning-subtle text-warning-emphasis text-uppercase" x-text="statusModalData.payment_status || 'PENDING'"></span>
+                                </div>
+                                <div class="col-4 pt-2 border-top border-light-subtle">
+                                    <div class="text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">Dispute Type</div>
+                                    <span class="badge bg-danger-subtle text-danger font-monospace text-uppercase" x-text="statusModalData.dispute_type || 'NONE'"></span>
                                 </div>
                                 <div class="col-12 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
                                     <span class="text-secondary fw-semibold">Total Amount / MCO:</span>
@@ -361,6 +420,8 @@
                                 <option value="ticketed">Ticketed</option>
                                 <option value="booking_complete">Booking Complete</option>
                                 <option value="void">Void</option>
+                                <option value="failed">Failed</option>
+                                <option value="chargeback">Chargeback</option>
                             </select>
                             <div class="form-text small text-muted">
                                 <i class="bi bi-info-circle me-1"></i>Setting to <strong>Ticketed</strong> or <strong>Booking Complete</strong> automatically marks payment as <strong>Received</strong>.
@@ -382,6 +443,38 @@
                                 <i class="bi bi-graph-up-arrow me-1"></i>MCO is counted in reports only when Booking Status is <strong>Ticketed/Complete</strong> and Payment is <strong>Received</strong>. If Refund/Cancelled, MCO will not be counted.
                             </div>
                         </div>
+
+                        <!-- Dispute Type Field (Managed ONLY by Chargeback Team) -->
+                        @if(auth()->check() && (auth()->user()->role === 'chargeback' || auth()->user()->hasRole('chargeback')))
+                            <div class="mb-3 p-3 rounded-3 border border-danger-subtle bg-danger-subtle bg-opacity-10">
+                                <label class="form-label text-danger small fw-bold text-uppercase d-flex justify-content-between align-items-center mb-1">
+                                    <span><i class="bi bi-shield-lock-fill me-1"></i> Dispute Type</span>
+                                    <span class="badge bg-danger text-white" style="font-size: 0.65rem;">CHARGEBACK EXCLUSIVE</span>
+                                </label>
+                                <select name="dispute_type" x-model="newDisputeType" class="form-select form-select-sm font-monospace fw-bold text-danger border-danger-subtle">
+                                    <option value="">-- No Dispute (None) --</option>
+                                    <option value="CHARGEBACK">CHARGEBACK</option>
+                                    <option value="RDR">RDR</option>
+                                    <option value="ALERT">ALERT</option>
+                                    <option value="RETRIEVAL">RETRIEVAL</option>
+                                </select>
+                                <div class="form-text text-muted small mt-1" style="font-size: 0.75rem;">
+                                    <i class="bi bi-info-circle me-1"></i>Exclusively managed by Chargeback team.
+                                </div>
+                            </div>
+                        @else
+                            <template x-if="statusModalData.dispute_type">
+                                <div class="mb-3 p-2.5 rounded border border-light-subtle bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary small fw-bold text-uppercase"><i class="bi bi-shield-lock me-1"></i> Dispute Type:</span>
+                                        <span class="badge bg-danger text-white font-monospace" x-text="statusModalData.dispute_type"></span>
+                                    </div>
+                                    <div class="text-muted small mt-1" style="font-size: 0.72rem;">
+                                        <i class="bi bi-lock-fill me-1"></i> Managed exclusively by Chargeback Team (Read-Only).
+                                    </div>
+                                </div>
+                            </template>
+                        @endif
 
                         <!-- Remark / Reason Field -->
                         <div class="mb-2">
@@ -489,6 +582,24 @@
                             <div class="small text-secondary text-uppercase fw-bold">MCO Amount</div>
                             <div class="fw-bold text-success font-monospace" x-text="`${booking.currency} ${parseFloat(booking.total_mco || 0).toFixed(2)}`"></div>
                         </div>
+                        <div class="col-6 col-sm-4">
+                            <div class="small text-secondary text-uppercase fw-bold">Company Card</div>
+                            <template x-if="booking.company_card_used && parseFloat(booking.company_card_amount || 0) > 0">
+                                <div class="fw-bold text-warning-emphasis font-monospace" x-text="`${booking.currency} ${parseFloat(booking.company_card_amount).toFixed(2)}`"></div>
+                            </template>
+                            <template x-if="!booking.company_card_used || parseFloat(booking.company_card_amount || 0) <= 0">
+                                <div class="text-muted small font-monospace">None</div>
+                            </template>
+                        </div>
+                        <div class="col-6 col-sm-4">
+                            <div class="small text-secondary text-uppercase fw-bold">Dispute Type</div>
+                            <template x-if="booking.dispute_type">
+                                <span class="badge bg-danger text-white font-monospace text-uppercase" x-text="booking.dispute_type"></span>
+                            </template>
+                            <template x-if="!booking.dispute_type">
+                                <span class="text-muted small">None</span>
+                            </template>
+                        </div>
                         <div class="col-12 pt-2 border-top border-light-subtle">
                             <div class="small text-secondary text-uppercase fw-bold">Billing Address</div>
                             <div class="small text-dark" x-text="booking.billing_address || 'No billing address recorded.'"></div>
@@ -547,6 +658,16 @@
                         <div class="col-12">
                             <label class="form-label text-secondary small fw-bold text-uppercase">Billing Address</label>
                             <input type="text" name="billing_address" :value="booking.billing_address" placeholder="Full Billing Address" class="form-control form-control-sm">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-secondary small fw-bold text-uppercase">Company Card Used</label>
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-text bg-white">
+                                    <input class="form-check-input mt-0" type="checkbox" name="company_card_used" value="1" :checked="booking.company_card_used" id="drawer_company_card_check">
+                                </div>
+                                <input type="number" step="0.01" min="0" name="company_card_amount" :value="parseFloat(booking.company_card_amount || 0).toFixed(2)" placeholder="0.00" class="form-control form-control-sm font-monospace fw-bold text-warning-emphasis">
+                            </div>
                         </div>
 
                         <div class="col-12">
@@ -779,6 +900,7 @@
             statusModalData: {},
             newBookingStatus: '',
             newPaymentStatus: '',
+            newDisputeType: '',
             slideoverOpen: false,
             booking: {},
             rawPnr: '',
@@ -788,6 +910,7 @@
                 this.statusModalData = data;
                 this.newBookingStatus = data.booking_status;
                 this.newPaymentStatus = data.payment_status || 'pending';
+                this.newDisputeType = data.dispute_type || '';
                 this.statusModalOpen = true;
             },
 
@@ -796,6 +919,8 @@
                     if (!this.newPaymentStatus || this.newPaymentStatus === 'pending') {
                         this.newPaymentStatus = 'received';
                     }
+                } else if (this.newBookingStatus === 'failed') {
+                    this.newPaymentStatus = 'cancelled';
                 }
             },
 
@@ -957,6 +1082,15 @@
                 return '#';
             }
         };
+    }
+
+    function handleCancelAuthBooking(form, bookingId) {
+        let reason = prompt("Enter failure/cancellation reason for Booking #" + bookingId + " (Agent will be notified via email that charge failed):", "Customer declined authorization / Charge failed");
+        if (reason === null) {
+            return false;
+        }
+        form.querySelector('input[name="reason"]').value = reason.trim() || 'Payment charge could not be processed / authorization cancelled by Admin.';
+        return true;
     }
 </script>
 @endsection

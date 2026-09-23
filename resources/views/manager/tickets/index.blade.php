@@ -124,6 +124,8 @@
                                         'ticketed' => 'bg-success text-light border border-success',
                                         'booking_complete' => 'bg-success text-light border border-success',
                                         'booking_generated' => 'bg-primary text-light border border-primary',
+                                        'void' => 'bg-danger text-light border border-danger',
+                                        'failed' => 'bg-danger text-light border border-danger',
                                         default => 'bg-secondary text-secondary'
                                     };
                                     $statusLabel = str_replace('_', ' ', ucfirst($booking->booking_status));

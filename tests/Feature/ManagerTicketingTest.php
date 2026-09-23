@@ -82,15 +82,28 @@ class ManagerTicketingTest extends TestCase
         // 1. Guest redirected to login
         $this->get(route('manager.tickets.index'))->assertRedirect(route('login'));
 
-        // 2. Agent receives 403 forbidden
+        // 2. Agent allowed in
         $this->actingAs($this->agent)
             ->get(route('manager.tickets.index'))
-            ->assertStatus(403);
+            ->assertStatus(200);
 
         // 3. Manager allowed in
         $this->actingAs($this->manager)
             ->get(route('manager.tickets.index'))
             ->assertStatus(200);
+
+        // 4. Other roles (e.g. changes) receive 403 forbidden
+        $changesUser = User::create([
+            'name' => 'Changes User',
+            'alias_name' => 'Changes U',
+            'email' => 'changes@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'changes',
+        ]);
+
+        $this->actingAs($changesUser)
+            ->get(route('manager.tickets.index'))
+            ->assertStatus(403);
     }
 
     /**
@@ -215,4 +228,46 @@ class ManagerTicketingTest extends TestCase
         $this->booking->refresh();
         $this->assertEquals('round_trip', $this->booking->trip_type);
     }
+
+    /**
+     * Test agent can view preview and send e-ticket.
+     */
+    public function test_agent_can_view_preview_and_send_eticket(): void
+    {
+        Mail::fake();
+
+        // 1. Agent can view preview page
+        $response = $this->actingAs($this->agent)
+            ->get(route('manager.tickets.preview-email', $this->booking));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('manager.tickets.eticket_preview');
+
+        // 2. Agent can send e-ticket
+        $payload = [
+            'booking_status' => 'ticketed',
+            'notes' => 'Agent issued ticket directly.',
+        ];
+
+        $sendResponse = $this->actingAs($this->agent)
+            ->post(route('manager.tickets.send', $this->booking), $payload);
+
+        $sendResponse->assertSessionHasNoErrors();
+        $sendResponse->assertRedirect(route('manager.tickets.index'));
+
+        $this->booking->refresh();
+        $this->assertEquals('ticketed', $this->booking->booking_status);
+
+        Mail::assertSent(CustomerETicketMail::class, function ($mail) {
+            return $mail->hasTo('customer@example.com') &&
+                   $mail->booking->id === $this->booking->id;
+        });
+
+        $this->assertDatabaseHas('booking_remarks', [
+            'booking_id' => $this->booking->id,
+            'user_id' => $this->agent->id,
+            'type' => 'admin_remark',
+        ]);
+    }
 }
+

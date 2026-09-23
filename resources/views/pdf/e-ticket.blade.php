@@ -243,6 +243,13 @@
             </tr>
         </table>
 
+        <!-- TOP HEADER TEXT LINE -->
+        @if(!empty($booking->eticket_top_text))
+            <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; border: 1px solid #bfdbfe; border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; font-size: 11px; font-weight: bold; color: #1e40af;">
+                {{ $booking->eticket_top_text }}
+            </div>
+        @endif
+
         <!-- PASSENGER ROSTER TABLE -->
         <div class="section-title">Passenger &amp; Ticket Details</div>
         <table class="data-table">
@@ -371,7 +378,7 @@
                                 <div class="airport-code">{{ $flight->origin_airport }}</div>
                                 <div style="font-size: 11px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->origin_city ?: $flight->origin_airport_name }}</div>
                                 <div style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                                    Departure: <strong style="color: #0f172a;">{{ $flight->departure_time ? $flight->departure_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                    Departure: <strong style="color: #0f172a;">{{ $flight->departure_time ? $flight->departure_time->format('h:i A') : 'N/A' }}</strong>
                                 </div>
                             </td>
 
@@ -388,7 +395,7 @@
                                 <div class="airport-code">{{ $flight->destination_airport }}</div>
                                 <div style="font-size: 11px; font-weight: bold; color: #334155; margin-top: 2px;">{{ $flight->destination_city ?: $flight->destination_airport_name }}</div>
                                 <div style="font-size: 10px; color: #64748b; margin-top: 4px;">
-                                    Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('H:i (h:i A)') : 'N/A' }}</strong>
+                                    Arrival: <strong style="color: #0f172a;">{{ $flight->arrival_time ? $flight->arrival_time->format('h:i A') : 'N/A' }}</strong>
                                     @if($dayOffset > 0)
                                         <span style="color: #dc2626; font-size: 10px; font-weight: bold; margin-left: 4px;">(+{{ $dayOffset }} {{ $dayOffset == 1 ? 'day' : 'days' }})</span>
                                     @endif

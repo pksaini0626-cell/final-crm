@@ -52,12 +52,22 @@
                                             <i class="bi bi-eye me-1"></i> View Booking
                                         </a>
 
-                                        <form action="{{ route('bookings.approve-auth', $pBooking->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" onclick="return confirm('Confirm customer authorization reply received for Booking #{{ $pBooking->booking_id }}? Status will change to EMAIL AUTH DONE.')" class="btn btn-success btn-sm fw-bold px-3">
-                                                <i class="bi bi-check-lg me-1"></i> Approve Auth
-                                            </button>
-                                        </form>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <form action="{{ route('bookings.cancel-auth', $pBooking->id) }}" method="POST" class="d-inline" onsubmit="return handleCancelAuth(this, '{{ $pBooking->booking_id }}');">
+                                                @csrf
+                                                <input type="hidden" name="reason" value="">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3" title="Cancel Authorization & Mark as Failed">
+                                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                                </button>
+                                            </form>
+
+                                            <form action="{{ route('bookings.approve-auth', $pBooking->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" onclick="return confirm('Confirm customer authorization reply received for Booking #{{ $pBooking->booking_id }}? Status will change to EMAIL AUTH DONE.')" class="btn btn-success btn-sm fw-bold px-3">
+                                                    <i class="bi bi-check-lg me-1"></i> Approve Auth
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -117,6 +127,7 @@
                             <option value="ticketed" {{ request('booking_status') === 'ticketed' ? 'selected' : '' }}>Ticketed</option>
                             <option value="booking_complete" {{ request('booking_status') === 'booking_complete' ? 'selected' : '' }}>Booking Complete</option>
                             <option value="void" {{ request('booking_status') === 'void' ? 'selected' : '' }}>Void</option>
+                            <option value="failed" {{ request('booking_status') === 'failed' ? 'selected' : '' }}>Failed</option>
                         </select>
                     </div>
 
@@ -154,6 +165,18 @@
                             <option value="seat_assignment" {{ request('service_provided') === 'seat_assignment' ? 'selected' : '' }}>Seat Assignment</option>
                         </select>
                     </div>
+
+                    <!-- Dispute Type Filter -->
+                    <div class="col-md-3">
+                        <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Dispute Type</label>
+                        <select name="dispute_type" class="form-select font-monospace fw-semibold">
+                            <option value="">All Dispute Types</option>
+                            <option value="CHARGEBACK" {{ request('dispute_type') === 'CHARGEBACK' ? 'selected' : '' }}>CHARGEBACK</option>
+                            <option value="RDR" {{ request('dispute_type') === 'RDR' ? 'selected' : '' }}>RDR</option>
+                            <option value="ALERT" {{ request('dispute_type') === 'ALERT' ? 'selected' : '' }}>ALERT</option>
+                            <option value="RETRIEVAL" {{ request('dispute_type') === 'RETRIEVAL' ? 'selected' : '' }}>RETRIEVAL</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-light-subtle">
@@ -187,6 +210,23 @@
                                 <span class="fw-bold text-primary font-monospace fs-6 d-block">{{ $booking->booking_id }}</span>
                                 <span class="small text-secondary d-block">Agent: {{ $booking->agent ? $booking->agent->alias_name : 'N/A' }}</span>
                                 <span class="text-muted small font-monospace d-block">{{ $booking->booking_date->format('M d, Y') }}</span>
+                                @if($booking->dispute_type)
+                                    @php
+                                        $dtBadgeClass = match(strtoupper($booking->dispute_type)) {
+                                            'CHARGEBACK' => 'bg-danger text-white border border-danger',
+                                            'RDR' => 'text-white',
+                                            'ALERT' => 'bg-warning text-dark border border-warning',
+                                            'RETRIEVAL' => 'bg-primary text-white border border-primary',
+                                            default => 'bg-danger text-white'
+                                        };
+                                        $dtStyle = strtoupper($booking->dispute_type) === 'RDR' ? 'background-color: #6f42c1 !important; color: #fff !important;' : '';
+                                    @endphp
+                                    <div class="mt-1">
+                                        <span class="badge {{ $dtBadgeClass }} font-monospace px-2 py-0.5" style="font-size: 0.72rem; {{ $dtStyle }}" title="Dispute Type: {{ strtoupper($booking->dispute_type) }} (Managed by Chargeback Team)">
+                                            <i class="bi bi-shield-exclamation me-1"></i>{{ strtoupper($booking->dispute_type) }}
+                                        </span>
+                                    </div>
+                                @endif
                             </td>
                             <!-- Customer Details -->
                             <td class="px-3 py-3">
@@ -208,6 +248,7 @@
                                         'ticketed' => 'bg-secondary text-white',
                                         'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
                                         'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        'failed' => 'bg-danger text-white border border-danger',
                                         default => 'bg-light text-dark border border-secondary-subtle'
                                     };
                                 @endphp
@@ -413,6 +454,15 @@
                 return `/bookings/${this.changeBookingId}/request-change`;
             }
         };
+    }
+
+    function handleCancelAuth(form, bookingId) {
+        let reason = prompt("Enter failure/cancellation reason for Booking #" + bookingId + " (Agent will be notified via email that charge failed):", "Customer declined authorization / Charge failed");
+        if (reason === null) {
+            return false;
+        }
+        form.querySelector('input[name="reason"]').value = reason.trim() || 'Payment charge could not be processed / authorization cancelled by Admin.';
+        return true;
     }
 </script>
 @endsection

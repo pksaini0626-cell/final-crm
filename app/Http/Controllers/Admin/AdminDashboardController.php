@@ -107,6 +107,12 @@ class AdminDashboardController extends Controller
         $chartLabels = $topAgents->pluck('alias_name')->map(fn($name, $i) => $name ?: 'Agent #' . ($i + 1))->toArray();
         $chartData = $topAgents->pluck('month_total_mco')->toArray();
 
+        // Pending Customer Authorization Notifications (email_auth_sent)
+        $pendingAuthBookings = Booking::where('booking_status', 'email_auth_sent')
+            ->with(['agent', 'passengers', 'bookingFlights'])
+            ->latest()
+            ->get();
+
         return view('admin.dashboard', compact(
             'todayBookingsCount',
             'todayTotalAmount',
@@ -121,7 +127,8 @@ class AdminDashboardController extends Controller
             'latestBookings',
             'topAgents',
             'chartLabels',
-            'chartData'
+            'chartData',
+            'pendingAuthBookings'
         ));
     }
 }

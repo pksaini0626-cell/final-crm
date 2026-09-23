@@ -27,6 +27,67 @@
         </div>
     </div>
 
+    <!-- Pending Customer Authorization Notifications Banner for Admin/Manager -->
+    @if(isset($pendingAuthBookings) && $pendingAuthBookings->count() > 0)
+        <div class="card bg-white border-warning-subtle shadow-sm mb-4">
+            <div class="card-header bg-warning-subtle border-warning-subtle py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="spinner-grow spinner-grow-sm text-warning" role="status"></span>
+                    <h2 class="h6 font-bold text-warning-emphasis mb-0 text-uppercase">
+                        Pending Customer Authorization Notifications ({{ $pendingAuthBookings->count() }})
+                    </h2>
+                </div>
+                <span class="badge bg-warning text-dark border border-warning-subtle small">Customer Authorization Sent — Awaiting Reply &amp; Admin Approval</span>
+            </div>
+
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    @foreach($pendingAuthBookings as $pBooking)
+                        <div class="col-md-6">
+                            <div class="card bg-light border-warning-subtle shadow-sm h-100">
+                                <div class="card-body p-3 vstack justify-content-between gap-3">
+                                    <div class="vstack gap-1 text-secondary small">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-dark font-monospace">Booking #{{ $pBooking->booking_id }}</span>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase">Email Auth Sent</span>
+                                        </div>
+                                        <div><strong class="text-secondary">PNR:</strong> <span class="text-warning-emphasis font-monospace fw-bold">{{ $pBooking->airline_pnr ?: ($pBooking->gk_pnr ?: 'N/A') }}</span> | <strong class="text-secondary">Airline:</strong> {{ $pBooking->airline_name ?: 'Airline' }}</div>
+                                        <div><strong class="text-secondary">Customer Email:</strong> <span class="text-dark fw-semibold">{{ $pBooking->email_address }}</span></div>
+                                        <div><strong class="text-secondary">Created By Agent:</strong> <span class="text-dark fw-semibold">{{ $pBooking->agent ? $pBooking->agent->name : 'Agent' }}</span></div>
+                                        <div class="text-muted small mt-1"><i class="bi bi-clock me-1"></i> Dispatched: {{ $pBooking->updated_at->diffForHumans() }}</div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle">
+                                        <a href="{{ route('bookings.index') }}?q={{ $pBooking->booking_id }}" class="btn btn-link btn-sm text-info p-0 text-decoration-none fw-semibold">
+                                            <i class="bi bi-eye me-1"></i> View Booking
+                                        </a>
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <form action="{{ route('bookings.cancel-auth', $pBooking->id) }}" method="POST" class="d-inline" onsubmit="return handleCancelAuth(this, '{{ $pBooking->booking_id }}');">
+                                                @csrf
+                                                <input type="hidden" name="reason" value="">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3" title="Cancel Authorization & Mark as Failed">
+                                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                                </button>
+                                            </form>
+
+                                            <form action="{{ route('bookings.approve-auth', $pBooking->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" onclick="return confirm('Confirm customer authorization reply received for Booking #{{ $pBooking->booking_id }}? Status will change to EMAIL AUTH DONE.')" class="btn btn-success btn-sm fw-bold px-3">
+                                                    <i class="bi bi-check-lg me-1"></i> Approve Auth
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- SECTION 1: TOP KPI CARDS (Today's Bookings vs This Month's Bookings) -->
     <div class="row g-3">
         <!-- Today's Performance Group -->
@@ -267,6 +328,7 @@
                                             'ticketed' => 'bg-secondary text-white',
                                             'booking_complete' => 'bg-success-subtle text-success border border-success-subtle',
                                             'void' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                            'failed' => 'bg-danger text-white border border-danger',
                                             default => 'bg-light text-dark border border-secondary-subtle'
                                         };
                                     @endphp
@@ -449,5 +511,14 @@
             });
         }
     });
+
+    function handleCancelAuth(form, bookingId) {
+        let reason = prompt("Enter failure/cancellation reason for Booking #" + bookingId + " (Agent will be notified via email that charge failed):", "Customer declined authorization / Charge failed");
+        if (reason === null) {
+            return false;
+        }
+        form.querySelector('input[name="reason"]').value = reason.trim() || 'Payment charge could not be processed / authorization cancelled by Admin.';
+        return true;
+    }
 </script>
 @endsection

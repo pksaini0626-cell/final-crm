@@ -52,6 +52,11 @@ class AdminBookingController extends Controller
             $query->where('service_provided', $request->input('service_provided'));
         }
 
+        // Dispute type filter
+        if ($request->filled('dispute_type')) {
+            $query->where('dispute_type', $request->input('dispute_type'));
+        }
+
         // General search query
         if ($request->filled('q')) {
             $search = $request->input('q');
@@ -98,6 +103,12 @@ class AdminBookingController extends Controller
      */
     public function update(Request $request, Booking $booking)
     {
+        if ($request->has('company_card_used')) {
+            $request->merge([
+                'company_card_used' => filter_var($request->company_card_used, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
+
         $validated = $request->validate([
             'agent_id' => 'required|exists:users,id',
             'merchant_id' => 'nullable|exists:merchants,id',
@@ -111,6 +122,8 @@ class AdminBookingController extends Controller
             'total_amount' => 'required|numeric|min:0',
             'paid_to_airline' => 'required|numeric|min:0',
             'total_mco' => 'required|numeric|min:0',
+            'company_card_used' => 'nullable|boolean',
+            'company_card_amount' => 'nullable|numeric|min:0',
             'booking_status' => 'required|string',
             'payment_status' => 'required|string',
             'case_status' => 'nullable|string',
@@ -146,6 +159,9 @@ class AdminBookingController extends Controller
             'flights.*.booking_class' => 'nullable|string|max:10',
             'flights.*.status' => 'nullable|string|max:255',
         ]);
+
+        $validated['company_card_used'] = $request->boolean('company_card_used');
+        $validated['company_card_amount'] = $validated['company_card_used'] ? (float) ($validated['company_card_amount'] ?? 0) : 0.00;
 
         DB::transaction(function () use ($request, $validated, $booking) {
             $booking->update($validated);

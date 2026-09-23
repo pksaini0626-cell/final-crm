@@ -47,7 +47,8 @@ return new class extends Migration
                 'email_auth_done', 
                 'ticketed', 
                 'booking_complete', 
-                'void'
+                'void',
+                'failed'
             ])->default('booking_generated');
             
             $table->enum('case_status', [

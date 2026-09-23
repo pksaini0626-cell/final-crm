@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Mail\AuthApprovedAgentNotificationMail;
+use App\Mail\AuthFailedAgentNotificationMail;
+use App\Mail\ChargebackAlertAgentMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
@@ -24,7 +27,7 @@ class BookingController extends Controller
         // Apply Search Filter (booking_id, airline_pnr, gk_pnr, email_address, passenger name)
         if ($search = trim($request->input('search', ''))) {
             $query->where(function ($q) use ($search, $user) {
-                if ($user && ($user->hasAnyRole(['admin', 'manager']) || in_array($user->role, ['admin', 'manager']))) {
+                if ($user && ($user->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array($user->role, ['admin', 'manager', 'chargeback']))) {
                     $q->where('booking_id', 'like', "%{$search}%")
                       ->orWhere('airline_pnr', 'like', "%{$search}%")
                       ->orWhere('gk_pnr', 'like', "%{$search}%")
@@ -65,7 +68,7 @@ class BookingController extends Controller
                 }
             });
         } else {
-            if (!$user || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager']))) {
+            if (!$user || (!$user->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'manager', 'chargeback']))) {
                 $query->where('agent_id', Auth::id());
             }
         }
@@ -73,6 +76,11 @@ class BookingController extends Controller
         // Apply Status Filter
         if ($status = $request->input('status')) {
             $query->where('booking_status', $status);
+        }
+
+        // Apply Dispute Type Filter
+        if ($disputeType = $request->input('dispute_type')) {
+            $query->where('dispute_type', $disputeType);
         }
 
         $bookings = $query->with(['passengers', 'bookingFlights', 'flightSegments', 'bookingRemarks.user', 'agent', 'ticketingUser'])
@@ -160,6 +168,8 @@ class BookingController extends Controller
 
             $data['booking_status'] = 'booking_generated';
             $data['email_auth_taken'] = $request->boolean('email_auth_taken');
+            $data['company_card_used'] = $request->boolean('company_card_used');
+            $data['company_card_amount'] = $data['company_card_used'] ? (float) $request->input('company_card_amount', 0) : 0.00;
 
             // Create the Booking record (total_mco is saved as passed from input)
             $booking = Booking::create($data);
@@ -235,7 +245,7 @@ class BookingController extends Controller
      */
     public function addRemark(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array(Auth::user()->role, ['admin', 'manager', 'chargeback']), 403);
 
         $request->validate([
             'remark' => 'nullable|string|required_without:attachments',
@@ -263,7 +273,7 @@ class BookingController extends Controller
         $booking->bookingRemarks()->create([
             'user_id' => Auth::id(),
             'remark' => $request->input('remark') ?: 'Attachment(s) added.',
-            'type' => Auth::user()->hasAnyRole(['admin', 'manager']) ? 'admin_remark' : 'agent_remark',
+            'type' => (Auth::user()->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array(Auth::user()->role, ['admin', 'manager', 'chargeback'])) ? 'admin_remark' : 'agent_remark',
             'attachments' => $attachmentData,
         ]);
 
@@ -277,6 +287,12 @@ class BookingController extends Controller
     {
         abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
 
+        if ($request->has('company_card_used')) {
+            $request->merge([
+                'company_card_used' => filter_var($request->company_card_used, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
+
         $request->validate([
             'airline_pnr' => 'nullable|string|max:255',
             'trip_type' => 'nullable|in:one_way,round_trip,multi_city',
@@ -285,6 +301,8 @@ class BookingController extends Controller
             'billing_phone' => 'nullable|string|max:255',
             'billing_address' => 'nullable|string|max:1000',
             'payment_info' => 'nullable|string',
+            'company_card_used' => 'nullable|boolean',
+            'company_card_amount' => 'nullable|numeric|min:0',
             'new_remark' => 'nullable|string',
             'new_remark_attachments' => 'nullable|array',
             'new_remark_attachments.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
@@ -325,6 +343,10 @@ class BookingController extends Controller
             }
             if ($request->has('payment_info')) {
                 $updateFields['payment_info'] = $request->input('payment_info');
+            }
+            if ($request->has('company_card_used') || $request->has('company_card_amount')) {
+                $updateFields['company_card_used'] = $request->boolean('company_card_used');
+                $updateFields['company_card_amount'] = $updateFields['company_card_used'] ? (float) $request->input('company_card_amount', 0) : 0.00;
             }
 
             if (!empty($updateFields)) {
@@ -385,6 +407,44 @@ class BookingController extends Controller
         });
 
         return redirect()->back()->with('success', 'Booking details updated successfully.');
+    }
+
+    /**
+     * Update Company Card Used status and amount via quick modal/form.
+     */
+    public function updateCompanyCard(Request $request, Booking $booking)
+    {
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager', 'ticketing']) && !in_array(Auth::user()->role, ['admin', 'manager', 'ticketing']), 403);
+
+        if ($request->has('company_card_used')) {
+            $request->merge([
+                'company_card_used' => filter_var($request->company_card_used, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
+
+        $validated = $request->validate([
+            'company_card_used' => 'nullable|boolean',
+            'company_card_amount' => 'nullable|numeric|min:0',
+        ]);
+
+        $companyCardUsed = $request->boolean('company_card_used');
+        $companyCardAmount = $companyCardUsed ? (float) ($validated['company_card_amount'] ?? 0) : 0.00;
+
+        $booking->update([
+            'company_card_used' => $companyCardUsed,
+            'company_card_amount' => $companyCardAmount,
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Company card details updated successfully.',
+                'company_card_used' => $booking->company_card_used,
+                'company_card_amount' => number_format((float)$booking->company_card_amount, 2, '.', ''),
+            ]);
+        }
+
+        return back()->with('success', 'Company card details updated successfully.');
     }
 
     /**
@@ -570,6 +630,46 @@ class BookingController extends Controller
     }
 
     /**
+     * Cancel customer authorization / mark charging as failed and notify the agent.
+     */
+    public function cancelAuth(Request $request, Booking $booking)
+    {
+        $user = Auth::user();
+        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])), 403, 'Unauthorized access.');
+
+        $canceller = $user;
+        $reason = trim($request->input('reason', 'Payment charge could not be processed / authorization cancelled by Admin.'));
+        if (empty($reason)) {
+            $reason = 'Payment charge could not be processed / authorization cancelled by Admin.';
+        }
+
+        DB::transaction(function () use ($booking, $canceller, $reason) {
+            $booking->update([
+                'booking_status' => 'failed',
+                'payment_status' => 'cancelled',
+            ]);
+
+            $booking->bookingRemarks()->create([
+                'user_id' => $canceller->id,
+                'remark' => 'Customer Authorization Cancelled & Payment Failed by ' . strtoupper($canceller->role) . ' (' . ($canceller->alias_name ?: $canceller->name) . '). Reason: ' . $reason . '. Status updated to: FAILED (NOT CHARGED).',
+                'type' => 'admin_remark',
+            ]);
+        });
+
+        // Dispatch Email Notification to the agent who created the booking
+        $booking->load(['agent', 'passengers']);
+        if ($booking->agent && filter_var($booking->agent->email, FILTER_VALIDATE_EMAIL)) {
+            try {
+                Mail::to($booking->agent->email)->send(new AuthFailedAgentNotificationMail($booking, $canceller, $reason));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send auth cancellation email to agent: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('success', 'Customer authorization cancelled for Booking #' . $booking->booking_id . '. Status updated to FAILED & notification email dispatched to agent (' . ($booking->agent ? $booking->agent->email : 'N/A') . ').');
+    }
+
+    /**
      * Get complete booking details in JSON format for the modal.
      */
     public function getBookingJson(Booking $booking)
@@ -599,35 +699,33 @@ class BookingController extends Controller
     public function updateStatus(Request $request, Booking $booking)
     {
         $user = Auth::user();
-        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])), 403, 'Unauthorized access.');
+        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'manager', 'chargeback'])), 403, 'Unauthorized access.');
 
         $validated = $request->validate([
-            'booking_status' => 'required|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void',
+            'booking_status' => 'required|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void,failed,chargeback',
             'payment_status' => 'required|string|in:pending,received,refund,cancelled',
+            'dispute_type' => 'nullable|string|in:CHARGEBACK,RDR,ALERT,RETRIEVAL,none,NONE',
             'remark' => 'nullable|string|max:1000',
         ]);
 
+        if ($request->has('dispute_type')) {
+            abort_if(!$user || $user->role !== 'chargeback', 403, 'Dispute Type can only be managed by the Chargeback Team.');
+        }
+
         $oldBookingStatus = $booking->booking_status;
         $oldPaymentStatus = $booking->payment_status;
+        $oldDisputeType = $booking->dispute_type;
 
         $newBookingStatus = $validated['booking_status'];
         $newPaymentStatus = $validated['payment_status'];
 
-        DB::transaction(function () use ($booking, $user, $newBookingStatus, $newPaymentStatus, $oldBookingStatus, $oldPaymentStatus, $validated) {
+        DB::transaction(function () use ($booking, $user, $newBookingStatus, $newPaymentStatus, $oldBookingStatus, $oldPaymentStatus, $validated, $request) {
             $booking->booking_status = $newBookingStatus;
             $booking->payment_status = $newPaymentStatus;
 
             if (in_array($newBookingStatus, ['ticketed', 'booking_complete'])) {
                 $booking->email_auth_taken = true;
             }
-
-            $booking->save();
-
-            $roleLabel = match($user->role) {
-                'manager' => 'Manager',
-                'admin' => 'Administrator',
-                default => 'Staff'
-            };
 
             $changes = [];
             if ($oldBookingStatus !== $newBookingStatus) {
@@ -636,6 +734,25 @@ class BookingController extends Controller
             if ($oldPaymentStatus !== $newPaymentStatus) {
                 $changes[] = 'Payment Status: ' . strtoupper(str_replace('_', ' ', (string)$oldPaymentStatus ?: 'none')) . ' -> ' . strtoupper(str_replace('_', ' ', $newPaymentStatus));
             }
+
+            if ($request->has('dispute_type') && $user->role === 'chargeback') {
+                $oldDisp = $booking->dispute_type;
+                $rawDisp = $validated['dispute_type'] ?? null;
+                $newDisputeType = ($rawDisp && strtoupper($rawDisp) !== 'NONE') ? strtoupper($rawDisp) : null;
+                $booking->dispute_type = $newDisputeType;
+                if ($oldDisp !== $newDisputeType) {
+                    $changes[] = 'Dispute Type: ' . ($oldDisp ?: 'NONE') . ' -> ' . ($newDisputeType ?: 'NONE');
+                }
+            }
+
+            $booking->save();
+
+            $roleLabel = match($user->role) {
+                'manager' => 'Manager',
+                'admin' => 'Administrator',
+                'chargeback' => 'Chargeback Team',
+                default => 'Staff'
+            };
 
             $noteText = !empty($validated['remark']) ? ' | Reason: ' . trim($validated['remark']) : '';
             $logText = !empty($changes)
@@ -649,6 +766,26 @@ class BookingController extends Controller
             ]);
         });
 
+        // Send automated alert email if Chargeback user changed status or dispute type
+        if ($user->role === 'chargeback' && (($oldBookingStatus !== $newBookingStatus) || ($oldDisputeType !== ($booking->dispute_type ?? null)))) {
+            $booking->loadMissing(['agent', 'passengers', 'flightSegments', 'bookingFlights']);
+            if ($booking->agent && !empty($booking->agent->email)) {
+                try {
+                    Mail::to($booking->agent->email)->send(new ChargebackAlertAgentMail(
+                        booking: $booking,
+                        oldDisputeType: $oldDisputeType,
+                        newDisputeType: $booking->dispute_type,
+                        oldStatus: $oldBookingStatus,
+                        newStatus: $newBookingStatus,
+                        changedBy: $user,
+                        note: $validated['remark'] ?? null
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error("Failed to send ChargebackAlertAgentMail on status update: " . $e->getMessage());
+                }
+            }
+        }
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -659,6 +796,66 @@ class BookingController extends Controller
         }
 
         return redirect()->back()->with('success', "Booking #{$booking->booking_id} status updated successfully.");
+    }
+
+    /**
+     * Update dispute type on a booking directly (Exclusively Chargeback Team).
+     */
+    public function updateDisputeType(Request $request, Booking $booking)
+    {
+        $user = Auth::user();
+        abort_if(!$user || $user->role !== 'chargeback', 403, 'Dispute Type can only be managed by the Chargeback Team.');
+
+        $validated = $request->validate([
+            'dispute_type' => 'nullable|string|in:CHARGEBACK,RDR,ALERT,RETRIEVAL,none,NONE',
+            'remark' => 'nullable|string|max:1000',
+        ]);
+
+        $oldDisputeType = $booking->dispute_type;
+        $rawDisp = $validated['dispute_type'] ?? null;
+        $newDisputeType = ($rawDisp && strtoupper($rawDisp) !== 'NONE') ? strtoupper($rawDisp) : null;
+
+        $booking->dispute_type = $newDisputeType;
+        $booking->save();
+
+        $noteText = !empty($validated['remark']) ? ' | Reason: ' . trim($validated['remark']) : '';
+        $logText = "Dispute Type updated by Chargeback Team ({$user->name}): " . ($oldDisputeType ?: 'NONE') . ' -> ' . ($newDisputeType ?: 'NONE') . $noteText;
+
+        $booking->bookingRemarks()->create([
+            'user_id' => $user->id,
+            'remark' => $logText,
+            'type' => 'admin_remark',
+        ]);
+
+        // Send automated alert email to the agent who created the booking
+        if ($oldDisputeType !== $newDisputeType) {
+            $booking->loadMissing(['agent', 'passengers', 'flightSegments', 'bookingFlights']);
+            if ($booking->agent && !empty($booking->agent->email)) {
+                try {
+                    Mail::to($booking->agent->email)->send(new ChargebackAlertAgentMail(
+                        booking: $booking,
+                        oldDisputeType: $oldDisputeType,
+                        newDisputeType: $newDisputeType,
+                        oldStatus: $booking->booking_status,
+                        newStatus: $booking->booking_status,
+                        changedBy: $user,
+                        note: $validated['remark'] ?? null
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error("Failed to send ChargebackAlertAgentMail on dispute type update: " . $e->getMessage());
+                }
+            }
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Booking #{$booking->booking_id} dispute type updated to " . ($newDisputeType ?: 'None') . ".",
+                'dispute_type' => $booking->dispute_type
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Booking #{$booking->booking_id} dispute type updated successfully.");
     }
 }
 

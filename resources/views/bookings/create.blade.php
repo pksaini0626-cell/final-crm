@@ -511,6 +511,11 @@
                         <div class="d-flex align-items-center gap-2">
                             <span class="small text-secondary fw-bold">MCO Profit:</span>
                             <span class="badge fs-6 font-monospace" :class="Number(formData.total_mco) >= 0 ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'" x-text="`${formData.currency} ${Number(formData.total_mco || 0).toFixed(2)}`"></span>
+                            <template x-if="formData.company_card_used">
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fs-6 font-monospace ms-2" title="Company Card Used">
+                                    <i class="bi bi-credit-card-fill me-1"></i>Co. Card: <span x-text="`${formData.currency} ${Number(formData.company_card_amount || 0).toFixed(2)}`"></span>
+                                </span>
+                            </template>
                         </div>
                     </div>
                     <div class="card-body p-4">
@@ -532,15 +537,37 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Total Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="total_amount" x-model="formData.total_amount" @input="calculateMco()" required class="form-control font-monospace fw-bold text-dark" placeholder="0.00">
+                                <input type="number" step="0.01" name="total_amount" x-model="formData.total_amount" required class="form-control font-monospace fw-bold text-dark" placeholder="0.00">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Paid to Airline <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="paid_to_airline" x-model="formData.paid_to_airline" @input="calculateMco()" required class="form-control font-monospace" placeholder="0.00">
+                                <input type="number" step="0.01" name="paid_to_airline" x-model="formData.paid_to_airline" required class="form-control font-monospace" placeholder="0.00">
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label text-secondary small fw-bold text-uppercase">Total MCO <span class="text-danger">*</span></label>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Total MCO (Manual) <span class="text-danger">*</span></label>
                                 <input type="number" step="0.01" name="total_mco" x-model="formData.total_mco" required class="form-control font-monospace fw-bold text-success bg-success bg-opacity-10 border-success border-opacity-50" placeholder="0.00">
+                                <div class="form-text small text-muted" style="font-size: 0.72rem;">Enter manually</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-secondary small fw-bold text-uppercase d-flex justify-content-between align-items-center">
+                                    <span>Company Card</span>
+                                    <template x-if="formData.company_card_used">
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle font-monospace" style="font-size: 0.7rem;">Active</span>
+                                    </template>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-text bg-white">
+                                        <input class="form-check-input mt-0" type="checkbox" id="company_card_checkbox" :checked="formData.company_card_used" @click.prevent="toggleCompanyCard()" title="Check to add company card used amount">
+                                    </div>
+                                    <input type="text" readonly class="form-control font-monospace fw-bold" :class="formData.company_card_used ? 'bg-warning bg-opacity-10 text-dark border-warning' : 'bg-light text-muted'" :value="formData.company_card_used ? `${formData.currency} ${Number(formData.company_card_amount || 0).toFixed(2)}` : 'Not Used'" @click="openCompanyCardModal()" style="cursor: pointer;" title="Click to edit amount">
+                                    <template x-if="formData.company_card_used">
+                                        <button type="button" class="btn btn-outline-warning" @click="openCompanyCardModal()" title="Edit Amount">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                                <input type="hidden" name="company_card_used" :value="formData.company_card_used ? '1' : '0'">
+                                <input type="hidden" name="company_card_amount" :value="formData.company_card_amount || '0.00'">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-secondary small fw-bold text-uppercase">Payment Status <span class="text-danger">*</span></label>
@@ -629,11 +656,21 @@
                                     <strong class="text-dark font-monospace" x-text="`${formData.currency} ${Number(formData.total_amount || 0).toFixed(2)}`"></strong>
                                 </li>
                                 <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
+                                    <span>Charged on Merchant:</span>
+                                    <strong class="text-primary font-monospace" x-text="formData.company_card_used ? `${formData.currency} ${Number(formData.total_amount || 0).toFixed(2)} (Full)` : `${formData.currency} ${Number(Math.max(0, (formData.total_amount || 0) - (formData.paid_to_airline || 0))).toFixed(2)}`"></strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
                                     <span>Airline Cost:</span>
                                     <strong class="text-secondary font-monospace" x-text="`${formData.currency} ${Number(formData.paid_to_airline || 0).toFixed(2)}`"></strong>
                                 </li>
+                                <template x-if="formData.company_card_used">
+                                    <li class="list-group-item bg-transparent text-secondary d-flex justify-content-between border-light-subtle py-2">
+                                        <span class="text-warning-emphasis fw-semibold"><i class="bi bi-credit-card-fill me-1"></i>Company Card Paid:</span>
+                                        <strong class="text-warning-emphasis font-monospace" x-text="`${formData.currency} ${Number(formData.company_card_amount || 0).toFixed(2)}`"></strong>
+                                    </li>
+                                </template>
                                 <li class="list-group-item bg-transparent d-flex justify-content-between pt-3 border-0">
-                                    <span class="fw-bold text-warning-emphasis text-uppercase">Calculated MCO Margin:</span>
+                                    <span class="fw-bold text-warning-emphasis text-uppercase">Total MCO Margin:</span>
                                     <strong class="text-success font-monospace fs-5" x-text="`${formData.currency} ${Number(formData.total_mco || 0).toFixed(2)}`"></strong>
                                 </li>
                             </ul>
@@ -735,6 +772,50 @@
             </div>
         </div>
     </div>
+
+    <!-- Company Card Amount Popup Modal -->
+    <div x-show="companyCardModalOpen" 
+         style="display: none; z-index: 1065; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);" 
+         class="modal fade" 
+         :class="{ 'show d-block': companyCardModalOpen }" 
+         tabindex="-1"
+         @click.self="closeCompanyCardModal()"
+         @keydown.escape.window="closeCompanyCardModal()"
+         x-cloak>
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px; pointer-events: auto;">
+            <div class="modal-content shadow border-0 rounded-3">
+                <div class="modal-header bg-dark text-white py-2.5 px-3">
+                    <h6 class="modal-title fw-bold mb-0 text-uppercase d-flex align-items-center gap-2">
+                        <i class="bi bi-credit-card-2-front-fill text-warning"></i> Company Card Amount
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white btn-sm" @click="closeCompanyCardModal()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="small text-secondary mb-3">
+                        Enter the amount charged to the <strong>agency's company card</strong> for this booking (e.g. paying airline fee directly).
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold text-uppercase">Company Card Amount (<span x-text="formData.currency"></span>) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text font-monospace fw-bold" x-text="formData.currency"></span>
+                            <input type="number" step="0.01" min="0" id="company_card_popup_input" x-model="companyCardTempAmount" @keydown.enter.prevent="saveCompanyCard()" class="form-control form-control-lg font-monospace fw-bold text-dark" placeholder="0.00" autofocus>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 px-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" @click="closeCompanyCardModal()">Cancel</button>
+                    <div class="d-flex gap-2">
+                        <template x-if="formData.company_card_used">
+                            <button type="button" class="btn btn-outline-danger btn-sm" @click="removeCompanyCard()">Remove</button>
+                        </template>
+                        <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" @click="saveCompanyCard()">
+                            <i class="bi bi-check-circle me-1"></i> Submit Amount
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -773,6 +854,8 @@
             total_amount: dup.total_amount ? parseFloat(dup.total_amount) : 0.00,
             paid_to_airline: dup.paid_to_airline ? parseFloat(dup.paid_to_airline) : 0.00,
             total_mco: dup.total_mco ? parseFloat(dup.total_mco) : 0.00,
+            company_card_used: dup.company_card_used ? true : false,
+            company_card_amount: dup.company_card_amount ? parseFloat(dup.company_card_amount) : 0.00,
             payment_status: 'pending',
             payment_info: dup.payment_info || ''
         } : {
@@ -809,6 +892,8 @@
             total_amount: 0.00,
             paid_to_airline: 0.00,
             total_mco: 0.00,
+            company_card_used: false,
+            company_card_amount: 0.00,
             payment_status: 'pending',
             payment_info: ''
         };
@@ -898,6 +983,59 @@
             paymentMode: (initialBookingCards.length > 0) ? 'split' : 'single',
             bookingCards: initialBookingCards,
             multiCardsModalOpen: false,
+
+            companyCardModalOpen: false,
+            companyCardTempAmount: '',
+
+            toggleCompanyCard() {
+                if (!this.formData.company_card_used) {
+                    this.openCompanyCardModal();
+                } else {
+                    this.removeCompanyCard();
+                }
+            },
+
+            openCompanyCardModal() {
+                const currentAmt = parseFloat(this.formData.company_card_amount);
+                const airlinePaid = parseFloat(this.formData.paid_to_airline);
+                if (!isNaN(currentAmt) && currentAmt > 0) {
+                    this.companyCardTempAmount = currentAmt;
+                } else if (!isNaN(airlinePaid) && airlinePaid > 0) {
+                    this.companyCardTempAmount = airlinePaid;
+                } else {
+                    this.companyCardTempAmount = '';
+                }
+                this.companyCardModalOpen = true;
+                this.$nextTick(() => {
+                    const input = document.getElementById('company_card_popup_input');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                });
+            },
+
+            closeCompanyCardModal() {
+                this.companyCardModalOpen = false;
+            },
+
+            saveCompanyCard() {
+                const amt = parseFloat(this.companyCardTempAmount);
+                if (isNaN(amt) || amt <= 0) {
+                    alert('Please enter a valid amount greater than 0.');
+                    return;
+                }
+                this.formData.company_card_used = true;
+                this.formData.company_card_amount = amt.toFixed(2);
+                this.companyCardModalOpen = false;
+            },
+
+            removeCompanyCard() {
+                this.formData.company_card_used = false;
+                this.formData.company_card_amount = 0.00;
+                this.companyCardTempAmount = '';
+                this.companyCardModalOpen = false;
+            },
 
             newCardHolderName: '',
             newCardType: 'Visa',
@@ -1101,7 +1239,7 @@
                     formDataObj.append('_token', csrfToken);
 
                     Object.keys(this.formData).forEach(key => {
-                        if (key === 'email_auth_taken') {
+                        if (key === 'email_auth_taken' || key === 'company_card_used' || typeof this.formData[key] === 'boolean') {
                             formDataObj.append(key, this.formData[key] ? '1' : '0');
                         } else if (this.formData[key] !== null && this.formData[key] !== undefined) {
                             formDataObj.append(key, this.formData[key]);
