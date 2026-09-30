@@ -44,6 +44,17 @@ class LoginController extends Controller
 
             $user->forceFill(['last_login_at' => now()])->save();
 
+            // Record login footprint for chargeback users
+            if ($user->role === 'chargeback' || (method_exists($user, 'hasRole') && $user->hasRole('chargeback'))) {
+                \App\Models\ChargebackActivity::record([
+                    'user_id' => $user->id,
+                    'action' => 'login',
+                    'description' => "User '{$user->name}' ({$user->email}) logged into CRM",
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            }
+
             $request->session()->regenerate();
 
             return $this->redirectBasedOnRole($user);
@@ -73,8 +84,9 @@ class LoginController extends Controller
     protected function redirectBasedOnRole($user)
     {
         return match($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
+            'admin', 'master_admin' => redirect()->route('admin.dashboard'),
             'manager' => redirect()->route('manager.tickets.index'),
+            'chargeback' => redirect()->route('chargeback.index'),
             default => redirect()->route('bookings.index'),
         };
     }

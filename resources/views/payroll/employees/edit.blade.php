@@ -90,6 +90,7 @@
                                     <option value="accounts" {{ old('role', $user->role) === 'accounts' ? 'selected' : '' }}>Accounts &amp; Payroll</option>
                                     <option value="manager" {{ old('role', $user->role) === 'manager' ? 'selected' : '' }}>Manager</option>
                                     <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
+                                    <option value="master_admin" {{ old('role', $user->role) === 'master_admin' ? 'selected' : '' }}>Master Admin</option>
                                 </select>
                             </div>
 

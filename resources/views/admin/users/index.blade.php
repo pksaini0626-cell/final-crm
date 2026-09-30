@@ -45,6 +45,7 @@
                 <div class="col-md-3">
                     <select name="role" class="form-select form-select-sm bg-white border-light-subtle text-dark">
                         <option value="">All User Roles</option>
+                        <option value="master_admin" {{ request('role') === 'master_admin' ? 'selected' : '' }}>Master Admin</option>
                         <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                         <option value="ticketing" {{ request('role') === 'ticketing' ? 'selected' : '' }}>Ticketing Desk</option>
@@ -105,6 +106,7 @@
                             <td class="px-3 py-3">
                                 @php
                                     $roleBadge = match($user->role) {
+                                        'master_admin' => 'bg-danger text-white border border-danger shadow-sm',
                                         'admin' => 'bg-danger-subtle text-danger border border-danger-subtle',
                                         'manager' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                         'ticketing' => 'bg-info-subtle text-info border border-info-subtle',

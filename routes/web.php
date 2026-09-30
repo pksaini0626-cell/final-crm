@@ -78,15 +78,19 @@ Route::middleware('auth')->group(function () {
     // Change Request Submission Routes
     Route::get('/bookings/{booking}/request-change', [\App\Http\Controllers\ChangeRequestController::class, 'create'])->name('bookings.request-change.create');
     Route::post('/bookings/{booking}/request-change', [\App\Http\Controllers\ChangeRequestController::class, 'store'])->name('bookings.request-change');
+
+    // Refund / Void Request Submission Routes
+    Route::get('/bookings/{booking}/refund-request', [\App\Http\Controllers\RefundRequestController::class, 'create'])->name('bookings.refund-request.create');
+    Route::post('/bookings/{booking}/refund-request', [\App\Http\Controllers\RefundRequestController::class, 'store'])->name('bookings.refund-request.store');
 });
 
-Route::middleware(['auth', 'role:manager|admin|changes'])->group(function () {
+Route::middleware(['auth', 'role:manager|admin|master_admin|changes'])->group(function () {
     Route::get('/changes/requests', [\App\Http\Controllers\ChangeRequestController::class, 'index'])->name('changes.index');
     Route::get('/changes/queue', [\App\Http\Controllers\ChangeRequestController::class, 'index'])->name('changes.queue');
     Route::post('/changes/requests/{changeRequest}/status', [\App\Http\Controllers\ChangeRequestController::class, 'updateStatus'])->name('changes.update-status');
 });
 
-Route::middleware(['auth', 'role:manager|admin|ticketing|agent'])->group(function () {
+Route::middleware(['auth', 'role:manager|admin|master_admin|ticketing|agent'])->group(function () {
     Route::post('/bookings/{booking}/approve-auth', [BookingController::class, 'approveAuth'])->name('bookings.approve-auth');
     Route::post('/bookings/{booking}/cancel-auth', [BookingController::class, 'cancelAuth'])->name('bookings.cancel-auth');
     Route::get('/manager/tickets', [TicketController::class, 'index'])->name('manager.tickets.index');
@@ -99,13 +103,13 @@ Route::middleware(['auth', 'role:manager|admin|ticketing|agent'])->group(functio
 });
 
 // Booking Edit & Update (Accessible to Admin, Manager, Ticketing, and Agent)
-Route::middleware(['auth', 'role:admin|manager|ticketing|agent'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin|master_admin|manager|ticketing|agent'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
 });
 
 // Admin Panel Routes
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin|master_admin'])->prefix('admin')->name('admin.')->group(function () {
     // Admin Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/', function () {
@@ -146,6 +150,29 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/daily', [DailyReportController::class, 'index'])->name('reports.daily');
     Route::get('/reports/daily/detail', [DailyReportController::class, 'detail'])->name('reports.daily.detail');
     Route::get('/reports/daily/export', [DailyReportController::class, 'exportCsv'])->name('reports.daily.export');
+});
+
+// Admin, Master Admin & MIS Refund Management & Reporting Routes
+use App\Http\Controllers\RefundRequestController;
+use App\Http\Controllers\Admin\RefundReportController;
+
+Route::middleware(['auth', 'role:admin|master_admin|mis|manager'])->prefix('admin')->name('admin.')->group(function () {
+    // Refund Requests Desk & Approvals
+    Route::get('/refunds', [RefundRequestController::class, 'index'])->name('refunds.index');
+    Route::post('/refunds/{refundRequest}/approve', [RefundRequestController::class, 'approve'])->name('refunds.approve');
+    Route::post('/refunds/{refundRequest}/reject', [RefundRequestController::class, 'reject'])->name('refunds.reject');
+    Route::post('/refunds/{refundRequest}/update-remarks', [RefundRequestController::class, 'updateMisRemarks'])->name('refunds.update-remarks');
+
+    // Refund / Void Report Sheet & CSV Export
+    Route::get('/reports/refunds', [RefundReportController::class, 'index'])->name('reports.refunds');
+    Route::get('/reports/refunds/export', [RefundReportController::class, 'exportCsv'])->name('reports.refunds.export');
+});
+
+// Master Admin Exclusive Routes (Strictly Restricted to Master Administrator)
+use App\Http\Controllers\Admin\MasterAdminChargebackAnalyticsController;
+
+Route::middleware(['auth', 'role:master_admin'])->prefix('master-admin')->name('master-admin.')->group(function () {
+    Route::get('/chargebacks/analytics', [MasterAdminChargebackAnalyticsController::class, 'index'])->name('chargebacks.analytics');
 });
 
 // HR & Accounts Exclusive Payroll Management Routes

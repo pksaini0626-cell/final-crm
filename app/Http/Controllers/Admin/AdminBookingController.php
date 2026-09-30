@@ -201,6 +201,8 @@ class AdminBookingController extends Controller
             }
 
             $roleLabel = match(Auth::user()->role) {
+                'master_admin' => 'Master Admin',
+                'admin' => 'Administrator',
                 'ticketing' => 'Ticketing Agent',
                 'manager' => 'Manager',
                 default => 'Administrator'

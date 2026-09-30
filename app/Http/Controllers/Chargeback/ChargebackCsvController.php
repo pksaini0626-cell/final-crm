@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\ChargebackControl;
 use App\Models\ChargebackPortal;
+use App\Models\ChargebackActivity;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -368,6 +369,20 @@ class ChargebackCsvController extends Controller
         }
 
         fclose($handle);
+
+        // Record CSV Import Footprint Activity
+        ChargebackActivity::record([
+            'user_id' => auth()->id(),
+            'action' => 'csv_imported',
+            'description' => "Bulk imported CSV: Read {$totalRowsRead} rows (Created: {$createdRecords}, Updated: {$updatedRecords}, Duplicates Filtered: {$skippedDuplicates})",
+            'changes' => [
+                'total_rows_read' => $totalRowsRead,
+                'created_records' => $createdRecords,
+                'updated_records' => $updatedRecords,
+                'skipped_duplicates' => $skippedDuplicates,
+                'new_portals_added' => $newPortalsAdded,
+            ]
+        ]);
 
         $msg = "CSV Processed Successfully! Total rows read: {$totalRowsRead}. New cases created: {$createdRecords}.";
         if ($updatedRecords > 0) {

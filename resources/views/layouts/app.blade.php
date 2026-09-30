@@ -174,7 +174,7 @@
                         </a>
                     </li>
                     
-                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'ticketing', 'agent']))
+                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'master_admin', 'ticketing', 'agent']))
                         <li class="nav-item">
                             <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('manager.tickets.*') ? 'active' : '' }}" href="{{ route('manager.tickets.index') }}">
                                 Ticketing
@@ -182,7 +182,7 @@
                         </li>
                     @endif
 
-                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'changes']))
+                    @if(Auth::check() && in_array(Auth::user()->role, ['manager', 'admin', 'master_admin', 'changes']))
                         <li class="nav-item">
                             <a class="nav-link fw-semibold px-3 rounded-2 {{ request()->routeIs('changes.*') ? 'active' : '' }}" href="{{ route('changes.index') }}">
                                 Changes
@@ -237,7 +237,7 @@
                         </li>
                     @endauth
 
-                    @if(Auth::check() && Auth::user()->role === 'admin')
+                    @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'master_admin']))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.*') ? 'active text-primary' : '' }}" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-shield-lock-fill me-1 text-primary"></i> Admin Panel
@@ -249,8 +249,18 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.reports.daily') }}">
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.daily*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.reports.daily') }}">
                                         <i class="bi bi-file-earmark-bar-graph text-success"></i> Daily Report
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.refunds.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.refunds.index') }}">
+                                        <i class="bi bi-arrow-counterclockwise text-danger"></i> Refund Requests Desk
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.refunds*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.reports.refunds') }}">
+                                        <i class="bi bi-file-earmark-spreadsheet text-danger"></i> Refund / Void Report
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider my-1"></li>
@@ -274,7 +284,43 @@
                                         <i class="bi bi-credit-card-2-front text-danger"></i> Charges &amp; Links
                                     </a>
                                 </li>
+                                @if(Auth::user()->role === 'master_admin' || (method_exists(Auth::user(), 'hasRole') && Auth::user()->hasRole('master_admin')))
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li>
+                                        <a class="dropdown-item py-2 px-3 fw-bold text-danger d-flex align-items-center gap-2 {{ request()->routeIs('master-admin.*') ? 'active bg-danger text-white' : '' }}" href="{{ route('master-admin.chargebacks.analytics') }}">
+                                            <i class="bi bi-shield-shaded text-danger"></i> Master Chargeback Analytics
+                                        </a>
+                                    </li>
+                                @endif
                             </ul>
+                        </li>
+                    @endif
+
+                    @if(Auth::check() && (Auth::user()->role === 'mis' || (method_exists(Auth::user(), 'hasRole') && Auth::user()->hasRole('mis'))))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-semibold px-3 rounded-2 {{ request()->routeIs('admin.refunds.*') || request()->routeIs('admin.reports.refunds*') ? 'active text-primary' : '' }}" href="#" id="misDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-arrow-counterclockwise text-danger me-1"></i> Refund / MIS Desk
+                            </a>
+                            <ul class="dropdown-menu shadow border-light-subtle rounded-3 py-2" aria-labelledby="misDropdown">
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.refunds.*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.refunds.index') }}">
+                                        <i class="bi bi-arrow-counterclockwise text-danger"></i> Refund Requests Desk
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 px-3 fw-medium d-flex align-items-center gap-2 {{ request()->routeIs('admin.reports.refunds*') ? 'active bg-primary text-white' : '' }}" href="{{ route('admin.reports.refunds') }}">
+                                        <i class="bi bi-file-earmark-spreadsheet text-danger"></i> Refund / Void Report Sheet
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    @endif
+
+                    @if(Auth::check() && (Auth::user()->role === 'master_admin' || (method_exists(Auth::user(), 'hasRole') && Auth::user()->hasRole('master_admin'))))
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold px-3 rounded-2 text-danger {{ request()->routeIs('master-admin.*') ? 'active bg-danger text-white' : '' }}" href="{{ route('master-admin.chargebacks.analytics') }}">
+                                <i class="bi bi-shield-shaded me-1"></i> Master Analytics
+                            </a>
                         </li>
                     @endif
                 </ul>

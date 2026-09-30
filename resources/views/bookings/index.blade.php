@@ -15,8 +15,8 @@
         </a>
     </div>
 
-    <!-- Pending Customer Authorization Banner (Admin/Manager) -->
-    @if(Auth::user()->hasAnyRole(['admin', 'manager']) && isset($pendingAuthBookings) && $pendingAuthBookings->count() > 0)
+    <!-- Pending Customer Authorization Banner (Admin/Master Admin/Manager) -->
+    @if((Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager'])) && isset($pendingAuthBookings) && $pendingAuthBookings->count() > 0)
         <div class="card bg-white border-warning-subtle shadow-sm mb-4">
             <div class="card-header bg-warning-subtle py-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
@@ -258,7 +258,7 @@
                                     <span class="badge {{ $badgeClass }} px-2.5 py-1.5 text-uppercase">
                                         {{ $statusLabel }}
                                     </span>
-                                    @if(auth()->check() && (auth()->user()->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array(auth()->user()->role, ['admin', 'manager', 'chargeback'])))
+                                    @if(auth()->check() && (auth()->user()->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) || in_array(auth()->user()->role, ['admin', 'master_admin', 'manager', 'chargeback'])))
                                         <button type="button" 
                                                 @click="openStatusModal({{ json_encode([
                                                     'id' => $booking->id,
@@ -331,6 +331,11 @@
                                      <a href="{{ route('bookings.request-change.create', $booking->id) }}" class="btn btn-outline-info" title="Request Changes from Changes Team">
                                          <i class="bi bi-arrow-repeat me-1"></i> Request Change
                                      </a>
+                                     @if(in_array($booking->booking_status, ['ticketed', 'booking_complete']) && !in_array($booking->payment_status, ['void', 'refund']))
+                                         <a href="{{ route('bookings.refund-request.create', $booking->id) }}" class="btn btn-outline-danger" title="Raise Refund / Void Request">
+                                             <i class="bi bi-arrow-counterclockwise me-1"></i> Refund / Void
+                                         </a>
+                                     @endif
                                      <a href="{{ route('bookings.create', ['duplicate' => $booking->id]) }}" class="btn btn-outline-secondary" title="Duplicate Booking">
                                          <i class="bi bi-files me-1"></i> Duplicate
                                      </a>

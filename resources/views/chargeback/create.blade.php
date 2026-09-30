@@ -206,13 +206,13 @@
                     <!-- Shift Month -->
                     <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Shift Month (Optional)</label>
-                        <input type="date" name="shift_month" value="{{ old('shift_month') }}" class="form-control">
+                        <input type="text" name="shift_month" value="{{ old('shift_month') }}" placeholder="e.g. YYYY-MM or YYYY-MM-DD" class="form-control font-monospace">
                     </div>
 
                     <!-- Statement Month -->
                     <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Statement Month (Optional)</label>
-                        <input type="date" name="statement_month" value="{{ old('statement_month') }}" class="form-control">
+                        <input type="text" name="statement_month" value="{{ old('statement_month') }}" placeholder="e.g. YYYY-MM or YYYY-MM-DD" class="form-control font-monospace">
                     </div>
                 </div>
             </div>

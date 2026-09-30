@@ -27,7 +27,7 @@ class BookingController extends Controller
         // Apply Search Filter (booking_id, airline_pnr, gk_pnr, email_address, passenger name)
         if ($search = trim($request->input('search', ''))) {
             $query->where(function ($q) use ($search, $user) {
-                if ($user && ($user->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array($user->role, ['admin', 'manager', 'chargeback']))) {
+                if ($user && ($user->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) || in_array($user->role, ['admin', 'master_admin', 'manager', 'chargeback']))) {
                     $q->where('booking_id', 'like', "%{$search}%")
                       ->orWhere('airline_pnr', 'like', "%{$search}%")
                       ->orWhere('gk_pnr', 'like', "%{$search}%")
@@ -68,7 +68,7 @@ class BookingController extends Controller
                 }
             });
         } else {
-            if (!$user || (!$user->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'manager', 'chargeback']))) {
+            if (!$user || (!$user->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'master_admin', 'manager', 'chargeback']))) {
                 $query->where('agent_id', Auth::id());
             }
         }
@@ -89,7 +89,7 @@ class BookingController extends Controller
             ->withQueryString();
 
         $pendingAuthBookings = collect();
-        if ($user && ($user->hasAnyRole(['admin', 'manager']) || in_array($user->role, ['admin', 'manager']))) {
+        if ($user && ($user->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array($user->role, ['admin', 'master_admin', 'manager']))) {
             $pendingAuthBookings = Booking::where('booking_status', 'email_auth_sent')
                 ->with(['agent', 'passengers', 'bookingFlights'])
                 ->latest()
@@ -97,7 +97,7 @@ class BookingController extends Controller
         }
 
         $approvedAuthBookings = collect();
-        if ($user && ($user->role === 'agent' || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])))) {
+        if ($user && ($user->role === 'agent' || (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager'])))) {
             $approvedAuthBookings = Booking::where('agent_id', $user->id)
                 ->where('booking_status', 'email_auth_done')
                 ->with(['agent', 'passengers', 'bookingFlights'])
@@ -123,7 +123,7 @@ class BookingController extends Controller
 
         $agents = collect();
         $user = Auth::user();
-        if ($user && ($user->hasAnyRole(['admin', 'manager']) || in_array($user->role, ['admin', 'manager']))) {
+        if ($user && ($user->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array($user->role, ['admin', 'master_admin', 'manager']))) {
             $agents = \App\Models\User::where('is_active', true)->orderBy('alias_name')->get();
             if ($agents->isEmpty()) {
                 $agents = \App\Models\User::orderBy('alias_name')->get();
@@ -150,9 +150,9 @@ class BookingController extends Controller
         return DB::transaction(function () use ($request) {
             $data = $request->validated();
             
-            // Assign agent_id: If admin/manager provided an agent_id, use it; otherwise default to Auth::id()
+            // Assign agent_id: If admin/master_admin/manager provided an agent_id, use it; otherwise default to Auth::id()
             $user = Auth::user();
-            if ($user && ($user->hasAnyRole(['admin', 'manager']) || in_array($user->role, ['admin', 'manager'])) && $request->filled('agent_id')) {
+            if ($user && ($user->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array($user->role, ['admin', 'master_admin', 'manager'])) && $request->filled('agent_id')) {
                 $data['agent_id'] = $request->input('agent_id');
             } else {
                 $data['agent_id'] = Auth::id();
@@ -245,7 +245,7 @@ class BookingController extends Controller
      */
     public function addRemark(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array(Auth::user()->role, ['admin', 'manager', 'chargeback']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager', 'chargeback']), 403);
 
         $request->validate([
             'remark' => 'nullable|string|required_without:attachments',
@@ -273,7 +273,7 @@ class BookingController extends Controller
         $booking->bookingRemarks()->create([
             'user_id' => Auth::id(),
             'remark' => $request->input('remark') ?: 'Attachment(s) added.',
-            'type' => (Auth::user()->hasAnyRole(['admin', 'manager', 'chargeback']) || in_array(Auth::user()->role, ['admin', 'manager', 'chargeback'])) ? 'admin_remark' : 'agent_remark',
+            'type' => (Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager', 'chargeback'])) ? 'admin_remark' : 'agent_remark',
             'attachments' => $attachmentData,
         ]);
 
@@ -285,7 +285,7 @@ class BookingController extends Controller
      */
     public function updateTicketsAndSeats(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']), 403);
 
         if ($request->has('company_card_used')) {
             $request->merge([
@@ -400,7 +400,7 @@ class BookingController extends Controller
                 $booking->bookingRemarks()->create([
                     'user_id' => Auth::id(),
                     'remark' => $request->input('new_remark') ?: 'Updated booking details with attachment(s).',
-                    'type' => Auth::user()->hasAnyRole(['admin', 'manager']) ? 'admin_remark' : 'agent_remark',
+                    'type' => (Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager'])) ? 'admin_remark' : 'agent_remark',
                     'attachments' => $newAttachments,
                 ]);
             }
@@ -414,7 +414,7 @@ class BookingController extends Controller
      */
     public function updateCompanyCard(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager', 'ticketing']) && !in_array(Auth::user()->role, ['admin', 'manager', 'ticketing']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager', 'ticketing']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager', 'ticketing']), 403);
 
         if ($request->has('company_card_used')) {
             $request->merge([
@@ -452,7 +452,7 @@ class BookingController extends Controller
      */
     public function previewAuthEmail(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']), 403);
 
         $booking->load(['passengers', 'bookingFlights', 'agent']);
 
@@ -530,7 +530,7 @@ class BookingController extends Controller
      */
     public function sendAuthEmail(Request $request, Booking $booking)
     {
-        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'manager']), 403);
+        abort_if($booking->agent_id !== Auth::id() && !Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']), 403);
 
         $request->validate([
             'email_address' => 'required|email',
@@ -600,7 +600,7 @@ class BookingController extends Controller
      */
     public function approveAuth(Booking $booking)
     {
-        abort_if(!Auth::user()->hasAnyRole(['admin', 'manager']), 403);
+        abort_if(!Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']), 403);
 
         $approver = Auth::user();
 
@@ -635,7 +635,7 @@ class BookingController extends Controller
     public function cancelAuth(Request $request, Booking $booking)
     {
         $user = Auth::user();
-        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])), 403, 'Unauthorized access.');
+        abort_if(!$user || (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager'])), 403, 'Unauthorized access.');
 
         $canceller = $user;
         $reason = trim($request->input('reason', 'Payment charge could not be processed / authorization cancelled by Admin.'));
@@ -699,11 +699,11 @@ class BookingController extends Controller
     public function updateStatus(Request $request, Booking $booking)
     {
         $user = Auth::user();
-        abort_if(!$user || (!$user->hasAnyRole(['admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'manager', 'chargeback'])), 403, 'Unauthorized access.');
+        abort_if(!$user || (!$user->hasAnyRole(['admin', 'master_admin', 'manager', 'chargeback']) && !in_array($user->role, ['admin', 'master_admin', 'manager', 'chargeback'])), 403, 'Unauthorized access.');
 
         $validated = $request->validate([
             'booking_status' => 'required|string|in:booking_generated,email_auth_sent,email_auth_done,ticketed,booking_complete,void,failed,chargeback',
-            'payment_status' => 'required|string|in:pending,received,refund,cancelled',
+            'payment_status' => 'required|string|in:pending,received,refund,cancelled,cancel,void,partial_void,refund_pending',
             'dispute_type' => 'nullable|string|in:CHARGEBACK,RDR,ALERT,RETRIEVAL,none,NONE',
             'remark' => 'nullable|string|max:1000',
         ]);
@@ -748,8 +748,9 @@ class BookingController extends Controller
             $booking->save();
 
             $roleLabel = match($user->role) {
-                'manager' => 'Manager',
                 'admin' => 'Administrator',
+                'master_admin' => 'Master Admin',
+                'manager' => 'Manager',
                 'chargeback' => 'Chargeback Team',
                 default => 'Staff'
             };

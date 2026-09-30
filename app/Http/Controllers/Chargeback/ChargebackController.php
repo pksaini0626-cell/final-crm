@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Chargeback;
 use App\Http\Controllers\Controller;
 use App\Models\ChargebackControl;
 use App\Models\ChargebackPortal;
+use App\Models\ChargebackActivity;
 use App\Models\Booking;
 use App\Mail\ChargebackAlertAgentMail;
 use Illuminate\Http\Request;
@@ -165,8 +166,8 @@ class ChargebackController extends Controller
             'vertical' => 'nullable|string|max:100',
             'service_provided' => 'nullable|string|max:255',
             'shift_time' => 'nullable|string|max:20',
-            'shift_month' => 'nullable|date',
-            'statement_month' => 'nullable|date',
+            'shift_month' => 'nullable|string|max:50',
+            'statement_month' => 'nullable|string|max:50',
             'sds' => 'nullable|integer',
             'booking_id' => 'nullable|exists:bookings,id',
             'booking_reference' => 'nullable|string|max:20',
@@ -253,6 +254,29 @@ class ChargebackController extends Controller
             );
         }
 
+        // Record Creation Footprint Activity
+        ChargebackActivity::record([
+            'user_id' => Auth::id(),
+            'chargeback_id' => $chargeback->id,
+            'case_number' => $chargeback->case_number,
+            'pnr' => $chargeback->pnr,
+            'action' => 'created',
+            'description' => "Created Chargeback Case #{$chargeback->case_number} ({$chargeback->dispute_type}, Disputed: {$chargeback->currency} {$chargeback->disputed_amount})",
+            'changes' => [
+                'initial_state' => [
+                    'portal' => $chargeback->portal,
+                    'case_number' => $chargeback->case_number,
+                    'case_type' => $chargeback->case_type,
+                    'dispute_type' => $chargeback->dispute_type,
+                    'cbk_status' => $chargeback->cbk_status,
+                    'current_status' => $chargeback->current_status,
+                    'disputed_amount' => $chargeback->disputed_amount,
+                    'currency' => $chargeback->currency,
+                    'pnr' => $chargeback->pnr,
+                ]
+            ]
+        ]);
+
         return redirect()->route('chargeback.index')->with('success', "Chargeback Case #{$chargeback->case_number} created successfully.");
     }
 
@@ -320,8 +344,8 @@ class ChargebackController extends Controller
             'vertical' => 'nullable|string|max:100',
             'service_provided' => 'nullable|string|max:255',
             'shift_time' => 'nullable|string|max:20',
-            'shift_month' => 'nullable|date',
-            'statement_month' => 'nullable|date',
+            'shift_month' => 'nullable|string|max:50',
+            'statement_month' => 'nullable|string|max:50',
             'sds' => 'nullable|integer',
             'new_remark' => 'nullable|string',
             'attachments' => 'nullable|array',
@@ -336,6 +360,24 @@ class ChargebackController extends Controller
 
         $oldDisputeType = $chargeback->dispute_type;
         $oldCurrentStatus = $chargeback->current_status;
+
+        // Snapshot existing attributes for change diffs
+        $trackedKeys = [
+            'portal', 'case_number', 'case_type', 'dispute_type', 'received_date',
+            'received_month', 'booking_date', 'booking_month', 'deadline_date',
+            'action_taken_date', 'cbk_status', 'current_status', 'pnr', 'agent_name',
+            'currency', 'total_booking_amount', 'disputed_amount', 'cc_brand', 'card_no',
+            'reason_code', 'reason_description', 'vertical', 'service_provided', 'shift_time',
+            'shift_month', 'statement_month', 'sds'
+        ];
+        $oldSnap = [];
+        foreach ($trackedKeys as $k) {
+            $val = $chargeback->{$k};
+            if ($val instanceof \Carbon\Carbon) {
+                $val = $val->format('Y-m-d');
+            }
+            $oldSnap[$k] = $val !== null ? (string)$val : '';
+        }
 
         // Process Additional Image Attachments
         $newImages = $this->handleImageUploads($request);
@@ -360,6 +402,45 @@ class ChargebackController extends Controller
                 ]);
             }
         });
+
+        // Compute field-level differences
+        $diffs = [];
+        foreach ($trackedKeys as $k) {
+            $newVal = $chargeback->fresh()->{$k};
+            if ($newVal instanceof \Carbon\Carbon) {
+                $newVal = $newVal->format('Y-m-d');
+            }
+            $newValStr = $newVal !== null ? (string)$newVal : '';
+            if ($oldSnap[$k] !== $newValStr) {
+                $diffs[$k] = [
+                    'old' => $oldSnap[$k],
+                    'new' => $newValStr,
+                ];
+            }
+        }
+
+        // Record Update Footprint Activity
+        $changedKeys = array_keys($diffs);
+        $changeDesc = !empty($changedKeys) 
+            ? "Updated Case #{$chargeback->case_number} (Modified: " . implode(', ', $changedKeys) . ")"
+            : "Saved Case #{$chargeback->case_number}";
+
+        if (!empty($validated['new_remark'])) {
+            $diffs['remark_added'] = [
+                'old' => '',
+                'new' => trim($validated['new_remark'])
+            ];
+        }
+
+        ChargebackActivity::record([
+            'user_id' => Auth::id(),
+            'chargeback_id' => $chargeback->id,
+            'case_number' => $chargeback->case_number,
+            'pnr' => $chargeback->pnr,
+            'action' => 'updated',
+            'description' => $changeDesc,
+            'changes' => $diffs,
+        ]);
 
         // Automated Alert Email on Dispute Type or Current Status Change
         $disputeTypeChanged = ($oldDisputeType !== $validated['dispute_type']);
@@ -388,6 +469,25 @@ class ChargebackController extends Controller
         $this->authorizeChargebackRole();
 
         $caseNo = $chargeback->case_number;
+        $pnr = $chargeback->pnr;
+
+        ChargebackActivity::record([
+            'user_id' => Auth::id(),
+            'chargeback_id' => null,
+            'case_number' => $caseNo,
+            'pnr' => $pnr,
+            'action' => 'deleted',
+            'description' => "Deleted Chargeback Case #{$caseNo} (PNR: {$pnr})",
+            'changes' => [
+                'deleted_record' => [
+                    'portal' => $chargeback->portal,
+                    'case_number' => $caseNo,
+                    'pnr' => $pnr,
+                    'disputed_amount' => $chargeback->disputed_amount,
+                ]
+            ]
+        ]);
+
         $chargeback->delete();
 
         return redirect()->route('chargeback.index')->with('success', "Chargeback Case #{$caseNo} deleted successfully.");
@@ -507,6 +607,18 @@ class ChargebackController extends Controller
                 'user_id' => Auth::id(),
                 'remark' => "Chargeback Remark [Case #{$chargeback->case_number}]: " . trim($validated['remark']),
                 'type' => 'admin_remark',
+            ]);
+
+            ChargebackActivity::record([
+                'user_id' => Auth::id(),
+                'chargeback_id' => $chargeback->id,
+                'case_number' => $chargeback->case_number,
+                'pnr' => $chargeback->pnr,
+                'action' => 'remark_added',
+                'description' => "Added remark on Case #{$chargeback->case_number}: " . trim($validated['remark']),
+                'changes' => [
+                    'remark' => trim($validated['remark'])
+                ]
             ]);
 
             return redirect()->back()->with('success', 'Remark added to booking successfully.');
@@ -641,8 +753,8 @@ class ChargebackController extends Controller
                     $row->vertical,
                     $row->service_provided,
                     $row->shift_time,
-                    $row->shift_month ? $row->shift_month->format('Y-m-d') : '',
-                    $row->statement_month ? $row->statement_month->format('Y-m-d') : '',
+                    $row->shift_month instanceof \DateTimeInterface ? $row->shift_month->format('Y-m-d') : ($row->shift_month ?: ''),
+                    $row->statement_month instanceof \DateTimeInterface ? $row->statement_month->format('Y-m-d') : ($row->statement_month ?: ''),
                     $row->sds,
                     $row->creator ? ($row->creator->alias_name ?: $row->creator->name) : 'System',
                     $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '',

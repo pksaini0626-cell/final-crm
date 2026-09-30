@@ -77,4 +77,12 @@ class ChargebackControl extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Get the audit footprints and activities for this chargeback.
+     */
+    public function activities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ChargebackActivity::class, 'chargeback_id');
+    }
 }

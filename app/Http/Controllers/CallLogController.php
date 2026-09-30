@@ -19,8 +19,8 @@ class CallLogController extends Controller
 
         $user = Auth::user();
 
-        // Agents can only see their own call logs unless admin/manager
-        if (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])) {
+        // Agents can only see their own call logs unless admin/master_admin/manager
+        if (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager'])) {
             $query->where('agent_id', $user->id);
         } elseif ($request->filled('agent_id')) {
             $query->where('agent_id', $request->input('agent_id'));
@@ -108,7 +108,7 @@ class CallLogController extends Controller
     public function show(CallLog $callLog)
     {
         $user = Auth::user();
-        if (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager']) && $callLog->agent_id !== $user->id) {
+        if (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager']) && $callLog->agent_id !== $user->id) {
             abort(403);
         }
 
@@ -139,7 +139,7 @@ class CallLogController extends Controller
     public function destroy(CallLog $callLog)
     {
         $user = Auth::user();
-        if (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager']) && $callLog->agent_id !== $user->id) {
+        if (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager']) && $callLog->agent_id !== $user->id) {
             abort(403);
         }
 
@@ -158,7 +158,7 @@ class CallLogController extends Controller
         $query = CallLog::with('agent');
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'manager']) && !in_array($user->role, ['admin', 'manager'])) {
+        if (!$user->hasAnyRole(['admin', 'master_admin', 'manager']) && !in_array($user->role, ['admin', 'master_admin', 'manager'])) {
             $query->where('agent_id', $user->id);
         } elseif ($request->filled('agent_id')) {
             $query->where('agent_id', $request->input('agent_id'));

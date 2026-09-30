@@ -44,7 +44,7 @@ class StoreBookingRequest extends FormRequest
                 'nullable',
                 Rule::requiredIf(function () {
                     $user = auth()->user();
-                    return $user && ($user->hasAnyRole(['admin', 'manager']) || in_array($user->role, ['admin', 'manager']));
+                    return $user && ($user->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array($user->role, ['admin', 'master_admin', 'manager']));
                 }),
                 'exists:users,id',
             ],
@@ -99,7 +99,7 @@ class StoreBookingRequest extends FormRequest
             'total_mco' => 'required|numeric|min:0',
             'company_card_used' => 'nullable|boolean',
             'company_card_amount' => 'nullable|numeric|min:0',
-            'payment_status' => 'required|in:pending,received,refund,cancelled',
+            'payment_status' => 'required|in:pending,received,refund,cancelled,cancel,void,partial_void,refund_pending',
             'payment_info' => 'nullable|string',
 
             // Passengers: At least one passenger is MUST

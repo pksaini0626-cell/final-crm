@@ -133,11 +133,11 @@
                     </div>
                     <div class="col-md-3 col-6">
                         <span class="text-secondary small text-uppercase fw-bold d-block">Shift Time / Month</span>
-                        <span class="text-dark">{{ $chargeback->shift_time ?: 'N/A' }} ({{ $chargeback->shift_month ? $chargeback->shift_month->format('M Y') : 'N/A' }})</span>
+                        <span class="text-dark">{{ $chargeback->shift_time ?: 'N/A' }} ({{ $chargeback->shift_month ? ($chargeback->shift_month instanceof \DateTimeInterface ? $chargeback->shift_month->format('M Y') : $chargeback->shift_month) : 'N/A' }})</span>
                     </div>
                     <div class="col-md-3 col-6">
                         <span class="text-secondary small text-uppercase fw-bold d-block">Statement Month</span>
-                        <span class="text-dark">{{ $chargeback->statement_month ? $chargeback->statement_month->format('M Y') : 'N/A' }}</span>
+                        <span class="text-dark">{{ $chargeback->statement_month ? ($chargeback->statement_month instanceof \DateTimeInterface ? $chargeback->statement_month->format('M Y') : $chargeback->statement_month) : 'N/A' }}</span>
                     </div>
                     <div class="col-md-3 col-6">
                         <span class="text-secondary small text-uppercase fw-bold d-block">SDS</span>

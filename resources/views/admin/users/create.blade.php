@@ -73,6 +73,7 @@
                             <option value="chargeback" {{ old('role') === 'chargeback' ? 'selected' : '' }}>Chargeback Desk</option>
                             <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="master_admin" {{ old('role') === 'master_admin' ? 'selected' : '' }}>Master Admin</option>
                         </select>
                         @error('role')<div class="form-text text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>

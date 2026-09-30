@@ -94,7 +94,7 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            @if(Auth::check() && (Auth::user()->hasAnyRole(['admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'manager'])))
+                            @if(Auth::check() && (Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager'])))
                                 <div class="col-md-3">
                                     <label class="form-label text-warning-emphasis small fw-bold text-uppercase">Assign Agent <span class="text-danger">*</span></label>
                                     <select name="agent_id" x-model="formData.agent_id" required class="form-select border-warning fw-semibold">

@@ -97,8 +97,8 @@
                     </select>
                 </div>
 
-                <!-- Agent Filter (Admin / Manager Only) -->
-                @if(Auth::user()->hasAnyRole(['admin','manager']) || in_array(Auth::user()->role, ['admin','manager']))
+                <!-- Agent Filter (Admin / Master Admin / Manager Only) -->
+                @if(Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']))
                 <div class="col-md-2">
                     <select name="agent_id" class="form-select form-select-sm">
                         <option value="">-- All Agents --</option>
@@ -162,7 +162,7 @@
                             <th>Email</th>
                             <th>City</th>
                             <th>Call Type</th>
-                            @if(Auth::user()->hasAnyRole(['admin','manager']) || in_array(Auth::user()->role, ['admin','manager']))
+                            @if(Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']))
                                 <th>Agent</th>
                             @endif
                             <th style="width: 110px;" class="text-center">Follow-Up</th>
@@ -215,7 +215,7 @@
                                         <i class="bi bi-tag-fill me-1"></i>{{ $log->service_provided_label }}
                                     </span>
                                 </td>
-                                @if(Auth::user()->hasAnyRole(['admin','manager']) || in_array(Auth::user()->role, ['admin','manager']))
+                                @if(Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']))
                                     <td>
                                         <span class="badge bg-light text-secondary border border-secondary-subtle small">
                                             <i class="bi bi-person-circle me-1"></i>{{ $log->agent ? ($log->agent->alias_name ?: $log->agent->name) : 'N/A' }}
@@ -238,7 +238,7 @@
                                         <button type="button" @click="viewCallLog({{ $log->id }})" class="btn btn-outline-primary" title="View Call Details">
                                             <i class="bi bi-eye"></i> View
                                         </button>
-                                        @if(Auth::user()->hasAnyRole(['admin','manager']) || in_array(Auth::user()->role, ['admin','manager']) || $log->agent_id === Auth::id())
+                                        @if(Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager']) || $log->agent_id === Auth::id())
                                             <button type="button" @click="confirmDelete({{ $log->id }}, '{{ addslashes($log->customer_name) }}')" class="btn btn-outline-danger" title="Delete Call Log">
                                                 <i class="bi bi-trash"></i>
                                             </button>

@@ -124,7 +124,7 @@
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">
                             Received Date <span class="text-danger">*</span>
                         </label>
-                        <input type="date" name="received_date" value="{{ old('received_date', $chargeback->received_date ? $chargeback->received_date->format('Y-m-d') : '') }}" required class="form-control">
+                        <input type="date" name="received_date" value="{{ old('received_date', $chargeback->received_date instanceof \DateTimeInterface ? $chargeback->received_date->format('Y-m-d') : ($chargeback->received_date ?: '')) }}" required class="form-control">
                     </div>
 
                     <!-- Received Month -->
@@ -141,7 +141,7 @@
                             <span>Deadline Date</span>
                             <span class="text-muted fw-normal" style="font-size: 0.72rem;">Optional</span>
                         </label>
-                        <input type="date" name="deadline_date" value="{{ old('deadline_date', $chargeback->deadline_date ? $chargeback->deadline_date->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="date" name="deadline_date" value="{{ old('deadline_date', $chargeback->deadline_date instanceof \DateTimeInterface ? $chargeback->deadline_date->format('Y-m-d') : ($chargeback->deadline_date ?: '')) }}" class="form-control">
                     </div>
 
                     <!-- Action Taken Date (Optional) -->
@@ -150,13 +150,13 @@
                             <span>Action Taken Date</span>
                             <span class="text-muted fw-normal" style="font-size: 0.72rem;">Optional</span>
                         </label>
-                        <input type="date" name="action_taken_date" value="{{ old('action_taken_date', $chargeback->action_taken_date ? $chargeback->action_taken_date->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="date" name="action_taken_date" value="{{ old('action_taken_date', $chargeback->action_taken_date instanceof \DateTimeInterface ? $chargeback->action_taken_date->format('Y-m-d') : ($chargeback->action_taken_date ?: '')) }}" class="form-control">
                     </div>
 
                     <!-- Booking Date -->
                     <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Booking Date</label>
-                        <input type="date" name="booking_date" value="{{ old('booking_date', $chargeback->booking_date ? $chargeback->booking_date->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="date" name="booking_date" value="{{ old('booking_date', $chargeback->booking_date instanceof \DateTimeInterface ? $chargeback->booking_date->format('Y-m-d') : ($chargeback->booking_date ?: '')) }}" class="form-control">
                     </div>
 
                     <!-- Booking Month -->
@@ -168,13 +168,13 @@
                     <!-- Shift Month -->
                     <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Shift Month (Optional)</label>
-                        <input type="date" name="shift_month" value="{{ old('shift_month', $chargeback->shift_month ? $chargeback->shift_month->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="text" name="shift_month" value="{{ old('shift_month', $chargeback->shift_month ? ($chargeback->shift_month instanceof \DateTimeInterface ? $chargeback->shift_month->format('Y-m-d') : $chargeback->shift_month) : '') }}" placeholder="e.g. YYYY-MM or YYYY-MM-DD" class="form-control font-monospace">
                     </div>
 
                     <!-- Statement Month -->
                     <div class="col-md-3">
                         <label class="form-label text-secondary small fw-bold text-uppercase mb-1">Statement Month (Optional)</label>
-                        <input type="date" name="statement_month" value="{{ old('statement_month', $chargeback->statement_month ? $chargeback->statement_month->format('Y-m-d') : '') }}" class="form-control">
+                        <input type="text" name="statement_month" value="{{ old('statement_month', $chargeback->statement_month ? ($chargeback->statement_month instanceof \DateTimeInterface ? $chargeback->statement_month->format('Y-m-d') : $chargeback->statement_month) : '') }}" placeholder="e.g. YYYY-MM or YYYY-MM-DD" class="form-control font-monospace">
                     </div>
                 </div>
             </div>

@@ -294,6 +294,11 @@
                                     <a href="{{ route('bookings.request-change.create', $booking->id) }}" class="btn btn-outline-info btn-sm px-2 py-1" title="Request Changes from Changes Team">
                                         Changes
                                     </a>
+                                    @if(in_array($booking->booking_status, ['ticketed', 'booking_complete']) && !in_array($booking->payment_status, ['void', 'refund']))
+                                        <a href="{{ route('bookings.refund-request.create', $booking->id) }}" class="btn btn-outline-danger btn-sm px-2 py-1" title="Raise Refund / Void Request">
+                                            Refund
+                                        </a>
+                                    @endif
                                     <a href="{{ route('bookings.create', ['duplicate' => $booking->id]) }}" class="btn btn-outline-secondary btn-sm px-2 py-1" title="Duplicate Booking">
                                         <i class="bi bi-files"></i>
                                     </a>

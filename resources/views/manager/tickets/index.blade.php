@@ -163,7 +163,7 @@
                                     <a href="{{ route('manager.tickets.preview', $booking) }}" target="_blank" class="btn btn-outline-info btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1">
                                         <i class="bi bi-file-earmark-pdf"></i> PDF
                                     </a>
-                                    @if(Auth::user()->hasAnyRole(['admin', 'manager', 'agent']) || in_array(Auth::user()->role, ['admin', 'manager', 'agent']))
+                                    @if(Auth::user()->hasAnyRole(['admin', 'master_admin', 'manager', 'agent']) || in_array(Auth::user()->role, ['admin', 'master_admin', 'manager', 'agent']))
                                         <button type="button" @click="openAssignModal({{ $booking->id }}, '{{ $booking->booking_id }}', {{ $booking->ticketing_user_id ?: 'null' }})" class="btn btn-outline-primary btn-sm px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1" title="Assign to Ticketing Agent">
                                             <i class="bi bi-person-check"></i> Assign
                                         </button>

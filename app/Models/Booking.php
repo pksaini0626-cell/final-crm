@@ -300,6 +300,31 @@ class Booking extends Model
     }
 
     /**
+     * Check if booking is eligible for refund / void request.
+     */
+    public function canRequestRefund(): bool
+    {
+        return in_array($this->booking_status, ['ticketed', 'booking_complete'])
+            && !in_array($this->payment_status, ['void', 'refund']);
+    }
+
+    /**
+     * Get the refund requests for the booking.
+     */
+    public function refundRequests(): HasMany
+    {
+        return $this->hasMany(RefundRequest::class, 'booking_id')->latest();
+    }
+
+    /**
+     * Get the latest refund request for the booking.
+     */
+    public function latestRefundRequest(): HasOne
+    {
+        return $this->hasOne(RefundRequest::class, 'booking_id')->latestOfMany();
+    }
+
+    /**
      * Scope a query to only include bookings with reportable MCO.
      */
     public function scopeWhereReportableMco($query)
